@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { ChangeEventHandler, FC } from 'react';
 import ToolButton from './ToolButton';
 import { ChainedCommands, Editor } from '@tiptap/react';
 import Underline from '@tiptap/extension-underline';
@@ -60,6 +60,14 @@ const tools = [
     }
 ] as const
 
+const headingOptions = [
+    {task: "p", value: "Paragraph"},
+    {task: "h1", value: "Heading 1"},
+    {task: "h2", value: "Heading 2"},
+    {task: "h3", value: "Heading 3"},
+    {task: "h4", value: "Heading 4"}
+] as const 
+
 const chainMethods = (editor : Editor | null, command: (chain: ChainedCommands) => ChainedCommands
 ) => {
     if(!editor) return 
@@ -67,6 +75,7 @@ const chainMethods = (editor : Editor | null, command: (chain: ChainedCommands) 
 }
 
 type TaskType = (typeof tools)[number]["task"]
+type HeadingType = (typeof headingOptions)[number]["task"]
 
 const Tools: FC<Props> = ({editor, onImageSelection}) => {
 
@@ -99,7 +108,36 @@ const Tools: FC<Props> = ({editor, onImageSelection}) => {
         }
     }
 
+    const handleHeadingSelection: ChangeEventHandler<HTMLSelectElement> = ({target}) => {
+        const {value} = target as {value: HeadingType}
+
+        switch(value){
+            case 'p':
+                return chainMethods(editor, (chain) => chain.setParagraph()
+            )
+            case 'h1':
+                return chainMethods(editor, (chain) => chain.toggleHeading({level: 1})
+            )
+            case 'h2':
+                return chainMethods(editor, (chain) => chain.toggleHeading({level: 2})
+            )
+            case 'h3':
+                return chainMethods(editor, (chain) => chain.toggleHeading({level: 3})
+            )
+            case 'h4':
+                return chainMethods(editor, (chain) => chain.toggleHeading({level: 4})
+            )
+        }
+    }
+
     return <div>
+        <select className='p-2' name="" id="" onChange={handleHeadingSelection}>
+            {headingOptions.map(item => {
+                return  <option key={item.task} value={item.task}>
+                            {item.value}
+                        </option>
+            } )}
+        </select>
         {tools.map(({icon, task}) => {
             return <ToolButton 
             onClick={() => handleOnClick(task)}

@@ -7,6 +7,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Tools from './Tools';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
+import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder';
 import ImageGallery from './ImageGallery';
 import { useState } from 'react';
@@ -18,6 +19,12 @@ const extensions = [
     Underline, 
     TextAlign.configure({
         types: ['paragraph'],
+    }),
+    Image.configure({
+        inline: false,
+        HTMLAttributes: {
+            class: "w-[80%] mx-auto"
+        }
     }),
     Placeholder.configure({
         placeholder: "Write Something..."
@@ -35,13 +42,18 @@ const RichEditor: FC<Props> = () => {
         },
         // content: "<h1>Hallo Gais</h1>"
     });
+
+    const onImageSelect = (image: string) => {
+        editor?.chain().focus().setImage({src: image, alt: "this is an image"}).run()
+    }
+
     return <>
         <Tools editor={editor} onImageSelection={() => setShowImageGallery(true)}/>
         <EditorContent
         editor={editor}
         //  extensions={[StarterKit]} content="Hello World <strong>Yooo</strong>"
           />
-        <ImageGallery visible={showImageGallery} onClose={setShowImageGallery}/>
+        <ImageGallery onSelect={onImageSelect} visible={showImageGallery} onClose={setShowImageGallery}/>
     </>
 }
 

@@ -1,16 +1,29 @@
-import { FC } from "react"
+import { FC, useState } from "react"
 import { FileUploader } from "react-drag-drop-files";
 import GalleryImage from "../GalleryImage/page";
+import { uploadFile } from "@/app/actions/file";
+import { useImages } from "@/app/context/imageProvider";
 
 interface Props {
     visible: boolean;
     onClose(state: boolean): void
+    onSelect?(src: string): void
+    // onDelete?(src: string): void
 }
 
-const ImageGallery: FC<Props> = ({visible, onClose}) => {
+const ImageGallery: FC<Props> = ({visible, onClose, onSelect}) => {
+    const [isUploading, setIsUploading] = useState(false)
+    const image = useImages()
+    const images = image?.images
+    const updateImages = image?.updateImages
 
     const handleClose = () => {
         onClose(!visible)
+    }
+
+    const handleSelection = (image: string) => {
+        onSelect && onSelect(image)
+        handleClose()
     }
 
     if(!visible) return null
@@ -27,7 +40,21 @@ const ImageGallery: FC<Props> = ({visible, onClose}) => {
                 </button>
             </div>
             <FileUploader 
-                handleChange={() => {}}
+                handleChange={async (file: File) => {
+                    setIsUploading(true)
+                    try {
+                        const formData = new FormData()
+                        formData.append("file", file)
+                        const res = await uploadFile(formData)
+                        if(res && updateImages){
+                            updateImages([res.secure_url])
+                        }
+                    } catch (error) {
+                        console.log(error)
+                    }
+                    
+                    setIsUploading(false)
+                }}
                 name="file"
                 types={["png", "jpg", "svg", "jpeg", "webp"]}
             >
@@ -47,10 +74,15 @@ const ImageGallery: FC<Props> = ({visible, onClose}) => {
 
             </FileUploader>
 
-            <p className="my-2 text-center text-sm text-gray-500 dark:text-gray-400">No Images to Render...</p>
+            {!images?.length ? <p className="my-2 text-center text-sm text-gray-500 dark:text-gray-400">No Images to Render...</p> : null}
 
             <div className="grid gap-4 md:grid-cols-4 grid-cols-2 mt-4">
-                <GalleryImage src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" />
+                {isUploading && (
+                    <div className="w-full aspect-square rounded animate-pulse bg-gray-200"></div>
+                )}
+                {images?.map(item => {
+                    return <GalleryImage onSelectClick={() => handleSelection(item)} src={item}/>
+                })}
             </div>
         </div>
 
