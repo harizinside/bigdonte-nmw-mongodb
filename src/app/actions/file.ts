@@ -41,3 +41,7 @@ export const readAllImages = async () => {
     
     return []
 }
+
+export const removeImage = async(id: string) => {
+    await cloud.uploader.destroy(id)
+}

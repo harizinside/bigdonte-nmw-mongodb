@@ -1,7 +1,7 @@
 import { FC, useState } from "react"
 import { FileUploader } from "react-drag-drop-files";
 import GalleryImage from "../GalleryImage/page";
-import { uploadFile } from "@/app/actions/file";
+import { removeImage, uploadFile } from "@/app/actions/file";
 import { useImages } from "@/app/context/imageProvider";
 
 interface Props {
@@ -16,6 +16,7 @@ const ImageGallery: FC<Props> = ({visible, onClose, onSelect}) => {
     const image = useImages()
     const images = image?.images
     const updateImages = image?.updateImages
+    const removeOldImage = image?.removeOldImage
 
     const handleClose = () => {
         onClose(!visible)
@@ -32,7 +33,7 @@ const ImageGallery: FC<Props> = ({visible, onClose, onSelect}) => {
         tabIndex={-1}
         onKeyDown={({key}) => {
         if(key === "Escape") handleClose()
-    }} className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center">
+    }} className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-9999">
         <div className="relative md:w-[760px] w-[80%] h-[80%] bg-white rounded-md p-4 overflow-y-auto">
             <div className="absolute right-4 top-4 p-2 z-50">
                 <button onClick={handleClose}>
@@ -81,7 +82,18 @@ const ImageGallery: FC<Props> = ({visible, onClose, onSelect}) => {
                     <div className="w-full aspect-square rounded animate-pulse bg-gray-200"></div>
                 )}
                 {images?.map(item => {
-                    return <GalleryImage onSelectClick={() => handleSelection(item)} src={item}/>
+                    return <GalleryImage key={item}
+                            onDeleteClick={async() => {
+                                if(confirm("Are you sure?")){
+                                    const id = item.split("/").slice(-2).join("/").split(".")[0]
+                                    await removeImage(id)
+                                    if(removeOldImage){
+                                        removeOldImage(item)
+                                    }
+                                }
+                            }} 
+                            onSelectClick={() => handleSelection(item)} 
+                            src={item}/>
                 })}
             </div>
         </div>

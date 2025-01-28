@@ -4,7 +4,7 @@ import React from 'react'
 const Example = () => {
   return (
     <div>
-        <RichEditor/>
+        <h1>Hai</h1>
     </div>
   )
 }

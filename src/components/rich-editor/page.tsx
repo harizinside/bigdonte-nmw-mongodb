@@ -11,6 +11,7 @@ import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder';
 import ImageGallery from './ImageGallery';
 import { useState } from 'react';
+import Link from '@tiptap/extension-link';
 
 interface props {}
 
@@ -19,6 +20,14 @@ const extensions = [
     Underline, 
     TextAlign.configure({
         types: ['paragraph'],
+    }),
+    Link.configure({
+        openOnClick: false,
+        autolink: false,
+        linkOnPaste: true,
+        HTMLAttributes: {
+            target: ""
+        },
     }),
     Image.configure({
         inline: false,
@@ -35,9 +44,10 @@ const RichEditor: FC<Props> = () => {
     const [showImageGallery, setShowImageGallery] = useState(false)
     const editor = useEditor({
         extensions,
+        immediatelyRender: false,
         editorProps: {
             attributes: {
-                class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none outline-none'
+                class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl w-full dark:text-white focus:outline-none outline-none'
             }
         },
         // content: "<h1>Hallo Gais</h1>"
@@ -49,10 +59,19 @@ const RichEditor: FC<Props> = () => {
 
     return <>
         <Tools editor={editor} onImageSelection={() => setShowImageGallery(true)}/>
-        <EditorContent
-        editor={editor}
-        //  extensions={[StarterKit]} content="Hello World <strong>Yooo</strong>"
-          />
+        <div className="flex flex-col mt-3">
+            <div className="p-4 w-full rounded-[7px] border-[1.5px] border-stroke dark:border-dark-3 dark:bg-dark-2">
+                <EditorContent
+                    editor={editor}
+                />
+            </div>
+            <div className="p-0 mt-5">
+                <button onClick={() => {
+                    console.log(editor?.getHTML())
+                }}>Create New Post</button>
+            </div>
+        </div>
+        
         <ImageGallery onSelect={onImageSelect} visible={showImageGallery} onClose={setShowImageGallery}/>
     </>
 }

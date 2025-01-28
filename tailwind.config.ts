@@ -242,6 +242,29 @@ const config: Config = {
         280: "70rem",
         292.5: "73.125rem",
       },
+      // typography: {
+      //   DEFAULT: {
+      //     css: {
+      //       color: 'inherit', // Menggunakan warna teks default dari elemen induk
+      //       a: {
+      //         color: 'inherit',
+      //         textDecoration: 'underline',
+      //       },
+      //     },
+      //   },
+      //   dark: {
+      //     css: {
+      //       color: '#fff', // Warna teks putih di mode gelap
+      //       a: {
+      //         color: '#4ade80', // Warna link hijau di mode gelap (opsional)
+      //       },
+      //       h1: { color: '#fff' },
+      //       h2: { color: '#fff' },
+      //       h3: { color: '#fff' },
+      //       strong: { color: '#fff' },
+      //     },
+      //   },
+      // },
       maxHeight: {
         35: "8.75rem",
         70: "17.5rem",

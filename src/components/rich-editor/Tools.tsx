@@ -1,8 +1,10 @@
 import { ChangeEventHandler, FC } from 'react';
 import ToolButton from './ToolButton';
-import { ChainedCommands, Editor } from '@tiptap/react';
+import { BubbleMenu, ChainedCommands, Editor } from '@tiptap/react';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
+import LinkForm from './LinkForm';
+import LinkEditorForm from './LinkEditForm';
 
 interface Props{
     editor : Editor | null
@@ -108,6 +110,20 @@ const Tools: FC<Props> = ({editor, onImageSelection}) => {
         }
     }
 
+    const handleLinkSubmission = (href: string) => {
+        editor?.commands.setLink({ href })
+
+        if (href === '') {
+            editor?.chain().focus().extendMarkRange('link').unsetLink()
+              .run()
+      
+            return
+          }
+
+        editor?.chain().focus().extendMarkRange('link').setLink({ href })
+        .run()
+    }
+
     const handleHeadingSelection: ChangeEventHandler<HTMLSelectElement> = ({target}) => {
         const {value} = target as {value: HeadingType}
 
@@ -130,16 +146,44 @@ const Tools: FC<Props> = ({editor, onImageSelection}) => {
         }
     }
 
-    return <div>
-        <select className='p-2' name="" id="" onChange={handleHeadingSelection}>
+    const getInitialLink = () => {
+        const attributes = editor?.getAttributes("link")
+        console.log(attributes)
+        if(attributes) return attributes.href
+    }
+
+    const getSelectedHeading = (): HeadingType => {
+        let result: HeadingType = "p"
+
+        if(editor?.isActive('heading', {level: 1})) result = 'h1'
+        if(editor?.isActive('heading', {level: 2})) result = 'h2'
+        if(editor?.isActive('heading', {level: 3})) result = 'h3'
+        if(editor?.isActive('heading', {level: 4})) result = 'h4'
+
+        return result 
+    }
+
+    return <div className='flex items-start space-x-1'>
+        <select value={getSelectedHeading()} className='p-2 rounded-md' name="" id="" onChange={handleHeadingSelection}>
             {headingOptions.map(item => {
                 return  <option key={item.task} value={item.task}>
                             {item.value}
                         </option>
             } )}
         </select>
+
+        <LinkForm onSubmit={handleLinkSubmission}/>
+
+        <BubbleMenu editor={editor} shouldShow={({editor}) => editor.isActive('link')}>
+            <LinkEditorForm initialState={getInitialLink()} onSubmit={handleLinkSubmission}/>
+            {/* <div className='bg-white w-96 p-2 rounded shadow-md z-50 '>
+                
+            </div> */}
+        </BubbleMenu>
+
         {tools.map(({icon, task}) => {
             return <ToolButton 
+            key={task}
             onClick={() => handleOnClick(task)}
             active={editor?.isActive(task) || editor?.isActive({textAlign: task}) }
             >{icon}</ToolButton>

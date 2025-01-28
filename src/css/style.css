@@ -478,3 +478,6 @@ input[type="search"]::-webkit-search-cancel-button {
     pointer-events: none;
   }
   
+.editor_custom a{
+    text-decoration: underline !important;
+}

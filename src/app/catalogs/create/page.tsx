@@ -59,7 +59,7 @@ const CreateCatalog = () => {
                     </div>
 
                     <div className="flex flex-col w-full xl:w-1/2">
-                        <DatePickerOne />
+                        <DatePickerOne label="Select Date" />
                     </div>
                 </div>
                 <div className="flex gap-3">
