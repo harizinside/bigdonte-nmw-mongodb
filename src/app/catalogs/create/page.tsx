@@ -1,16 +1,73 @@
 'use client'
 
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-
-import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
-import InputGroup from "@/components/FormElements/InputGroup";
-import DatePickerOne from "@/components/FormElements/DatePicker/DatePickerOne";
-import SelectGroupOne from "@/components/FormElements/SelectGroup/SelectGroupOne";
-
+import { useState, useEffect, useRef  } from "react";
+import { useRouter } from "next/navigation";
 
 const CreateCatalog = () => {
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [document, setDocument] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const router = useRouter();
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
+
+  const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setDocument(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!title || !date || !image || !document) {
+      setMessage("Please fill in all required fields!");
+      setIsOpen(true);
+      return;
+    }
+
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("date", date);
+    formData.append("image", image);
+    formData.append("document", document);
+
+    try {
+      const response = await fetch("/api/catalogsPost", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to create doctor");
+      }
+
+      setMessage("Catalog created successfully!");
+      setIsOpen(true);
+    } catch (error) {
+      setMessage("Error creating doctor: " + error);
+      setIsOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePush = () => {
+    setIsOpen(false);
+    router.push("/catalogs");
+  } 
+
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -36,16 +93,24 @@ const CreateCatalog = () => {
                         </label>
                         <input
                         type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
                         className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                         />
                     </div>
 
-                  <InputGroup
-                    label="Catalog Title"
-                    type="text"
-                    placeholder="Enter catalog title"
-                    customClasses="w-full xl:w-1/2"
-                  />
+                    <div className="w-full xl:w-1/2">
+                      <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                        Catalog Title
+                        <span className="text-red">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter catalog title"
+                        value={title} onChange={(e) => setTitle(e.target.value)}
+                        className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                      />
+                    </div>
                 </div>
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
                     <div className="w-full xl:w-1/2">
@@ -54,18 +119,34 @@ const CreateCatalog = () => {
                         </label>
                         <input
                         type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleDocumentChange}
                         className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                         />
                     </div>
-
                     <div className="flex flex-col w-full xl:w-1/2">
-                        <DatePickerOne label="Select Date" />
+                      <div>
+                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                          Select Date
+                        </label> 
+                        <div className="relative">
+                            <input 
+                              type="date" 
+                              value={date} 
+                              onChange={(e) => setDate(e.target.value)} 
+                              className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-2.5 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-dark-6 dark:focus:border-orange-400"
+                            />
+                            <div className="flex absolute inset-y-0 right-0 items-center pe-5.5 pointer-events-none">
+                              <svg aria-hidden="true" className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                        </div>
+                      </div>
                     </div>
                 </div>
                 <div className="flex gap-3">
-                    <button className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
+                    <button onClick={handleSubmit} disabled={loading} className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
-                        Save Catalog
+                        {loading ? "Saving..." : "Save Doctor"}
                     </button>
                     <Link href={'/catalogs'}>
                         <button className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
@@ -78,6 +159,27 @@ const CreateCatalog = () => {
               </div>
             </div>
         </div>
+    </div>
+
+    {/* Modal */}
+    <div className={`fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
+      <div className="bg-white text-center rounded-2xl p-6 py-9 w-1/3 shadow-lg">
+        <div className="flex items-center justify-center mb-4">
+          {message.includes('Error') || message.includes('Please fill in all required fields!') ? (
+            <svg className="w-28 h-28 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+            </svg>
+          ) : (
+            <svg className="w-28 h-28 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="4"><path d="M24 44a19.94 19.94 0 0 0 14.142-5.858A19.94 19.94 0 0 0 44 24a19.94 19.94 0 0 0-5.858-14.142A19.94 19.94 0 0 0 24 4A19.94 19.94 0 0 0 9.858 9.858A19.94 19.94 0 0 0 4 24a19.94 19.94 0 0 0 5.858 14.142A19.94 19.94 0 0 0 24 44Z"/><path stroke-linecap="round" d="m16 24l6 6l12-12"/></g></svg>
+          )}
+        </div>
+        <p className="text-gray-600 my-5 mb-9 text-center text-2xl font-medium">{message}</p>
+        <button 
+          onClick={() => message.includes('Error') || message.includes('Please fill in all required fields!') ? setIsOpen(false) : handlePush()} 
+          className={`text-lg text-white py-2 px-5 rounded-lg cursor-pointer ${message.includes('Error') || message.includes('Please fill in all required fields!') ? 'bg-red-500' : 'bg-green-500'}`}>
+          OK
+        </button>
+      </div>
     </div>
     </DefaultLayout>
   );

@@ -1,9 +1,12 @@
-export type Branches = {
-    number:number;
-    name: string;
-    address: string;
-    phone: number;
-    location:string;
-    operational: string[];
-  };
-  
+// types/Branch.ts
+
+interface Branch {
+  name: string;
+  address: string;
+  phone: string;
+  location: string;
+  operasional: string[];
+  image: string;
+}
+
+export default Branch;

@@ -1,46 +1,57 @@
-import { Branches } from "@/types/branches";
+'use client'
+
+// import { Branches } from "@/types/branches";
 import Image from "next/image";
+import { SetStateAction, useEffect, useState } from "react";
 
-const packageData: Branches[] = [
-  {
-    number:1,
-    name: "Petogogan",
-    address: "Jl. Petogogan II No.29",
-    phone: 62895610411991,
-    location: "https://www.google.com/maps/place/NMW+Clinic+-+Petogogan/@-6.2548093,106.7955809,17z/data=!3m1!4b1!4m6!3m5!1s0x2e69f10ccd71f6a1:0xcde934005ed4fff6!8m2!3d-6.2548093!4d106.7955809!16s%2Fg%2F1pp2tl7c0?entry=ttu&g_ep=EgoyMDI0MTExMy4xIKXMDSoASAFQAw%3D%3D",
-    operational: ['Senin - Jumat : 10.00-20.00', 'Sabtu - Minggu : 09.00-17.00']
-  },
-  {
-    number:2,
-    name: "Petogogan",
-    address: "Jl. Petogogan II No.29",
-    phone: 62895610411991,
-    location: "https://www.google.com/maps/place/NMW+Clinic+-+Petogogan/@-6.2548093,106.7955809,17z/data=!3m1!4b1!4m6!3m5!1s0x2e69f10ccd71f6a1:0xcde934005ed4fff6!8m2!3d-6.2548093!4d106.7955809!16s%2Fg%2F1pp2tl7c0?entry=ttu&g_ep=EgoyMDI0MTExMy4xIKXMDSoASAFQAw%3D%3D",
-    operational: ['Senin - Jumat : 10.00-20.00', 'Sabtu - Minggu : 09.00-17.00']
-  },
-  {
-    number:3,
-    name: "Petogogan",
-    address: "Jl. Petogogan II No.29",
-    phone: 62895610411991,
-    location: "https://www.google.com/maps/place/NMW+Clinic+-+Petogogan/@-6.2548093,106.7955809,17z/data=!3m1!4b1!4m6!3m5!1s0x2e69f10ccd71f6a1:0xcde934005ed4fff6!8m2!3d-6.2548093!4d106.7955809!16s%2Fg%2F1pp2tl7c0?entry=ttu&g_ep=EgoyMDI0MTExMy4xIKXMDSoASAFQAw%3D%3D",
-    operational: ['Senin - Jumat : 10.00-20.00', 'Sabtu - Minggu : 09.00-17.00']
-  },
-  {
-    number:4,
-    name: "Petogogan",
-    address: "Jl. Petogogan II No.29",
-    phone: 62895610411991,
-    location: "https://www.google.com/maps/place/NMW+Clinic+-+Petogogan/@-6.2548093,106.7955809,17z/data=!3m1!4b1!4m6!3m5!1s0x2e69f10ccd71f6a1:0xcde934005ed4fff6!8m2!3d-6.2548093!4d106.7955809!16s%2Fg%2F1pp2tl7c0?entry=ttu&g_ep=EgoyMDI0MTExMy4xIKXMDSoASAFQAw%3D%3D",
-    operational: ['Senin - Jumat : 10.00-20.00', 'Sabtu - Minggu : 09.00-17.00']
-  },
-];
-
+type Branch = {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  location: string;
+  operasional: string[];
+};
 
 const TableFour = () => {
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const itemsPerPage = 15;
+
+  useEffect(() => {
+    fetchBranches(currentPage);
+  }, [currentPage]);
+
+    const fetchBranches = async (currentPage: number) => {
+      try {
+        const response = await fetch(`/api/branches?page=${currentPage}`);
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+  
+        const result = await response.json(); 
+        console.log("Full API Response:", result); // Debug full response
+        
+        setBranches(result.data); // Ambil hanya bagian 'data'
+        setCurrentPage(result.pagination.currentPage);
+        setTotalPages(result.pagination.totalPages);
+      } catch (error) {
+        console.error("Error fetching branches:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
   return (
     <div className="rounded-[10px] border border-stroke bg-white p-4 shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card sm:p-7.5">
       <div className="max-w-full overflow-x-auto">
+      {loading ? (
+        <p className="text-center text-gray-500">Loading...</p>
+      ) : (
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-[#F7F9FC] text-left dark:bg-dark-2">
@@ -65,45 +76,52 @@ const TableFour = () => {
             </tr>
           </thead>
           <tbody>
-            {packageData.map((packageItem, index) => (
+            {branches.map((branch, index) => (
               <tr key={index}>
-                <td className={`border-[#eee] px-4 text-center py-4 dark:border-dark-3 w-0 xl:pl-7.5 ${index === packageData.length - 1 ? "border-b-0" : "border-b"}`}>
-                  <div className="w-0">
-                    {packageItem.number}
-                  </div>
+                <td
+                  className={`border-[#eee] px-4 text-center py-4 dark:border-dark-3 w-0 xl:pl-9 ${
+                    index === branches.length - 1 ? "border-b-0" : "border-b"
+                  }`}
+                >
+                  <div className="w-0">{(currentPage - 1) * itemsPerPage + index + 1}</div>
                 </td>
                 <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pl-0 ${index === packageData.length - 1 ? "border-b-0" : "border-b"}`}
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pl-4 ${index === branches.length - 1 ? "border-b-0" : "border-b"}`}
                 >
                   <h5 className="text-dark dark:text-white">
-                    {packageItem.name}
+                    {branch.name}
                   </h5>
                 </td>
                 <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pl-0 ${index === packageData.length - 1 ? "border-b-0" : "border-b"}`}
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pl-4 ${index === branches.length - 1 ? "border-b-0" : "border-b"}`}
                 >
                   <h5 className="text-dark dark:text-white">
-                    {packageItem.address}
+                    {branch.address.replace(/<\/?p>/g, "")}
                   </h5>
                 </td>
                 <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 ${index === packageData.length - 1 ? "border-b-0" : "border-b"}`}
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 ${index === branches.length - 1 ? "border-b-0" : "border-b"}`}
                 >
                   <p className="text-dark dark:text-white">
-                    {packageItem.phone}
+                    {branch.phone}
                   </p>
                 </td>
                 <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 ${index === packageData.length - 1 ? "border-b-0" : "border-b"}`}
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 ${index === branches.length - 1 ? "border-b-0" : "border-b"}`}
                 >
-                 <p className="text-dark dark:text-white">
-                    {packageItem.operational.map((item) => (
-                      <span key={item}>{item}<br /></span>
-                    ))}
-                  </p>
+                 {branch.operasional.filter((item) => item !== ":").length > 0 && (
+                    <p className="text-dark dark:text-white">
+                      {branch.operasional
+                        .filter((item) => item !== " : ")
+                        .map((item) => (
+                          <span key={item}>{item}<br /></span>
+                        ))}
+                    </p>
+                  )}
+
                 </td>
                 <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pr-7.5 ${index === packageData.length - 1 ? "border-b-0" : "border-b"}`}
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pr-7.5 ${index === branches.length - 1 ? "border-b-0" : "border-b"}`}
                 >
                   <div className="flex items-center justify-end space-x-3.5">
                     <button className="hover:text-primary">
@@ -144,6 +162,28 @@ const TableFour = () => {
             ))}
           </tbody>
         </table>
+      )}
+        <div className="flex justify-center mt-4 space-x-2">
+            <button
+              className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              Prev
+            </button>
+
+            <span className="px-4 py-2 rounded text-orange-400 font-medium">
+              {currentPage} / {totalPages}
+            </span>
+
+            <button
+              className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Next
+            </button>
+        </div>
       </div>
     </div>
   );

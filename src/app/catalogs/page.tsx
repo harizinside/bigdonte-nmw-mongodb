@@ -1,14 +1,13 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import TableThree from "@/components/Tables/TableThree";
 import ButtonDefault from "@/components/Buttons/ButtonDefault";
-
-import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import TableFive from "@/components/Tables/TableFive";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Next.js Tables Page | NextAdmin - Next.js Dashboard Kit",
-  description: "This is Next.js Tables page for NextAdmin Dashboard Kit",
+  title: "Catalogs | NMW Aesthetic Clinic",
+  description: "Content Management untuk membuat, mengubah, menghapus data Catalog",
 };
 
 const DoctorPage = () => {

@@ -19,7 +19,7 @@ const SubscriberPage = () => {
         </div>
 
       <div className="flex flex-col gap-10">
-        <TableSeven />
+        <TableSeven /> 
       </div>
     </DefaultLayout>
   );

@@ -6,8 +6,8 @@ import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 
 export const metadata: Metadata = {
-  title: "Next.js Tables Page | NextAdmin - Next.js Dashboard Kit",
-  description: "This is Next.js Tables page for NextAdmin Dashboard Kit",
+  title: "Doctors | NMW Aesthetic Clinic",
+  description: "Content Management untuk membuat, mengubah, menghapus data dokter",
 };
 
 const DoctorPage = () => {
@@ -29,6 +29,6 @@ const DoctorPage = () => {
       </div>
     </DefaultLayout>
   );
-};
+}; 
 
 export default DoctorPage;
