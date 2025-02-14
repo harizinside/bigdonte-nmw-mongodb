@@ -69,7 +69,7 @@ const EditCatalog = () => {
 
     try {
       const res = await fetch(`/api/catalogsDetail/${id}`, {
-        method: "POST", // Sesuai dengan backend
+        method: "POST", // Sesuai dengan backend 
         body: formData,
       });
 
@@ -105,16 +105,16 @@ const handlePush = () => {
             </div>
             <form onSubmit={handleUpdate} encType="multipart/form-data">
               <div className="p-6.5">
-                <div className="w-30 h-30 mb-5 overflow-hidden object-cover object-center rounded-lg">
-                  {(previewImage || catalog.image) && (
-                      <Image
-                      width="100"
-                      height="100"
-                      src={`https://nmw.prahwa.net/storage/${previewImage || catalog.image}`} 
-                      alt="Preview"
-                      className="w-full"
-                      />
-                  )}
+                <div className="w-60 h-auto mb-5 overflow-hidden object-cover object-center ">
+                    {(catalog.image) && (
+                        <Image
+                        width="300"
+                        height="300"
+                        src={`https://nmw.prahwa.net/storage/${catalog.image}`} 
+                        alt="Preview" 
+                        className="w-full rounded-lg"
+                        />
+                    )}
                 </div>
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
                     <div className="w-full xl:w-1/2">
@@ -128,7 +128,6 @@ const handlePush = () => {
                             const file = e.target.files?.[0];
                             if (file) {
                                 setImage(file);
-                                setPreviewImage(URL.createObjectURL(file));
                             }
                             }}
                             className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
@@ -185,7 +184,7 @@ const handlePush = () => {
                         {updating ? "Updating..." : "Update"}
                     </button>
                     <Link href={'/catalogs'}>
-                        <button className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
+                        <button type="button" className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                             Cancel
                         </button>
@@ -197,7 +196,7 @@ const handlePush = () => {
         </div>
       </div>
       {/* Modal */}
-      <div className={`fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
+      <div className={`fixed top-0 left-0 z-999 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
         <div className="bg-white text-center rounded-2xl p-6 py-9 w-1/3 shadow-lg">
           <div className="flex items-center justify-center mb-4">
             {message.includes('Error') ? (
@@ -209,7 +208,7 @@ const handlePush = () => {
             )}
           </div>
           <p className="text-gray-600 my-5 mb-9 text-center text-2xl font-medium">{message}</p>
-          <button 
+          <button type="button"
             onClick={() => message.includes('Error') ? setIsOpen(false) : handlePush()} 
             className={`text-lg text-white py-2 px-5 rounded-lg cursor-pointer ${message.includes('Error') || message.includes('Please fill in all required fields!') ? 'bg-red-500' : 'bg-green-500'}`}>
             OK

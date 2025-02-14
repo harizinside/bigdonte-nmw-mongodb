@@ -149,7 +149,7 @@ const CreateCatalog = () => {
                         {loading ? "Saving..." : "Save Doctor"}
                     </button>
                     <Link href={'/catalogs'}>
-                        <button className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
+                        <button type="button" className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                             Cancel
                         </button>
@@ -162,7 +162,7 @@ const CreateCatalog = () => {
     </div>
 
     {/* Modal */}
-    <div className={`fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
+    <div className={`fixed top-0 left-0 z-999 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
       <div className="bg-white text-center rounded-2xl p-6 py-9 w-1/3 shadow-lg">
         <div className="flex items-center justify-center mb-4">
           {message.includes('Error') || message.includes('Please fill in all required fields!') ? (
@@ -174,7 +174,7 @@ const CreateCatalog = () => {
           )}
         </div>
         <p className="text-gray-600 my-5 mb-9 text-center text-2xl font-medium">{message}</p>
-        <button 
+        <button type="button"
           onClick={() => message.includes('Error') || message.includes('Please fill in all required fields!') ? setIsOpen(false) : handlePush()} 
           className={`text-lg text-white py-2 px-5 rounded-lg cursor-pointer ${message.includes('Error') || message.includes('Please fill in all required fields!') ? 'bg-red-500' : 'bg-green-500'}`}>
           OK

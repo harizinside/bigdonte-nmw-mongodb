@@ -36,7 +36,7 @@ const ImageGallery: FC<Props> = ({visible, onClose, onSelect}) => {
     }} className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-9999">
         <div className="relative md:w-[760px] w-[80%] h-[80%] bg-white rounded-md p-4 overflow-y-auto">
             <div className="absolute right-4 top-4 p-2 z-50">
-                <button onClick={handleClose}>
+                <button onClick={handleClose} type="button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m7 7l10 10M7 17L17 7"/></svg>
                 </button>
             </div>

@@ -27,7 +27,7 @@ const packageData: Popup[] = [
     use: "activate",
     link: "https://www.nmwskincare.com/products/marketplace/bundle-nmw-mighty-serum-nmw-sunscreen-acne-50-ml"
   },
-];
+]; 
 
 const TableNine = () => {
   return (

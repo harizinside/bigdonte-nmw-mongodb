@@ -26,6 +26,7 @@ const LinkForm: FC<Props> = ({onSubmit}) => {
                     onMouseDown={()=> {
                         onSubmit(link)
                     }}
+                    type='button'
                     className='bg-white ml-1'
                 >
                         ok

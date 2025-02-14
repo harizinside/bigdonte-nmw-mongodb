@@ -12,6 +12,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import ImageGallery from './ImageGallery';
 import { useState } from 'react';
 import Link from '@tiptap/extension-link';
+import { useEffect } from 'react';
 
 interface props {}
 
@@ -40,18 +41,29 @@ const extensions = [
     })
 ];
 
-const RichEditor: FC<Props> = () => {
+const RichEditor: FC<{ value?: string; onChange: (html: string) => void }> = ({ value, onChange }) => {
     const [showImageGallery, setShowImageGallery] = useState(false)
     const editor = useEditor({
         extensions,
+        content: value || "", 
         immediatelyRender: false,
         editorProps: {
             attributes: {
-                class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl w-full dark:text-white focus:outline-none outline-none'
+                class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl w-full dark:text-white focus:outline-none outline-none',
+                style: "font-size: 16px; line-height:1.4; max-width:100%; min-height:300px;",
             }
         },
+        onUpdate: ({ editor }) => {
+            onChange(editor.getHTML()); // ⬅️ Kirim HTML ke state saat teks berubah
+        }
         // content: "<h1>Hallo Gais</h1>"
     });
+
+    useEffect(() => {
+        if (editor && value !== undefined && value !== editor.getHTML()) {  
+            editor.commands.setContent(value || "", false); 
+        }
+    }, [value, editor]);    
 
     const onImageSelect = (image: string) => {
         editor?.chain().focus().setImage({src: image, alt: "this is an image"}).run()
@@ -64,11 +76,6 @@ const RichEditor: FC<Props> = () => {
                 <EditorContent
                     editor={editor}
                 />
-            </div>
-            <div className="p-0 mt-5">
-                <button onClick={() => {
-                    console.log(editor?.getHTML())
-                }}>Create New Post</button>
             </div>
         </div>
         

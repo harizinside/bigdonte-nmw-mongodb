@@ -485,3 +485,12 @@ input[type="search"]::-webkit-search-cancel-button {
 input[type="date"]::-webkit-calendar-picker-indicator {
     display: none !important;
   }
+
+  .dark .ProseMirror strong {
+    color: white; /* Warna putih untuk teks bold */
+}
+
+.dark .ProseMirror a {
+    color: white !important; /* Warna putih untuk link */
+    text-decoration: underline; /* Opsional: agar tetap terlihat seperti link */
+}

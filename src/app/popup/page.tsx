@@ -26,7 +26,7 @@ const PopupPage = () => {
         </div>
 
       <div className="flex flex-col gap-10">
-        <TableNine />
+        <TableNine /> 
       </div>
     </DefaultLayout>
   );

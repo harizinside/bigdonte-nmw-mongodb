@@ -156,7 +156,7 @@ const CreateAchievment = () => {
         </div>
     </div>
     {/* Modal */}
-    <div className={`fixed top-0 left-0 z-50 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
+    <div className={`fixed top-0 left-0 z-999 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
       <div className="bg-white text-center rounded-2xl p-6 py-9 w-1/3 shadow-lg">
         <div className="flex items-center justify-center mb-4">
           {message.includes('Error') || message.includes('Please fill in all required fields!') ? (
