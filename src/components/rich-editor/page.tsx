@@ -56,7 +56,6 @@ const RichEditor: FC<{ value?: string; onChange: (html: string) => void }> = ({ 
         onUpdate: ({ editor }) => {
             onChange(editor.getHTML()); // ⬅️ Kirim HTML ke state saat teks berubah
         }
-        // content: "<h1>Hallo Gais</h1>"
     });
 
     useEffect(() => {

@@ -494,3 +494,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     color: white !important; /* Warna putih untuk link */
     text-decoration: underline; /* Opsional: agar tetap terlihat seperti link */
 }
+.dark .ProseMirror h1, .dark .ProseMirror h2, .dark .ProseMirror h3, .dark .ProseMirror h4 {
+    color: white !important; /* Warna putih untuk link */
+}

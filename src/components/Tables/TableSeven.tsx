@@ -31,7 +31,6 @@ const TableSeven = () => {
       }
 
       const result = await response.json(); 
-      console.log("Full API Response:", result); // Debug full response
       
       setSubscribers(result.data); // Ambil hanya bagian 'data'
       setCurrentPage(result.pagination.currentPage);
@@ -104,7 +103,7 @@ const TableSeven = () => {
                     className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pr-7.5 ${index === subscribers.length - 1 ? "border-b-0" : "border-b"}`}
                   >
                     <div className="flex items-center justify-end space-x-3.5">
-                      <button className="hover:red-primary" onClick={() => { setSelectedSubscribers(subscriber); setIsOpen(true); }}>
+                      <button className="hover:text-red-600" onClick={() => { setSelectedSubscribers(subscriber); setIsOpen(true); }}>
                         <svg
                           className="fill-current"
                           width="20"

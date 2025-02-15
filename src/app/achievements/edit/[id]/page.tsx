@@ -24,13 +24,11 @@ const EditAchievement = () => {
 
     const fetchAchievement = async () => {
       try {
-        console.log("Fetching Achievement data for ID:", id);
 
         const res = await fetch(`/api/achievementsDetail/${id}`);
         if (!res.ok) throw new Error("Gagal mengambil data Achievement");
 
         const responseData = await res.json();
-        console.log("Achievement Data (from API):", responseData);
 
         if (responseData.data) {
           setAchievement(responseData.data);
@@ -100,14 +98,15 @@ const handlePush = () => {
             </div>
             <form onSubmit={handleUpdate} encType="multipart/form-data">
               <div className="p-6.5">
-                <div className="w-30 h-30 mb-5 overflow-hidden object-cover object-center rounded-lg">
+                <div className="w-30 h-auto mb-5 overflow-hidden object-cover object-center ">
                   {(achievement.image) && (
                       <Image
                       width="100"
                       height="100"
                       src={`https://nmw.prahwa.net/storage/${achievement.image}`} 
-                      alt="Preview"
-                      className="w-full"
+                      alt={achievement.heading}
+                      priority
+                      className="w-full rounded-lg"
                       />
                   )}
                 </div>
@@ -163,7 +162,7 @@ const handlePush = () => {
                                 className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-2.5 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-dark-6 dark:focus:border-orange-400"
                             />
                             <div className="flex absolute inset-y-0 right-0 items-center pe-5.5 pointer-events-none">
-                                <svg aria-hidden="true" className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <svg aria-hidden="true" className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             </div>
                         </div>
                         </div>
@@ -195,7 +194,7 @@ const handlePush = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
               </svg>
             ) : (
-              <svg className="w-28 h-28 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="4"><path d="M24 44a19.94 19.94 0 0 0 14.142-5.858A19.94 19.94 0 0 0 44 24a19.94 19.94 0 0 0-5.858-14.142A19.94 19.94 0 0 0 24 4A19.94 19.94 0 0 0 9.858 9.858A19.94 19.94 0 0 0 4 24a19.94 19.94 0 0 0 5.858 14.142A19.94 19.94 0 0 0 24 44Z"/><path stroke-linecap="round" d="m16 24l6 6l12-12"/></g></svg>
+              <svg className="w-28 h-28 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="4"><path d="M24 44a19.94 19.94 0 0 0 14.142-5.858A19.94 19.94 0 0 0 44 24a19.94 19.94 0 0 0-5.858-14.142A19.94 19.94 0 0 0 24 4A19.94 19.94 0 0 0 9.858 9.858A19.94 19.94 0 0 0 4 24a19.94 19.94 0 0 0 5.858 14.142A19.94 19.94 0 0 0 24 44Z"/><path strokeLinecap="round" d="m16 24l6 6l12-12"/></g></svg>
             )}
           </div>
           <p className="text-gray-600 my-5 mb-9 text-center text-2xl font-medium">{message}</p>

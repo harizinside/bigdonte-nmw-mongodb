@@ -19,15 +19,14 @@ const EditBranch = () => {
         operasional: {
             [x: string]: any;
             day: string; time: string 
-}[];
+        }[];
       }>({
         name: "",
         address: "",
         image: "",
         phone: "",
         location: "",
-        operasional: [
-        ],
+        operasional: [],
       });
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
@@ -83,13 +82,11 @@ const EditBranch = () => {
 
     const fetchBranch = async () => {
       try {
-        console.log("Fetching branch data for ID:", id);
 
         const res = await fetch(`/api/branchesDetail/${id}`);
         if (!res.ok) throw new Error("Gagal mengambil data branch");
 
         const responseData = await res.json();
-        console.log("Branch Data (from API):", responseData);
 
         if (responseData.data) {
           setBranch(responseData.data);
@@ -169,14 +166,15 @@ const handlePush = () => {
 
             <div className="p-6.5">
                 <form action="" onSubmit={handleUpdate} encType="multipart/form-data">
-                <div className="w-60 h-auto mb-5 overflow-hidden object-cover object-center ">
+                <div className="w-60 h-auto mb-5 overflow-hidden">
                     {(branch.image) && (
                         <Image
-                        width="300"
-                        height="300"
+                        width="700"
+                        height="700"
                         src={`${branch.image}`} 
-                        alt="Preview"
-                        className="w-full rounded-lg"
+                        alt={branch.name}
+                        priority
+                        className="w-full rounded-xl"
                         />
                     )}
                 </div>
@@ -206,7 +204,7 @@ const handlePush = () => {
                     <input
                     type="text"
                     placeholder="Enter branch name"
-                    value={branch.name}
+                    defaultValue={branch.name}
                     onChange={(e) => setBranch({ ...branch, name: e.target.value })}
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                   />
@@ -220,7 +218,7 @@ const handlePush = () => {
                   <input
                     type="text"
                     placeholder="Enter branch address"
-                    value={branch.address}
+                    defaultValue={branch.address}
                     onChange={(e) => setBranch({ ...branch, address: e.target.value })}
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                   />
@@ -236,7 +234,7 @@ const handlePush = () => {
                     <input
                     type="text"
                     placeholder="Enter branch phone"
-                    value={branch.phone}
+                    defaultValue={branch.phone}
                     onChange={(e) => setBranch({ ...branch, phone: e.target.value })}
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                   />
@@ -250,7 +248,7 @@ const handlePush = () => {
                   <input
                     type="text"
                     placeholder="Enter link location"
-                    value={branch.location}
+                    defaultValue={branch.location}
                     onChange={(e) => setBranch({ ...branch, location: e.target.value })}
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                   />
@@ -261,8 +259,8 @@ const handlePush = () => {
                 <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Operational Hours</label>
                 {branch.operasional.map((op, index) => (
                     <div key={index} className="mb-4 flex flex-col gap-0 xl:flex-row">
-                      <input type="text" placeholder="Ex: Senin - Jumat" value={op.day} onChange={(e) => handleOperasionalChange(index, e.target.value, "day")} className="w-full xl:w-1/2 rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white" />
-                      <input type="text" placeholder="Ex: 10:00-17:00" value={op.time} onChange={(e) => handleOperasionalChange(index, e.target.value, "time")} className="w-full xl:w-1/2 rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white" />
+                      <input type="text" placeholder="Ex: Senin - Jumat" defaultValue={op.day} onChange={(e) => handleOperasionalChange(index, e.target.value, "day")} className="w-full xl:w-1/2 rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white" />
+                      <input type="text" placeholder="Ex: 10:00-17:00" defaultValue={op.time} onChange={(e) => handleOperasionalChange(index, e.target.value, "time")} className="w-full xl:w-1/2 rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white" />
                       <button type="button" onClick={() => removeOperasionalHour(index)} className="ml-2 text-red-500">✖</button>
                     </div>
                   ))}
@@ -295,7 +293,7 @@ const handlePush = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
               </svg>
             ) : (
-              <svg className="w-28 h-28 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="4"><path d="M24 44a19.94 19.94 0 0 0 14.142-5.858A19.94 19.94 0 0 0 44 24a19.94 19.94 0 0 0-5.858-14.142A19.94 19.94 0 0 0 24 4A19.94 19.94 0 0 0 9.858 9.858A19.94 19.94 0 0 0 4 24a19.94 19.94 0 0 0 5.858 14.142A19.94 19.94 0 0 0 24 44Z"/><path stroke-linecap="round" d="m16 24l6 6l12-12"/></g></svg>
+              <svg className="w-28 h-28 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="4"><path d="M24 44a19.94 19.94 0 0 0 14.142-5.858A19.94 19.94 0 0 0 44 24a19.94 19.94 0 0 0-5.858-14.142A19.94 19.94 0 0 0 24 4A19.94 19.94 0 0 0 9.858 9.858A19.94 19.94 0 0 0 4 24a19.94 19.94 0 0 0 5.858 14.142A19.94 19.94 0 0 0 24 44Z"/><path strokeLinecap="round" d="m16 24l6 6l12-12"/></g></svg>
             )}
           </div>
           <p className="text-gray-600 my-5 mb-9 text-center text-2xl font-medium">{message}</p>

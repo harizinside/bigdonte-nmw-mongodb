@@ -65,7 +65,9 @@ const CreateService = () => {
                   <div className="">
                     <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Service Description</label>
                     <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
-                      <RichEditor/>
+                      <RichEditor value="testing" onChange={function (html: string): void {
+                      throw new Error("Function not implemented.");
+                    } }/>
                     </div>
                   </div>
                 </div>

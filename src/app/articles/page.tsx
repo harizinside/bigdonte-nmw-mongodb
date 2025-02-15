@@ -26,7 +26,7 @@ const ArticlesPage = () => {
         </div>
 
       <div className="flex flex-col gap-10">
-        <TableEleven /> 
+        <TableEleven showPagination={true}/> 
       </div>
     </DefaultLayout>
   ); 

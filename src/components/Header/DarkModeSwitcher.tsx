@@ -8,7 +8,7 @@ const DarkModeSwitcher = () => {
       <div
         onClick={() => {
           if (typeof setColorMode === "function") {
-            setColorMode(colorMode === "light" ? "dark" : "light");
+            setColorMode(colorMode === "dark" ? "light" : "dark");
           }
         }}
         className={`relative z-10 flex h-12 w-[96px] cursor-pointer items-center gap-2.5 rounded-full bg-gray-3 p-[5px] text-dark dark:bg-[#020d1a] dark:text-white`}

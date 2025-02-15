@@ -25,7 +25,7 @@ const DoctorPage = () => {
         </div>
 
       <div className="flex flex-col gap-10">
-        <TableThree />
+        <TableThree showPagination={true}/>
       </div>
     </DefaultLayout>
   );
