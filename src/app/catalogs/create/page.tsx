@@ -25,7 +25,7 @@ const CreateCatalog = () => {
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setDocument(e.target.files[0]);
-    }
+    } 
   };
 
   const handleSubmit = async () => {
@@ -71,7 +71,7 @@ const CreateCatalog = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="catalogs" pageName="Manage Catalogs"  pageNameSecond="/ Create"/>
+          <Breadcrumb route="catalogs" pageName="Manage Catalogs"  pageNameSecond="/ Create" pageNameThird="" pageNameFour="" pageNameFive=""/>
         </div>
 
     <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -118,10 +118,10 @@ const CreateCatalog = () => {
                             Document (PDF)
                         </label>
                         <input
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        onChange={handleDocumentChange}
-                        className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleDocumentChange}
+                          className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                         />
                     </div>
                     <div className="flex flex-col w-full xl:w-1/2">

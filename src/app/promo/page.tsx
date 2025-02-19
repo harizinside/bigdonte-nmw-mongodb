@@ -15,7 +15,7 @@ const PromoPage = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="promo" pageName="Manage Promo" pageNameSecond="" />
+            <Breadcrumb route="promo" pageName="Manage Promo" pageNameSecond="" pageNameThird="" pageNameFour="" pageNameFive="" />
             <ButtonDefault
                     label="Add New Promo"
                     link="/promo/create"

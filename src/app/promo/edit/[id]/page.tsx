@@ -101,7 +101,7 @@ const EditPromo = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="promo" pageName="Manage Promo" pageNameSecond="/ Edit"/>
+          <Breadcrumb route="promo" pageName="Manage Promo" pageNameSecond="/ Edit" pageNameThird="" pageNameFour="" pageNameFive=""/>
         </div>
 
     <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -253,7 +253,7 @@ const EditPromo = () => {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                                     Cancel
                                 </button>
-                            </Link>
+                            </Link> 
                         </div>
                     </div>
                 </div>

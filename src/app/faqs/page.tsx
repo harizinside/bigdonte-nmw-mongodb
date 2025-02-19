@@ -15,7 +15,7 @@ const FaqsPage = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="faqs" pageName="Manage FaQs"  pageNameSecond=""/>
+            <Breadcrumb route="faqs" pageName="Manage FaQs"  pageNameSecond="" pageNameThird="" pageNameFour="" pageNameFive=""/>
             <ButtonDefault
                     label="Add New FaQs"
                     link="/faqs/create"

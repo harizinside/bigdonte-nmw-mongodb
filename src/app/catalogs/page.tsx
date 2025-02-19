@@ -14,7 +14,7 @@ const DoctorPage = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="catalogs" pageName="Manage Catalogs" pageNameSecond="" />
+            <Breadcrumb route="catalogs" pageName="Manage Catalogs" pageNameSecond="" pageNameThird="" pageNameFour="" pageNameFive=""/>
             <ButtonDefault
                     label="Add New Catalog"
                     link="/catalogs/create"

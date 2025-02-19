@@ -127,7 +127,7 @@ const EditBranch = () => {
       formData.append("image", image);
     }
 
-    try {
+    try { 
       const res = await fetch(`/api/branchesDetail/${id}`, {
         method: "POST", // Sesuai dengan backend
         body: formData,
@@ -154,7 +154,7 @@ const handlePush = () => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="branches" pageName="Manage Branches" pageNameSecond="/ Edit" />
+        <Breadcrumb route="branches" pageName="Manage Branches" pageNameSecond="/ Edit" pageNameThird="" pageNameFour="" pageNameFive=""/>
       </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

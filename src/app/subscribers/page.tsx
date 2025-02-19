@@ -15,7 +15,7 @@ const SubscriberPage = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="subscribers" pageName="Manage Subscribers"  pageNameSecond=""/>
+            <Breadcrumb route="subscribers" pageName="Manage Subscribers"  pageNameSecond="" pageNameThird="" pageNameFour="" pageNameFive=""/>
         </div>
 
       <div className="flex flex-col gap-10">

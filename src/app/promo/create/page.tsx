@@ -35,7 +35,7 @@ const CreatePromo = () => {
         formData.append("image", image || "");
         formData.append("sk", "");
         formData.append("start_date", "");
-        formData.append("end_date", "");
+        formData.append("end_date", ""); 
         formData.append("link", link);
     } else {
         formData.append("title", title);
@@ -75,7 +75,7 @@ const CreatePromo = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="promo" pageName="Manage Promo" pageNameSecond="/ Create"/>
+          <Breadcrumb route="promo" pageName="Manage Promo" pageNameSecond="/ Create" pageNameThird="" pageNameFour="" pageNameFive=""/>
         </div>
 
     <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

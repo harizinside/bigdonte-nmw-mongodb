@@ -14,7 +14,7 @@ const BranchesPage = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="branches" pageName="Manage Branches"  pageNameSecond=""/>
+            <Breadcrumb route="branches" pageName="Manage Branches"  pageNameSecond="" pageNameThird="" pageNameFour="" pageNameFive=""/>
             <ButtonDefault
                     label="Add New Branch"
                     link="/branches/create"

@@ -15,7 +15,7 @@ const ArticlesPage = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="articles" pageName="Manage Articles" pageNameSecond="" />
+            <Breadcrumb route="articles" pageName="Manage Articles" pageNameSecond="" pageNameThird="" pageNameFour="" pageNameFive="" />
             <ButtonDefault
                     label="Add New Article"
                     link="/articles/create"
