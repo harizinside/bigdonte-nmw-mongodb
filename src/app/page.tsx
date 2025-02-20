@@ -6,6 +6,7 @@ import TableEleven from "@/components/Tables/TableEleven";
 import TableThree from "@/components/Tables/TableThree";
 import Link from "next/link";
 
+
 export const metadata: Metadata = {
   title:
     "NMW Aesthetic Clinic CMS",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
+  
   return (
     <>
       <DefaultLayout>

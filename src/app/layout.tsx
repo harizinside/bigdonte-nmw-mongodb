@@ -6,6 +6,9 @@ import "@/css/style.css";
 import React, { useEffect, useState } from "react";
 import Loader from "@/components/common/Loader";
 import Providers from "./providers";
+import { useAuth } from "./context/AuthContext";
+import { useRouter } from "next/navigation";
+import ProgressBar from "@/components/ProgressBar/page";
 
 export default function RootLayout({
   children,
@@ -21,9 +24,19 @@ export default function RootLayout({
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
+  const { token } = useAuth();
+  const router = useRouter();
+
+    useEffect(() => {
+      if (!token) {
+        router.push("/login");
+      }
+    }, [token, router]);
+
   return (
     <html lang="en">
       <body suppressHydrationWarning={true}>
+      <ProgressBar />
         <Providers>
           {loading ? <Loader /> : children}
         </Providers>

@@ -1,26 +1,22 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { Metadata } from "next";
-import DefaultLayout from "@/components/Layouts/DefaultLaout";
-import Signin from "@/components/Auth/Signin";
+import Login from "@/components/Auth/Signin";
 
 export const metadata: Metadata = {
-  title: "Next.js Login Page | NextAdmin - Next.js Dashboard Kit",
-  description: "This is Next.js Login Page NextAdmin Dashboard Kit",
+  title: "Login | NMW Aesthetic Clinic",
+  description: "Please login to enter the admin page",
 };
 
 const SignIn: React.FC = () => {
   return (
-    <DefaultLayout>
-      <Breadcrumb pageName="Sign In" pageNameSecond="" route="" pageNameThird="" pageNameFour="" pageNameFive="" />
-
-      <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
+    <div className="flex w-full items-center px-65" style={{height: '100vh'}}>
+      <div className="rounded-[10px] bg-white shadow-1 w-full dark:bg-gray-dark dark:shadow-card block m-auto">
         <div className="flex flex-wrap items-center">
           <div className="w-full xl:w-1/2">
             <div className="w-full p-4 sm:p-12.5 xl:p-15">
-              <Signin />
+              <Login />
             </div>
           </div>
 
@@ -68,7 +64,7 @@ const SignIn: React.FC = () => {
           </div>
         </div>
       </div>
-    </DefaultLayout>
+    </div>
   );
 };
 

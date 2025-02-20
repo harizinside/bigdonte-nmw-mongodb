@@ -29,7 +29,7 @@ const ServicesSecond = () => {
         <TableThreeteen /> 
       </div>
     </DefaultLayout>
-  ); 
+  );  
 };
 
 export default ServicesSecond;
