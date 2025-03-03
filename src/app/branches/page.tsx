@@ -25,7 +25,7 @@ const BranchesPage = () => {
         </div>
 
       <div className="flex flex-col gap-10">
-        <TableFour />
+        <TableFour /> 
       </div>
     </DefaultLayout>
   );

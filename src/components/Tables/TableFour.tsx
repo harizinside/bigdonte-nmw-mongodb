@@ -1,17 +1,22 @@
 'use client'
 
-// import { Branches } from "@/types/branches";
 import Image from "next/image";
 import Link from "next/link";
 import { SetStateAction, useEffect, useState } from "react";
 
 type Branch = {
-  id: number;
+  _id: number;
   name: string;
   address: string;
   phone: string;
   location: string;
   operasional: string[];
+};
+
+type BranchesResponse = {
+  branches: Branch[];
+  currentPage: number;
+  totalPages: number;
 };
 
 const TableFour = () => {
@@ -25,41 +30,84 @@ const TableFour = () => {
 
   const itemsPerPage = 15;
 
-  useEffect(() => {
-    fetchBranches(currentPage);
-  }, [currentPage]);
-
-    const fetchBranches = async (currentPage: number) => {
-      try {
-        const response = await fetch(`/api/branches?page=${currentPage}`);
-  
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-  
-        const result = await response.json(); 
-        
-        setBranches(result.data); // Ambil hanya bagian 'data'
-        setCurrentPage(result.pagination.currentPage);
-        setTotalPages(result.pagination.totalPages);
-      } catch (error) {
-        console.error("Error fetching branches:", error);
-      } finally {
-        setLoading(false);
+  const fetchBranches = async (page = 1) => {
+    try {
+      const response = await fetch(`/api/branches?page=${page}`);
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data cabang");
       }
-    }; 
+  
+      const result: BranchesResponse = await response.json();
+  
+      setBranches(result.branches);
+      setCurrentPage(result.currentPage);
+      setTotalPages(result.totalPages);
+    } catch (error) {
+      console.error("Gagal mengambil data cabang:", error);
+    }
+  };  
+      
+  // Ambil halaman pertama saat load
+  useEffect(() => {
+    fetchBranches(1);
+  }, []);
 
-    const handleDeleteBranch = async (id: string | number) => {
+  // useEffect(() => {
+  //   fetchBranches(currentPage); 
+  // }, [currentPage]);
+
+  //   const fetchBranches = async (currentPage: number) => {
+  //     try {
+  //       const response = await fetch(`/api/branches?page=${currentPage}`);
+  
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! Status: ${response.status}`);
+  //       }
+  
+  //       const result = await response.json(); 
+        
+  //       setBranches(result.data); // Ambil hanya bagian 'data'
+  //       setCurrentPage(result.pagination.currentPage);
+  //       setTotalPages(result.pagination.totalPages);
+  //     } catch (error) {
+  //       console.error("Error fetching branches:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }; 
+
+    // const handleDeleteBranch = async (id: string | number) => {
+    //   try {
+    //     setLoadingDelete(true);
+    //     const response = await fetch(`/api/branchesDelete/${id}`, {
+    //       method: 'DELETE',
+    //     });
+    
+    //     if (!response.ok) {
+    //       throw new Error(response.statusText);
+    //     }
+    //     setBranches((prevBranches) => prevBranches.filter((branch) => branch.id !== id));
+    //     setSelectedBranches(null);
+    //     setIsOpen(false);
+    //   } catch (error) {
+    //     console.error(error);
+    //   } finally {
+    //     setLoadingDelete(false);
+    //   }
+    // };
+
+    const handleDeleteBranch = async (_id: string | number) => {
+      if (!selectedBranches) return;
       try {
         setLoadingDelete(true);
-        const response = await fetch(`/api/branchesDelete/${id}`, {
+        const response = await fetch(`api/branches/${selectedBranches._id}`, {
           method: 'DELETE',
         });
     
         if (!response.ok) {
           throw new Error(response.statusText);
         }
-        setBranches((prevBranches) => prevBranches.filter((branch) => branch.id !== id));
+        setBranches((prevBranches) => prevBranches.filter((branches) => branches._id !== _id));
         setSelectedBranches(null);
         setIsOpen(false);
       } catch (error) {
@@ -72,9 +120,9 @@ const TableFour = () => {
   return (
     <div className="rounded-[10px] border border-stroke bg-white p-4 shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card sm:p-7.5">
       <div className="max-w-full overflow-x-auto">
-      {loading ? (
+      {/* {loading ? (
         <p className="text-center text-gray-500">Loading...</p>
-      ) : (
+      ) : ( */}
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-[#F7F9FC] text-left dark:bg-dark-2">
@@ -147,7 +195,7 @@ const TableFour = () => {
                   className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pr-7.5 ${index === branches.length - 1 ? "border-b-0" : "border-b"}`}
                 >
                   <div className="flex items-center justify-end space-x-3.5">
-                      <Link href={`/branches/edit/${branch.id}`} className="p-0 m-0 flex items-center justify-center">
+                      <Link href={`/branches/edit/${branch._id}`} className="p-0 m-0 flex items-center justify-center">
                         <button className="hover:text-orange-400">
                           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M21.455 5.416a.75.75 0 0 1-.096.943l-9.193 9.192a.75.75 0 0 1-.34.195l-3.829 1a.75.75 0 0 1-.915-.915l1-3.828a.8.8 0 0 1 .161-.312L17.47 2.47a.75.75 0 0 1 1.06 0l2.829 2.828a1 1 0 0 1 .096.118m-1.687.412L18 4.061l-8.518 8.518l-.625 2.393l2.393-.625z" clipRule="evenodd"/><path fill="currentColor" d="M19.641 17.16a44.4 44.4 0 0 0 .261-7.04a.4.4 0 0 1 .117-.3l.984-.984a.198.198 0 0 1 .338.127a46 46 0 0 1-.21 8.372c-.236 2.022-1.86 3.607-3.873 3.832a47.8 47.8 0 0 1-10.516 0c-2.012-.225-3.637-1.81-3.873-3.832a46 46 0 0 1 0-10.67c.236-2.022 1.86-3.607 3.873-3.832a48 48 0 0 1 7.989-.213a.2.2 0 0 1 .128.34l-.993.992a.4.4 0 0 1-.297.117a46 46 0 0 0-6.66.255a2.89 2.89 0 0 0-2.55 2.516a44.4 44.4 0 0 0 0 10.32a2.89 2.89 0 0 0 2.55 2.516c3.355.375 6.827.375 10.183 0a2.89 2.89 0 0 0 2.55-2.516"/></svg>
                         </button>
@@ -187,7 +235,7 @@ const TableFour = () => {
             ))}
           </tbody>
         </table>
-      )}
+      {/* )} */}
       {isOpen && selectedBranches && (
           <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-35 z-999 flex justify-center items-center z-50">
             <div className="bg-white rounded-2xl p-6 py-9 w-1/3 shadow-lg">
@@ -203,7 +251,7 @@ const TableFour = () => {
                 <button className="bg-gray-200 hover:bg-gray-300 text-lg text-gray-600 py-2 px-5 rounded-lg cursor-pointer" onClick={() => setSelectedBranches(null)}>
                   Cancel
                 </button>
-                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteBranch(selectedBranches.id)}>
+                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteBranch(selectedBranches._id)}>
                   {loadingDelete ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
@@ -213,8 +261,8 @@ const TableFour = () => {
         <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1} 
+              onClick={() => fetchBranches(currentPage - 1)}
             >
               Prev
             </button>
@@ -225,8 +273,8 @@ const TableFour = () => {
 
             <button
               className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages} 
+              onClick={() => fetchBranches(currentPage + 1)}
             >
               Next
             </button>

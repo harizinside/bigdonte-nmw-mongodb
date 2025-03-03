@@ -24,7 +24,9 @@
     "clsx": "^2.1.1",
     "flatpickr": "^4.6.13",
     "flowbite": "^3.1.2",
+    "formidable": "^3.5.2",
     "jsvectormap": "^1.5.3",
+    "mongoose": "^8.11.0",
     "next": "^14.1.4",
     "nprogress": "^0.2.0",
     "react": "^18",
@@ -34,9 +36,11 @@
     "react-flatpickr": "^3.10.13",
     "react-quill": "^2.0.0",
     "react-select": "^5.8.0",
-    "react-table": "^7.8.0"
+    "react-table": "^7.8.0",
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
+    "@types/formidable": "^3.4.5",
     "@types/node": "^20",
     "@types/nprogress": "^0.2.3",
     "@types/react": "^18",
