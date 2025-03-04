@@ -18,15 +18,16 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
 
   const { name, position, image } = await req.json();
 
-  // Ambil data dokter lama sebelum diupdate
   const existingDoctor = await Doctor.findById(params.id);
   if (!existingDoctor) {
     return NextResponse.json({ message: "Doctor not found" }, { status: 404 });
   }
 
-  // Jika ada perubahan gambar, hapus gambar lama dari Cloudinary
+  let finalImageUrl = existingDoctor.image; // Gunakan gambar lama jika tidak ada perubahan
+
   if (image && existingDoctor.image !== image) {
     try {
+      // Hapus gambar lama jika ada
       const oldImageUrl = existingDoctor.image;
       const publicIdMatch = oldImageUrl.match(/\/v\d+\/doctors\/([^/.]+)/);
       const oldPublicId = publicIdMatch ? `doctors/${publicIdMatch[1]}` : null;
@@ -35,15 +36,19 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
         console.log("Menghapus gambar lama dari Cloudinary:", oldPublicId);
         await cloudinary.uploader.destroy(oldPublicId);
       }
+
+      // ✅ Pastikan URL baru benar-benar WebP
+      finalImageUrl = image.replace("/upload/", "/upload/f_webp,q_auto/");
+
+      console.log("Final WebP Image URL:", finalImageUrl);
     } catch (error) {
-      console.error("Gagal menghapus gambar lama dari Cloudinary:", error);
+      console.error("Gagal menghapus atau mengubah gambar:", error);
     }
   }
 
-  // Update data dokter dengan gambar baru atau lama
   const updatedDoctor = await Doctor.findByIdAndUpdate(
     params.id,
-    { name, position, image },
+    { name, position, image: finalImageUrl },
     { new: true }
   );
 

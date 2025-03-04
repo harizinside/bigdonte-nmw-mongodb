@@ -3,60 +3,127 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
-import { useState, useEffect, useRef  } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const CreateCatalog = () => {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [image, setImage] = useState<File | null>(null);
-  const [document, setDocument] = useState<File | null>(null);
+  const [documentFile, setDocument] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImage(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
     }
   };
 
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setDocument(e.target.files[0]);
-    } 
+    const file = e.target.files?.[0];
+    if (file) {
+      setDocument(file);
+    }
   };
 
-  const handleSubmit = async () => {
-    if (!title || !date || !image || !document) {
-      setMessage("Please fill in all required fields!");
+  // 🔹 Konversi gambar ke WebP sebelum upload
+  const convertToWebP = (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const img = new Image();
+        img.src = reader.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject("Canvas tidak didukung");
+
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject("Gagal mengonversi ke WebP");
+          }, "image/webp", 0.8);
+        };
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // 🔹 Upload file ke Cloudinary
+  const uploadToCloudinary = async (file: File | Blob, folder: string) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "nmw-clinic"); // Ganti dengan upload_preset Cloudinary
+    formData.append("folder", "catalogs"); // Opsional: menyimpan dalam folder tertentu
+
+    try {
+      const response = await axios.post(
+        "https://api.cloudinary.com/v1_1/duwyojrax/upload",
+        formData
+      );
+      return response.data.secure_url; // URL file yang diunggah
+    } catch (error) {
+      console.error(`Error uploading ${folder}:`, error);
+      throw new Error(`Gagal mengunggah ${folder}`);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title || !date || !image || !documentFile) {
+      setMessage("Semua field harus diisi!");
       setIsOpen(true);
       return;
     }
 
     setLoading(true);
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("date", date);
-    formData.append("image", image);
-    formData.append("document", document);
+    setMessage("");
 
     try {
-      const response = await fetch("/api/catalogsPost", {
-        method: "POST",
-        body: formData,
-      });
+      // 🔹 Konversi & upload gambar ke WebP
+      const webpBlob = await convertToWebP(image);
+      const imageUrl = await uploadToCloudinary(webpBlob, "catalog_images");
 
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to create doctor");
+      // 🔹 Upload dokumen ke Cloudinary
+      const documentUrl = await uploadToCloudinary(documentFile, "catalog_documents");
+
+      // 🔹 Simpan URL di MongoDB (bukan file asli)
+      const formData = {
+        title,
+        date,
+        image: imageUrl, // URL WebP dari Cloudinary
+        document: documentUrl, // URL dokumen dari Cloudinary
+      };
+
+      console.log("Form Data sebelum dikirim:", formData);
+
+      const response = await axios.post("/api/catalogs", formData);
+
+      console.log("Response dari API:", response.data);
+
+      if (response.status === 201) {
+        setIsOpen(true);
+        setMessage("Katalog berhasil ditambahkan!");
+        setTitle("");
+        setDate("");
+        setImage(null);
+        setDocument(null);
+      } else {
+        setMessage("Gagal menambahkan katalog.");
       }
-
-      setMessage("Catalog created successfully!");
-      setIsOpen(true);
     } catch (error) {
-      setMessage("Error creating doctor: " + error);
+      console.error("Error saat mengirim data:", error);
+      setMessage("Terjadi kesalahan.");
       setIsOpen(true);
     } finally {
       setLoading(false);
@@ -132,8 +199,7 @@ const CreateCatalog = () => {
                         <div className="relative">
                             <input 
                               type="date" 
-                              value={date} 
-                              onChange={(e) => setDate(e.target.value)} 
+                              value={date} onChange={(e) => setDate(e.target.value)}
                               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-2.5 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-dark-6 dark:focus:border-orange-400"
                             />
                             <div className="flex absolute inset-y-0 right-0 items-center pe-5.5 pointer-events-none">
@@ -146,7 +212,7 @@ const CreateCatalog = () => {
                 <div className="flex gap-3">
                     <button onClick={handleSubmit} disabled={loading} className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
-                        {loading ? "Saving..." : "Save Doctor"}
+                        {loading ? "Saving..." : "Save Catalog"}
                     </button>
                     <Link href={'/catalogs'}>
                         <button type="button" className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">

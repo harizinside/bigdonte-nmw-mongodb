@@ -6,145 +6,203 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios";
 
 const EditBranch = () => {
-    const { id } = useParams(); // Ambil ID dokter dari URL
-    const router = useRouter();
-    const [branch, setBranch] = useState<{
-        name: string;
-        address: string;
-        image: string;
-        phone: string;
-        location: string;
-        operasional: {
-            [x: string]: any;
-            day: string; time: string 
-        }[];
-      }>({
-        name: "",
-        address: "",
-        image: "",
-        phone: "",
-        location: "",
-        operasional: [],
-      });
-    const [loading, setLoading] = useState(true);
-    const [updating, setUpdating] = useState(false);
-    const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const { id } = useParams(); // Ambil ID dari URL
     const [message, setMessage] = useState("");
-    const [operasional, setOperasional] = useState(branch.operasional);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [image, setImage] = useState<File | null>(null);
+    
+    const [formData, setFormData] = useState({
+      name: "",
+      address: "",
+      phone: "",
+      location: "",
+      operasional: [{ day: "", time: "" }],
+      image: "",
+    });
 
     useEffect(() => {
-        if (branch.operasional && Array.isArray(branch.operasional)) {
-          // Periksa apakah formatnya masih berbentuk array string
-          if (typeof branch.operasional[0] === "string") {
-            const formattedOperasional = branch.operasional.map((op) => {
-              const [day, time] = op.split(" : "); // Memisahkan "Senin - Jumat : 07.00-20.00"
-              return { day: day?.trim() || "", time: time?.trim() || "" };
-            });
-      
-            setBranch((prev) => ({ ...prev, operasional: formattedOperasional }));
-          }
+      if (!id) return;
+    
+      const fetchBranch = async () => {
+        try {
+          setLoading(true);
+          const res = await fetch(`/api/branches/${id}`);
+          if (!res.ok) throw new Error("Gagal mengambil data cabang");
+    
+          const responseData = await res.json();
+    
+          // 🔹 Konversi operasional dari string ke array objek
+          const parsedOperasional = Array.isArray(responseData.operasional)
+            ? responseData.operasional.map((item: string) => {
+                const [day, time] = item.split(" : ");
+                return { day: day || "", time: time || "" };
+              })
+            : [{ day: "", time: "" }];
+    
+          // 🔹 Set default value dari API ke formData
+          setFormData({
+            name: responseData.name || "",
+            address: responseData.address || "",
+            phone: responseData.phone || "",
+            location: responseData.location || "",
+            operasional: parsedOperasional,
+            image: responseData.image || "",
+          });
+    
+          setPreviewImage(responseData.image); // Preview gambar lama
+        } catch (error) {
+          console.error("Error fetching branch data:", error);
+        } finally {
+          setLoading(false);
         }
-      }, [branch.operasional]); // Jalankan hanya saat `branch.operasional` berubah      
-      
-
-      const addOperasionalHour = () => {
-        setBranch((prev) => ({
-          ...prev,
-          operasional: [...prev.operasional, { day: "", time: "" }],
-        }));
       };
     
-      const handleOperasionalChange = (index: number, value: string, field: "day" | "time") => {
-        setBranch((prev) => ({
-          ...prev,
-          operasional: prev.operasional.map((op, i) =>
-            i === index ? { ...op, [field]: value } : op
-          ),
-        }));
-      };  
+      fetchBranch();
+    }, [id]);
     
-      const removeOperasionalHour = (index: number) => {
-        setBranch((prev) => ({
-          ...prev,
-          operasional: prev.operasional.length > 1
-            ? prev.operasional.filter((_, i) => i !== index)
-            : prev.operasional, // Mencegah penghapusan semua data
-        }));
-      };
 
-  // Fetch data dokter berdasarkan ID
-  useEffect(() => {
-    if (!id) return;
+    // Handle perubahan input form umum
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.value,
+      });
+    };
 
-    const fetchBranch = async () => {
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setImage(file);
+        setPreviewImage(URL.createObjectURL(file));
+      }
+    };
+
+    // Handle perubahan untuk operasional
+    const handleOperasionalChange = (index: number, value: string, field: "day" | "time") => {
+      const newOperasional = [...formData.operasional];
+      newOperasional[index][field] = value;
+      setFormData({ ...formData, operasional: newOperasional });
+    };
+
+    // Menambah jam operasional baru
+    const addOperasionalHour = () => {
+      setFormData({
+        ...formData,
+        operasional: [...formData.operasional, { day: "", time: "" }],
+      });
+    };
+
+    // Menghapus jam operasional
+    const removeOperasionalHour = (index: number) => {
+      const newOperasional = formData.operasional.filter((_, i) => i !== index);
+      setFormData({ ...formData, operasional: newOperasional });
+    };
+
+    // Handle submit form (Edit)
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setLoading(true);
+    
       try {
-
-        const res = await fetch(`/api/branchesDetail/${id}`);
-        if (!res.ok) throw new Error("Gagal mengambil data branch");
-
-        const responseData = await res.json();
-
-        if (responseData.data) {
-          setBranch(responseData.data);
-          setPreviewImage(responseData.data.image);
+        // Fungsi konversi ke WebP
+        const convertToWebP = (file: File): Promise<File> => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+              const img = new window.Image();
+              img.src = reader.result as string;
+              img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+    
+                if (!ctx) return reject("Canvas tidak didukung");
+    
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+    
+                canvas.toBlob((blob) => {
+                  if (!blob) return reject("Gagal konversi ke WebP");
+                  const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), {
+                    type: "image/webp",
+                  });
+                  resolve(webpFile);
+                }, "image/webp", 0.8);
+              };
+            };
+            reader.onerror = (error) => reject(error);
+          });
+        };
+    
+        let imageUrl = formData.image; // Gunakan gambar lama jika tidak ada perubahan
+    
+        if (image) {
+          console.log("Converting image to WebP...");
+          const webpImage = await convertToWebP(image);
+    
+          console.log("Uploading image to Cloudinary...");
+          const imageFormData = new FormData();
+          imageFormData.append("file", webpImage);
+          imageFormData.append("upload_preset", "nmw-clinic");
+          imageFormData.append("folder", "branches");
+    
+          // ✅ Pastikan Cloudinary mengonversi WebP
+          const cloudinaryResponse = await axios.post(
+            "https://api.cloudinary.com/v1_1/duwyojrax/image/upload",
+            imageFormData,
+            {
+              headers: { "Content-Type": "multipart/form-data" }
+            }
+          );
+    
+          console.log("Cloudinary Response:", cloudinaryResponse.data);
+          imageUrl = cloudinaryResponse.data.secure_url;
+          console.log("Final WebP Image URL:", imageUrl);
+        } else {
+          console.log("No new image uploaded, using existing image:", imageUrl);
         }
-        
+    
+        const formattedOperasional = formData.operasional.map((op) => `${op.day} : ${op.time}`);
+    
+        // Payload update
+        const payload = {
+          ...formData,
+          image: imageUrl,
+          operasional: formattedOperasional,
+        };
+    
+        const response = await fetch(`/api/branches/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+    
+        if (!response.ok) throw new Error("Gagal mengupdate cabang");
+    
+        setMessage("Cabang berhasil diperbarui!");
+        setIsOpen(true);
+        console.log("Cabang berhasil diperbarui!");
+    
+        setTimeout(() => {
+          router.push("/branches");
+        }, 1500);
       } catch (error) {
-        console.error(error);
-        
+        console.error("Error:", error);
+        setMessage("Terjadi kesalahan saat memperbarui cabang.");
+        setIsOpen(true);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchBranch();
-  }, [id]);
-
-  // Handle Update
-  const handleUpdate = async (e: React.FormEvent) => { 
-    e.preventDefault();
-    setUpdating(true);
-
-    const formData = new FormData();
-    formData.append("name", branch.name);
-    formData.append("address", branch.address);
-    formData.append("phone", branch.phone);
-    formData.append("location", branch.location);
-
-    if (Array.isArray(branch.operasional) && branch.operasional.length > 0) {
-        branch.operasional.forEach((op, index) => {
-          formData.append(`operasional_hari[${index}]`, op.day);
-          formData.append(`operasional_jam[${index}]`, op.time);
-        });
-      }
-
-    // Kirim file gambar jika ada perubahan
-    if (image) {
-      formData.append("image", image);
-    }
-
-    try { 
-      const res = await fetch(`/api/branchesDetail/${id}`, {
-        method: "POST", // Sesuai dengan backend
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Gagal memperbarui data branch");
-
-      setMessage("Branch successfully update!");
-      setIsOpen(true);
-    } catch (error) {
-      console.error("Update error:", error);
-      setMessage("Error creating branch: " + error);
-      setIsOpen(true);
-    } finally {
-      setUpdating(false);
-    }
-};
+    
+    
 
 const handlePush = () => {
   setIsOpen(false);
@@ -165,9 +223,12 @@ const handlePush = () => {
             </div>
 
             <div className="p-6.5">
-                <form action="" onSubmit={handleUpdate} encType="multipart/form-data">
+                <form action="" onSubmit={handleSubmit} encType="multipart/form-data">
                 <div className="w-60 h-auto mb-5 overflow-hidden">
-                    {(branch.image) && (
+                  {previewImage && <Image src={previewImage} alt="Preview"  width="700"
+                        height="700" priority
+                        className="w-full rounded-xl" />}
+                    {/* {(branch.image) && (
                         <Image
                         width="700"
                         height="700"
@@ -176,7 +237,7 @@ const handlePush = () => {
                         priority
                         className="w-full rounded-xl"
                         />
-                    )}
+                    )} */}
                 </div>
               <div className="mb-5">
                 <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
@@ -185,12 +246,7 @@ const handlePush = () => {
                 <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => {
-                    const file = e.target.files?.[0];
-                        if (file) {
-                            setImage(file);
-                        }
-                    }}
+                    onChange={handleImageChange}
                     className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                   />
               </div>
@@ -204,8 +260,7 @@ const handlePush = () => {
                     <input
                     type="text"
                     placeholder="Enter branch name"
-                    defaultValue={branch.name}
-                    onChange={(e) => setBranch({ ...branch, name: e.target.value })}
+                    name="name" value={formData.name} onChange={handleChange}
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                   />
                 </div>
@@ -218,8 +273,7 @@ const handlePush = () => {
                   <input
                     type="text"
                     placeholder="Enter branch address"
-                    defaultValue={branch.address}
-                    onChange={(e) => setBranch({ ...branch, address: e.target.value })}
+                    name="address" value={formData.address} onChange={handleChange}
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                   />
                 </div>
@@ -234,8 +288,7 @@ const handlePush = () => {
                     <input
                     type="text"
                     placeholder="Enter branch phone"
-                    defaultValue={branch.phone}
-                    onChange={(e) => setBranch({ ...branch, phone: e.target.value })}
+                    name="phone" value={formData.phone} onChange={handleChange}
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                   />
                 </div>
@@ -248,8 +301,7 @@ const handlePush = () => {
                   <input
                     type="text"
                     placeholder="Enter link location"
-                    defaultValue={branch.location}
-                    onChange={(e) => setBranch({ ...branch, location: e.target.value })}
+                    name="location" value={formData.location} onChange={handleChange}
                     className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                   />
                 </div>
@@ -257,10 +309,10 @@ const handlePush = () => {
 
               <div className="flex flex-col w-full mb-7">
                 <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Operational Hours</label>
-                {branch.operasional.map((op, index) => (
+                  {formData.operasional.map((op, index) => (
                     <div key={index} className="mb-4 flex flex-col gap-0 xl:flex-row">
-                      <input type="text" placeholder="Ex: Senin - Jumat" defaultValue={op.day} onChange={(e) => handleOperasionalChange(index, e.target.value, "day")} className="w-full xl:w-1/2 rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white" />
-                      <input type="text" placeholder="Ex: 10:00-17:00" defaultValue={op.time} onChange={(e) => handleOperasionalChange(index, e.target.value, "time")} className="w-full xl:w-1/2 rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white" />
+                      <input type="text" placeholder="Ex: Senin - Jumat" value={op.day} onChange={(e) => handleOperasionalChange(index, e.target.value, "day")} className="w-full xl:w-1/2 rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white" />
+                      <input type="text" placeholder="Ex: 10:00-17:00" value={op.time} onChange={(e) => handleOperasionalChange(index, e.target.value, "time")} className="w-full xl:w-1/2 rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white" />
                       <button type="button" onClick={() => removeOperasionalHour(index)} className="ml-2 text-red-500">✖</button>
                     </div>
                   ))}
@@ -268,9 +320,9 @@ const handlePush = () => {
               </div>
 
                 <div className="flex gap-3">
-                    <button type="submit" disabled={updating} className="flex w-max gap-2 justify-center rounded-[7px] bg-green-500 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
+                    <button type="submit" disabled={loading} className="flex w-max gap-2 justify-center rounded-[7px] bg-green-500 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
-                        {updating ? "Updating..." : "Update"}
+                        {loading ? "Updating..." : "Update"}
                     </button>
                     <Link href={'/branches'}>
                         <button type="button" className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
@@ -309,3 +361,226 @@ const handlePush = () => {
 };
 
 export default EditBranch;
+// "use client";
+
+// import { useState, useEffect } from "react";
+// import { useRouter } from "next/navigation";
+// import { useParams } from "next/navigation"; // Untuk mendapatkan ID dari URL
+// import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+// import DefaultLayout from "@/components/Layouts/DefaultLaout";
+// import axios from "axios";
+
+// const EditBranch = () => {
+//   const [loading, setLoading] = useState(false);
+//   const router = useRouter();
+//   const { id } = useParams(); // Ambil ID dari URL
+//   const [message, setMessage] = useState("");
+//   const [previewImage, setPreviewImage] = useState<string | null>(null);
+//   const [image, setImage] = useState<File | null>(null);
+  
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     address: "",
+//     phone: "",
+//     location: "",
+//     operasional: [{ day: "", time: "" }],
+//     image: "",
+//   });
+
+//   // Fetch data branch berdasarkan ID dan isi ke formData
+//   useEffect(() => {
+//     if (!id) return;
+  
+//     const fetchBranch = async () => {
+//       try {
+//         setLoading(true);
+//         const res = await fetch(`/api/branches/${id}`);
+//         if (!res.ok) throw new Error("Gagal mengambil data cabang");
+  
+//         const responseData = await res.json();
+  
+//         // 🔹 Konversi operasional dari string ke array objek
+//         const parsedOperasional = Array.isArray(responseData.operasional)
+//           ? responseData.operasional.map((item: string) => {
+//               const [day, time] = item.split(" : ");
+//               return { day: day || "", time: time || "" };
+//             })
+//           : [{ day: "", time: "" }];
+  
+//         // 🔹 Set default value dari API ke formData
+//         setFormData({
+//           name: responseData.name || "",
+//           address: responseData.address || "",
+//           phone: responseData.phone || "",
+//           location: responseData.location || "",
+//           operasional: parsedOperasional,
+//           image: responseData.image || "",
+//         });
+  
+//         setPreviewImage(responseData.image); // Preview gambar lama
+//       } catch (error) {
+//         console.error("Error fetching branch data:", error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+  
+//     fetchBranch();
+//   }, [id]);
+  
+
+//   // Handle perubahan input form umum
+//   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+//     setFormData({
+//       ...formData,
+//       [e.target.name]: e.target.value,
+//     });
+//   };
+
+//   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0];
+//     if (file) {
+//       setImage(file);
+//       setPreviewImage(URL.createObjectURL(file));
+//     }
+//   };
+
+//   // Handle perubahan untuk operasional
+//   const handleOperasionalChange = (index: number, value: string, field: "day" | "time") => {
+//     const newOperasional = [...formData.operasional];
+//     newOperasional[index][field] = value;
+//     setFormData({ ...formData, operasional: newOperasional });
+//   };
+
+//   // Menambah jam operasional baru
+//   const addOperasionalHour = () => {
+//     setFormData({
+//       ...formData,
+//       operasional: [...formData.operasional, { day: "", time: "" }],
+//     });
+//   };
+
+//   // Menghapus jam operasional
+//   const removeOperasionalHour = (index: number) => {
+//     const newOperasional = formData.operasional.filter((_, i) => i !== index);
+//     setFormData({ ...formData, operasional: newOperasional });
+//   };
+
+//   // Handle submit form (Edit)
+//   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+//     e.preventDefault();
+//     setLoading(true);
+  
+//     try {
+//       let imageUrl = formData.image; // Gunakan image lama jika tidak ada perubahan
+  
+//       if (image) {
+//         console.log("Uploading image to Cloudinary...");
+  
+//         // Perbaikan: Gunakan `FormData` bawaan JS, bukan `formData` dari state
+//         const imageFormData = new FormData();
+//         imageFormData.append("file", image);
+//         imageFormData.append("upload_preset", "nmw-clinic"); // Sesuaikan dengan Cloudinary
+//         imageFormData.append("folder", "branches"); // Folder Cloudinary
+  
+//         const cloudinaryResponse = await axios.post(
+//           "https://api.cloudinary.com/v1_1/duwyojrax/image/upload",
+//           imageFormData,
+//           {
+//             headers: { "Content-Type": "multipart/form-data" },
+//           }
+//         );
+  
+//         console.log("Cloudinary Response:", cloudinaryResponse.data);
+  
+//         // Gunakan URL dengan format WebP untuk optimasi
+//         const originalUrl = cloudinaryResponse.data.secure_url;
+//         imageUrl = originalUrl.replace("/upload/", "/upload/f_webp/");
+  
+//         console.log("Final WebP Image URL:", imageUrl);
+//       } else {
+//         console.log("No new image uploaded, using existing image:", imageUrl);
+//       }
+  
+//       // Perbaikan: Konversi operasional ke array string agar sesuai dengan API
+//       const formattedOperasional = formData.operasional.map(
+//         (op) => `${op.day} : ${op.time}`
+//       );
+  
+//       // Payload update
+//       const payload = {
+//         ...formData,
+//         image: imageUrl, // Simpan URL yang sudah diperbarui
+//         operasional: formattedOperasional,
+//       };
+  
+//       const response = await fetch(`/api/branches/${id}`, {
+//         method: "PUT",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(payload),
+//       });
+  
+//       if (!response.ok) throw new Error("Gagal mengupdate cabang");
+  
+//       setMessage("Cabang berhasil diperbarui!");
+//       console.log("Cabang berhasil diperbarui!");
+  
+//       setTimeout(() => {
+//         router.push("/branches");
+//       }, 1500);
+//     } catch (error) {
+//       console.error("Error:", error);
+//       setMessage("Terjadi kesalahan saat memperbarui cabang.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <DefaultLayout>
+//       <form onSubmit={handleSubmit}>
+//         <label>Nama Cabang:</label>
+//         <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+
+//         <label>Alamat:</label>
+//         <textarea name="address" value={formData.address} onChange={handleChange} required />
+
+//         <label>Telepon:</label>
+//         <input type="text" name="phone" value={formData.phone} onChange={handleChange} required />
+
+//         <label>Lokasi (Google Maps URL):</label>
+//         <input type="text" name="location" value={formData.location} onChange={handleChange} required />
+
+//         <label>Jam Operasional:</label>
+//         {formData.operasional.map((op, index) => (
+//           <div key={index}>
+//             <input
+//               type="text"
+//               value={op.day}
+//               onChange={(e) => handleOperasionalChange(index, e.target.value, "day")}
+//               placeholder="Hari (contoh: Senin - Jumat)"
+//             />
+//             <input
+//               type="text"
+//               value={op.time}
+//               onChange={(e) => handleOperasionalChange(index, e.target.value, "time")}
+//               placeholder="Jam (contoh: 10.00 - 17.00)"
+//             />
+//             <button type="button" onClick={() => removeOperasionalHour(index)}>Hapus</button>
+//           </div>
+//         ))}
+//         <button type="button" onClick={addOperasionalHour}>Tambah Jam Operasional</button>
+
+//         <label>Gambar:</label>
+//         {previewImage && <img src={previewImage} alt="Preview" width="100" />}
+//         <input type="file" accept="image/*" onChange={handleImageChange} />
+
+//         <button type="submit" disabled={loading}>
+//           {loading ? "Menyimpan..." : "Simpan Perubahan"}
+//         </button>
+//       </form>
+//     </DefaultLayout>
+//   );
+// };
+
+// export default EditBranch;

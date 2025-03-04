@@ -26,7 +26,7 @@ const AchievmentsPage = () => {
 
       <div className="flex flex-col gap-10">
         <TableSix /> 
-      </div>
+      </div> 
     </DefaultLayout>
   );
 };

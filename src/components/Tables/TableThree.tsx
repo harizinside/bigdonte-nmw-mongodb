@@ -13,7 +13,7 @@ type Doctor = {
 
 interface TableProps {
   limit?: number | null; 
-  showPagination?: boolean; 
+  showPagination?: boolean;  
 }
 
 type DoctorsResponse = {

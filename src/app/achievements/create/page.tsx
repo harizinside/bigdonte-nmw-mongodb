@@ -3,11 +3,12 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
-import { useState, useEffect, useRef  } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const CreateAchievment = () => { 
-  const [heading, setHeading] = useState("");
+  const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [description, setDescription] = useState("");
@@ -17,13 +18,18 @@ const CreateAchievment = () => {
   const router = useRouter();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImage(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setImage(file); // Simpan file asli
+      };
     }
   };
 
   const handleSubmit = async () => {
-    if (!heading || !date || !image || !description) {
+    if (!title || !date || !image || !description) {
       setMessage("Please fill in all required fields!");
       setIsOpen(true);
       return;
@@ -31,24 +37,58 @@ const CreateAchievment = () => {
 
     setLoading(true);
     const formData = new FormData();
-    formData.append("heading", heading);
+    formData.append("title", title);
     formData.append("date", date);
     formData.append("image", image);
     formData.append("description", description);
 
     try {
-      const response = await fetch("/api/achievementsPost", {
-        method: "POST",
-        body: formData,
+      const convertToWebP = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            const img = new Image();
+            img.src = reader.result as string;
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
+  
+              if (!ctx) return reject("Canvas tidak didukung");
+  
+              // Atur ukuran canvas sesuai gambar
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.drawImage(img, 0, 0, img.width, img.height);
+  
+              // Konversi ke WebP dengan kualitas 0.8
+              const webpImage = canvas.toDataURL("image/webp", 0.8);
+              resolve(webpImage);
+            };
+          };
+          reader.onerror = (error) => reject(error);
+        });
+      };
+
+      const webpImage = await convertToWebP(image);
+
+      const response = await axios.post("/api/achievements", {
+        title,
+        description,
+        date,
+        image: webpImage, // Kirim gambar WebP
       });
-
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to create achievement");
+      
+      if (response.status === 201) {
+        setIsOpen(true);
+        setMessage("Achievement berhasil ditambahkan!");
+        setTitle("");
+        setDescription("");
+        setDate("")
+        setImage(null);
+      } else {
+        setMessage("Gagal menambahkan doctor.");
       }
-
-      setMessage("Achievement created successfully!");
-      setIsOpen(true);
     } catch (error) {
       setMessage("Error creating Achievement: " + error);
       setIsOpen(true);
@@ -100,7 +140,7 @@ const CreateAchievment = () => {
                       <input
                         type="text"
                         placeholder="Enter achievement heading"
-                        value={heading} onChange={(e) => setHeading(e.target.value)}
+                        value={title} onChange={(e) => setTitle(e.target.value)}
                         className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                       />
                     </div>

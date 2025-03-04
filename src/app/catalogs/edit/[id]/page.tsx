@@ -6,88 +6,188 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios";
 
-const EditCatalog = () => {
-  const { id } = useParams(); // Ambil ID dokter dari URL
-  const router = useRouter();
-
-  const [catalog, setCatalog] = useState({ title: "", date: "", image: "", document: "" });
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
-  const [document, setDocument] = useState<File | null>(null); // Perbaiki tipe state
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState("");
-
-  // Fetch data dokter berdasarkan ID
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchCatalog = async () => {
-      try {
-
-        const res = await fetch(`/api/catalogsDetail/${id}`);
-        if (!res.ok) throw new Error("Gagal mengambil data dokter");
-
-        const responseData = await res.json();
-
-        if (responseData.data) {
-          setCatalog(responseData.data);
-          setPreviewImage(responseData.data.image);
-        }
-        
-      } catch (error) {
-        console.error(error);
-        
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCatalog();
-  }, [id]);
-
-  // Handle Update
-  const handleUpdate = async (e: React.FormEvent) => { 
-    e.preventDefault();
-    setUpdating(true);
-
-    const formData = new FormData();
-    formData.append("title", catalog.title);
-    formData.append("date", catalog.date);
-
-    // Kirim file gambar jika ada perubahan
-    if (image) {
-      formData.append("image", image);
-    }
-    if (document) {
-      formData.append("document", document);
-    }
-
-    try {
-      const res = await fetch(`/api/catalogsDetail/${id}`, {
-        method: "POST", // Sesuai dengan backend 
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Gagal memperbarui data catalog");
-
-      setMessage("Catalog successfully update!");
-      setIsOpen(true);
-    } catch (error) {
-      console.error("Update error:", error);
-      setMessage("Error creating catalog: " + error);
-      setIsOpen(true);
-    } finally {
-      setUpdating(false);
-    }
+type Catalog = {
+  _id: number;
+  title:string;
+  image: string;
+  date: string;
+  document: string;
 };
 
-const handlePush = () => {
-  setIsOpen(false);
-  router.push("/catalogs");
-}
+const EditCatalog = () => {
+  const { id } = useParams();
+const router = useRouter();
+
+const [catalog, setCatalog] = useState<Catalog | null>(null);
+const [loading, setLoading] = useState(true);
+const [updating, setUpdating] = useState(false);
+const [image, setImage] = useState<File | null>(null);
+const [documentFile, setDocument] = useState<File | null>(null);
+const [previewImage, setPreviewImage] = useState<string | null>(null);
+const [isOpen, setIsOpen] = useState(false);
+const [message, setMessage] = useState("");
+
+useEffect(() => {
+  if (!id) return;
+
+  const fetchCatalog = async () => {
+    try {
+      const res = await fetch(`/api/catalogs/${id}`);
+      if (!res.ok) throw new Error("Gagal mengambil data catalog");
+
+      const responseData: Catalog = await res.json();
+      setCatalog(responseData);
+      setPreviewImage(responseData.image);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCatalog();
+}, [id]);
+
+const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setImage(file);
+    setPreviewImage(URL.createObjectURL(file));
+  }
+};
+
+const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setDocument(file);
+  }
+};
+
+const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (!catalog) return;
+
+  setCatalog({
+    ...catalog,
+    [e.target.name]: e.target.value, // Update field yang diubah
+  });
+};
+
+const convertToWebP = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const img = new window.Image();
+      img.src = reader.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) return reject("Canvas tidak didukung");
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+
+        canvas.toBlob((blob) => {
+          if (!blob) return reject("Gagal konversi ke WebP");
+          const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), {
+            type: "image/webp",
+          });
+          resolve(webpFile);
+        }, "image/webp", 0.8);
+      };
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+const handleUpdate = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!catalog) return; 
+
+  setUpdating(true);
+
+  try {
+    let imageUrl = catalog.image; 
+    let documentUrl = catalog.document; 
+
+    if (image) {
+      console.log("Converting image to WebP...");
+      const webpImage = await convertToWebP(image);
+
+      console.log("Uploading WebP image to Cloudinary...");
+      const formData = new FormData();
+      formData.append("file", webpImage);
+      formData.append("upload_preset", "nmw-clinic");
+      formData.append("folder", "catalogs");
+
+      const cloudinaryResponse = await axios.post(
+        "https://api.cloudinary.com/v1_1/duwyojrax/image/upload",
+        formData
+      );
+
+      console.log("Cloudinary Response:", cloudinaryResponse.data);
+      imageUrl = cloudinaryResponse.data.secure_url;
+    } else {
+      console.log("No new image uploaded, using existing image:", imageUrl);
+    }
+
+    // Upload document jika ada
+    if (documentFile) {
+      console.log("Uploading document to Cloudinary...");
+      const formData = new FormData();
+      formData.append("file", documentFile);
+      formData.append("upload_preset", "nmw-clinic");
+      formData.append("folder", "catalogs");
+
+      const cloudinaryResponse = await axios.post(
+        "https://api.cloudinary.com/v1_1/duwyojrax/raw/upload",
+        formData
+      );
+
+      console.log("Cloudinary Response:", cloudinaryResponse.data);
+      documentUrl = cloudinaryResponse.data.secure_url;
+    } else {
+      console.log("No new document uploaded, using existing document:", documentUrl);
+    }
+
+    const payload = {
+      title: catalog.title, 
+      date: catalog.date,
+      image: imageUrl,
+      document: documentUrl,
+    };
+
+    console.log("Sending payload to API:", payload);
+
+    const response = await fetch(`/api/catalogs/${catalog._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Gagal menyimpan perubahan");
+    }
+
+    setMessage("Catalog successfully updated!");
+    setIsOpen(true);
+  } catch (error) {
+    console.error("Error updating catalog:", error);
+    setMessage("Error updating Catalog");
+    setIsOpen(true);
+  } finally {
+    setUpdating(false);
+  }
+};
+
+  const handlePush = () => {
+    setIsOpen(false);
+    router.push("/catalogs");
+  };
 
 
   return (
@@ -104,16 +204,16 @@ const handlePush = () => {
             <form onSubmit={handleUpdate} encType="multipart/form-data">
               <div className="p-6.5">
                 <div className="w-60 h-auto mb-5 overflow-hidden object-cover object-center ">
-                    {(catalog.image) && (
+                    {(previewImage || catalog?.image || "") && (
                         <Image
                         width="300"
                         height="300"
-                        src={`https://nmw.prahwa.net/storage/${catalog.image}`} 
-                        alt="Preview" 
                         priority
+                        src={`${previewImage || catalog?.image || ""}`} 
+                        alt="Preview"
                         className="w-full rounded-lg"
                         />
-                    )}
+                    )} 
                 </div>
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
                     <div className="w-full xl:w-1/2">
@@ -123,12 +223,7 @@ const handlePush = () => {
                         <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                setImage(file);
-                            }
-                            }}
+                            onChange={handleImageChange}
                             className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                         />
                     </div>
@@ -137,8 +232,9 @@ const handlePush = () => {
                         <input
                             type="text"
                             placeholder="Enter doctor name (Ex : dr. Doctor Name)"
-                            value={catalog.title}
-                            onChange={(e) => setCatalog({ ...catalog, title: e.target.value })}
+                            name="title"
+                            defaultValue={catalog?.title}
+                            onChange={handleChange}
                             className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                         />
                     </div>
@@ -149,12 +245,7 @@ const handlePush = () => {
                         <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                setDocument(file);
-                            }
-                            }}
+                            onChange={handleDocumentChange}
                             className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                         />
                     </div>
@@ -166,8 +257,9 @@ const handlePush = () => {
                         <div className="relative">
                             <input 
                                 type="date" 
-                                value={catalog.date} 
-                                onChange={(e) => setCatalog({ ...catalog, date: e.target.value })}
+                                defaultValue={catalog?.date}
+                                onChange={handleChange}
+                                name="date"
                                 className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-2.5 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-dark-6 dark:focus:border-orange-400"
                             />
                             <div className="flex absolute inset-y-0 right-0 items-center pe-5.5 pointer-events-none">

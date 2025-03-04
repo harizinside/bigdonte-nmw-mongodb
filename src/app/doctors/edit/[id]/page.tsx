@@ -76,16 +76,49 @@ const EditDoctor = () => {
     setUpdating(true);
   
     try {
+      // Fungsi untuk mengonversi gambar ke WebP sebelum upload
+      const convertToWebP = (file: File): Promise<File> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            const img = new window.Image();
+            img.src = reader.result as string;
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
+  
+              if (!ctx) return reject("Canvas tidak didukung");
+  
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.drawImage(img, 0, 0, img.width, img.height);
+  
+              canvas.toBlob((blob) => {
+                if (!blob) return reject("Gagal konversi ke WebP");
+                const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), {
+                  type: "image/webp",
+                });
+                resolve(webpFile);
+              }, "image/webp", 0.8);
+            };
+          };
+          reader.onerror = (error) => reject(error);
+        });
+      };
+  
       let imageUrl = doctor.image; // Gunakan gambar lama jika tidak ada perubahan
   
-      // Jika ada gambar baru, upload ke Cloudinary
       if (image) {
-        console.log("Uploading image to Cloudinary...");
+        console.log("Converting image to WebP...");
+        const webpImage = await convertToWebP(image); // Konversi ke WebP sebelum upload
+  
+        console.log("Uploading WebP image to Cloudinary...");
   
         const formData = new FormData();
-        formData.append("file", image);
-        formData.append("upload_preset", "nmw-clinic"); // Sesuaikan dengan Cloudinary
-        formData.append("folder", "doctors"); // Folder Cloudinary
+        formData.append("file", webpImage);
+        formData.append("upload_preset", "nmw-clinic");
+        formData.append("folder", "doctors");
   
         const cloudinaryResponse = await axios.post(
           "https://api.cloudinary.com/v1_1/duwyojrax/image/upload",
@@ -94,20 +127,16 @@ const EditDoctor = () => {
   
         console.log("Cloudinary Response:", cloudinaryResponse.data);
   
-        // Gunakan URL dengan format WebP
-        const originalUrl = cloudinaryResponse.data.secure_url;
-        imageUrl = originalUrl.replace("/upload/", "/upload/f_webp/");
-  
+        imageUrl = cloudinaryResponse.data.secure_url;
         console.log("Final WebP Image URL:", imageUrl);
       } else {
         console.log("No new image uploaded, using existing image:", imageUrl);
       }
   
-      // Kirim data ke API dalam format JSON
       const payload = {
         name: doctor.name,
         position: doctor.position,
-        image: imageUrl, // URL dari Cloudinary
+        image: imageUrl,
       };
   
       console.log("Sending payload to API:", payload);
@@ -117,8 +146,6 @@ const EditDoctor = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-  
-      console.log("API Response Status:", response.status);
   
       if (!response.ok) {
         throw new Error("Gagal menyimpan perubahan");
@@ -166,7 +193,7 @@ const EditDoctor = () => {
                       alt="Preview"
                       className="w-full rounded-lg"
                       />
-                  )}
+                  )} 
                 </div>
                 <div className="mb-5">
                     <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">

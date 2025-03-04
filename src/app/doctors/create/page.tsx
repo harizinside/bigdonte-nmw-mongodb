@@ -169,7 +169,7 @@ const CreateDoctor = () => {
               </div>
           </div>
         </div>
-      </div>
+      </div> 
 
     {/* Modal */}
     <div className={`fixed top-0 left-0 z-999 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>

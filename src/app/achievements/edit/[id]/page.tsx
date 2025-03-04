@@ -6,15 +6,25 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios";
 
-const EditAchievement = () => {
+type Achievement = {
+  _id: number;
+  image: string;
+  title: string;
+  description: string;
+  date: string;
+};
+
+const EditAchievement = () => { 
   const { id } = useParams(); // Ambil ID dokter dari URL
   const router = useRouter();
 
-  const [achievement, setAchievement] = useState({ heading: "", date: "", image: "", description: "" });
-  const [loading, setLoading] = useState(true);
+  const [achievement, setAchievement] = useState<Achievement | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const [updating, setUpdating] = useState(false);
   const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -25,15 +35,11 @@ const EditAchievement = () => {
     const fetchAchievement = async () => {
       try {
 
-        const res = await fetch(`/api/achievementsDetail/${id}`);
-        if (!res.ok) throw new Error("Gagal mengambil data Achievement");
+        const response = await fetch(`/api/achievements/${id}`);
+        if (!response.ok) throw new Error("Gagal mengambil data Achievement");
 
-        const responseData = await res.json();
-
-        if (responseData.data) {
-          setAchievement(responseData.data);
-        }
-        
+        const result: Achievement = await response.json();
+        setAchievement(result);
       } catch (error) {
         console.error(error);
         
@@ -45,28 +51,100 @@ const EditAchievement = () => {
     fetchAchievement();
   }, [id]);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!achievement) return;
+
+    setAchievement({
+      ...achievement,
+      [e.target.name]: e.target.value, // Update field yang diubah
+    });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
   // Handle Update
   const handleUpdate = async (e: React.FormEvent) => { 
     e.preventDefault();
+    if (!achievement) return;
     setUpdating(true);
 
-    const formData = new FormData();
-    formData.append("heading", achievement.heading);
-    formData.append("description", achievement.description);
-    formData.append("date", achievement.date);
-
-    // Kirim file gambar jika ada perubahan
-    if (image) {
-      formData.append("image", image);
-    }
-
     try {
-      const res = await fetch(`/api/achievementsDetail/${id}`, {
-        method: "POST", // Sesuai dengan backend
-        body: formData,
+      const convertToWebP = (file: File): Promise<File> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            const img = new window.Image();
+            img.src = reader.result as string;
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
+  
+              if (!ctx) return reject("Canvas tidak didukung");
+  
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.drawImage(img, 0, 0, img.width, img.height);
+  
+              canvas.toBlob((blob) => {
+                if (!blob) return reject("Gagal konversi ke WebP");
+                const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), {
+                  type: "image/webp",
+                });
+                resolve(webpFile);
+              }, "image/webp", 0.8);
+            };
+          };
+          reader.onerror = (error) => reject(error);
+        });
+      };
+
+      let imageUrl = achievement.image;
+
+      if (image) {
+        console.log("Converting image to WebP...");
+        const webpImage = await convertToWebP(image); // Konversi ke WebP sebelum upload
+  
+        console.log("Uploading WebP image to Cloudinary...");
+  
+        const formData = new FormData();
+        formData.append("file", webpImage);
+        formData.append("upload_preset", "nmw-clinic");
+        formData.append("folder", "achievements");
+  
+        const cloudinaryResponse = await axios.post(
+          "https://api.cloudinary.com/v1_1/duwyojrax/image/upload",
+          formData
+        );
+  
+        console.log("Cloudinary Response:", cloudinaryResponse.data);
+  
+        imageUrl = cloudinaryResponse.data.secure_url;
+        console.log("Final WebP Image URL:", imageUrl);
+      } else {
+        console.log("No new image uploaded, using existing image:", imageUrl);
+      }
+
+      const payload = {
+        title: achievement.title,
+        description: achievement.description,
+        date: achievement.date,
+        image: imageUrl,
+      };
+
+      const response = await fetch(`/api/achievements/${achievement._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Gagal memperbarui data Achievement");
+      if (!response.ok) throw new Error("Gagal memperbarui data Achievement");
 
       setMessage("Achievement successfully update!");
       setIsOpen(true);
@@ -99,13 +177,13 @@ const handlePush = () => {
             <form onSubmit={handleUpdate} encType="multipart/form-data">
               <div className="p-6.5">
                 <div className="w-30 h-auto mb-5 overflow-hidden object-cover object-center ">
-                  {(achievement.image) && (
+                  {(previewImage || achievement?.image || "") && (
                       <Image
-                      width="100"
-                      height="100"
-                      src={`https://nmw.prahwa.net/storage/${achievement.image}`} 
-                      alt={achievement.heading}
+                      width="300"
+                      height="300"
                       priority
+                      src={`${previewImage || achievement?.image || ""}`} 
+                      alt="Preview"
                       className="w-full rounded-lg"
                       />
                   )}
@@ -118,12 +196,7 @@ const handlePush = () => {
                         <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => {
-                            const file = e.target.files?.[0];
-                                if (file) {
-                                    setImage(file);
-                                }
-                            }}
+                            onChange={handleImageChange}
                             className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                         />
                     </div>
@@ -132,8 +205,9 @@ const handlePush = () => {
                         <input
                             type="text"
                             placeholder="Enter achievement heading"
-                            value={achievement.heading}
-                            onChange={(e) => setAchievement({ ...achievement, heading: e.target.value })}
+                            name="title"
+                            value={achievement?.title || ""}
+                            onChange={handleChange}
                             className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                         />
                     </div>
@@ -143,9 +217,8 @@ const handlePush = () => {
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Achievement Description</label>
                         <input
                             type="text"
-                            placeholder="Enter achievement description"
-                            value={achievement.description}
-                            onChange={(e) => setAchievement({ ...achievement, description: e.target.value })}
+                            placeholder="Enter achievement description" name="description"
+                            value={achievement?.description || ""} onChange={handleChange}
                             className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                         />
                     </div>
@@ -157,8 +230,9 @@ const handlePush = () => {
                         <div className="relative">
                             <input 
                                 type="date" 
-                                value={achievement.date} 
-                                onChange={(e) => setAchievement({ ...achievement, date: e.target.value })}
+                                name="date"
+                                value={achievement?.date ? new Date(achievement.date).toISOString().split("T")[0] : ""}
+                                onChange={handleChange}
                                 className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-2.5 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-dark-6 dark:focus:border-orange-400"
                             />
                             <div className="flex absolute inset-y-0 right-0 items-center pe-5.5 pointer-events-none">
