@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type Article = {
-  id: number;
+  _id: number;
   image: string;
   title: string;
   date: string;
+  slug:string;
 };
 
 interface TableProps {
@@ -28,20 +29,25 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
     const itemsPerPage = 15;
   
     useEffect(() => {
-      const fetchArticles = async (currentPage: number) => {
+      const fetchArticles = async (page= 1) => {
         try {
-          const response = await fetch(`/api/articles?page=${currentPage}`);
+          const response = await fetch(`/api/articles?page=${page}`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
+          });
     
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
     
           const result = await response.json();
-          const data = limit ? result.data.slice(0, limit) : result.data;
+          const data = limit ? result.articles.slice(0, limit) : result.articles;
 
           setArticles(data);
-          setCurrentPage(result.pagination.currentPage);
-          setTotalPages(result.pagination.totalPages);
+          setCurrentPage(result.currentPage);
+          setTotalPages(result.totalPages);
         } catch (error) {
           console.error("Error fetching articles:", error);
         } finally {
@@ -55,15 +61,19 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
 
       const handleDeleteArticles = async (id: string | number) => {
         try {
+          if (!selectedArticles) return;
           setLoadingDelete(true);
-          const response = await fetch(`/api/articlesDetail/${id}`, {
-            method: 'DELETE',
+          const response = await fetch(`/api/articles/${selectedArticles._id}`, {
+            method: "DELETE",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
           });
       
           if (!response.ok) {
             throw new Error(response.statusText);
           }
-          setArticles((prevArticles) => prevArticles.filter((article) => article.id !== id));
+          setArticles((prevArticles) => prevArticles.filter((article) => article._id !== id));
           setSelectedArticles(null);
           setIsOpen(false);
         } catch (error) {
@@ -94,13 +104,25 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
               <th className="min-w-[120px] px-4 py-4 font-medium text-dark dark:text-white">
                 Date
               </th>
+              <th className="min-w-[120px] px-4 py-4 font-medium text-dark dark:text-white">
+                Article Link
+              </th>
               <th className="px-4 py-4 text-right font-medium text-dark dark:text-white xl:pr-7.5">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody>
-            {articles.map((article, index) => (
+          {articles.map((article, index) => {
+              const articleUrl = `${process.env.NEXT_PUBLIC_API_WEB_URL}/${article.slug}`;
+
+              const copyToClipboard = () => {
+                navigator.clipboard.writeText(articleUrl).then(() => {
+                  alert("URL copied to clipboard!");
+                });
+              };
+
+              return (
               <tr key={index}>
                 <td
                   className={`border-[#eee] px-4 text-center py-4 dark:border-dark-3 w-0 xl:pl-9 ${
@@ -109,19 +131,20 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
                 >
                   <div className="w-0">{(currentPage - 1) * itemsPerPage + index + 1}</div>
                 </td>
-                <td className={`border-[#eee] px-4 py-4 dark:border-dark-3 w-10 xl:pl-7.5 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}>
-                  <div className="h-auto w-17 overflow-hidden ">
+                <td className={`border-[#eee] px-2 py-4 dark:border-dark-3 w-2 xl:pl-7.5 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}>
+                  <div className="h-auto w-32 overflow-hidden ">
                     <Image
                       src={article.image}
-                      width={100}
-                      height={100}
+                      width={800}
+                      height={800}
+                      priority
                       alt={article.title}
                       className="rounded-md"
                     />
                   </div>
                 </td>
                 <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 w-170 xl:pl-0 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 w-80 xl:pl-0 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}
                 >
                   <h5 className="text-dark dark:text-white">
                     {article.title}
@@ -131,14 +154,32 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
                   className={`border-[#eee] px-4 py-4 dark:border-dark-3 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}
                 >
                   <p className="text-dark dark:text-white">
-                    {article.date}
+                    {new Intl.DateTimeFormat("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    }).format(new Date(article.date))}
                   </p>
+
+                </td>
+                <td
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 w-100 xl:pl-0 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}
+                >
+                  <h5 className="text-dark dark:text-white  gap-2">
+                    <button
+                      onClick={copyToClipboard}
+                      className="p-1 border text-sm rounded bg-gray-200 dark:bg-gray-700"
+                    >
+                      {articleUrl}
+                    </button>
+                  </h5>
+
                 </td>
                 <td
                   className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pr-7.5 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}
                 >
                   <div className="flex items-center justify-end space-x-3.5">
-                    <Link href={`/articles/edit/${article.id}`} className="p-0 m-0 flex items-center justify-center">
+                    <Link href={`/articles/edit/${article._id}`} className="p-0 m-0 flex items-center justify-center">
                         <button className="hover:text-orange-400">
                           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M21.455 5.416a.75.75 0 0 1-.096.943l-9.193 9.192a.75.75 0 0 1-.34.195l-3.829 1a.75.75 0 0 1-.915-.915l1-3.828a.8.8 0 0 1 .161-.312L17.47 2.47a.75.75 0 0 1 1.06 0l2.829 2.828a1 1 0 0 1 .096.118m-1.687.412L18 4.061l-8.518 8.518l-.625 2.393l2.393-.625z" clipRule="evenodd"/><path fill="currentColor" d="M19.641 17.16a44.4 44.4 0 0 0 .261-7.04a.4.4 0 0 1 .117-.3l.984-.984a.198.198 0 0 1 .338.127a46 46 0 0 1-.21 8.372c-.236 2.022-1.86 3.607-3.873 3.832a47.8 47.8 0 0 1-10.516 0c-2.012-.225-3.637-1.81-3.873-3.832a46 46 0 0 1 0-10.67c.236-2.022 1.86-3.607 3.873-3.832a48 48 0 0 1 7.989-.213a.2.2 0 0 1 .128.34l-.993.992a.4.4 0 0 1-.297.117a46 46 0 0 0-6.66.255a2.89 2.89 0 0 0-2.55 2.516a44.4 44.4 0 0 0 0 10.32a2.89 2.89 0 0 0 2.55 2.516c3.355.375 6.827.375 10.183 0a2.89 2.89 0 0 0 2.55-2.516"/></svg>
                         </button>
@@ -178,7 +219,8 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
                   </div>
                 </td>
               </tr>
-            ))}
+               );
+              })}
           </tbody>
         </table>
       )}
@@ -197,35 +239,35 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
                 <button className="bg-gray-200 hover:bg-gray-300 text-lg text-gray-600 py-2 px-5 rounded-lg cursor-pointer" onClick={() => setSelectedArticles(null)}>
                   Cancel
                 </button>
-                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteArticles(selectedArticles.id)}>
+                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteArticles(selectedArticles._id)}>
                   {loadingDelete ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </div>
           </div>
         )}
-        {showPagination && (
-          <div className="flex justify-center mt-4 space-x-2">
-              <button
-                className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-              >
-                Prev
-              </button>
+        {articles.length >= itemsPerPage && (
+        <div className="flex justify-center mt-4 space-x-2">
+            <button
+              className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              Prev
+            </button>
 
-              <span className="px-4 py-2 rounded text-orange-400 font-medium">
-                {currentPage} / {totalPages}
-              </span>
+            <span className="px-4 py-2 rounded text-orange-400 font-medium">
+              {currentPage} / {totalPages}
+            </span>
 
-              <button
-                className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
-                Next
-              </button>
-          </div>
+            <button
+              className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Next
+            </button>
+        </div>
         )}
       </div>
     </div>

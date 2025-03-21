@@ -28,11 +28,17 @@ const TableSix = () => {
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const [loadingDelete, setLoadingDelete] = useState(false);
 
-  const itemsPerPage = 15;
+  const itemsPerPage = 15; 
   
-    const fetchAchievements = async (page = 1) => {
+    const fetchAchievements = async (currentPage = 1) => {
       try {
-        const response = await fetch(`/api/achievements?page=${currentPage}`);
+        const response = await fetch(`/api/achievements?page=${currentPage}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        });
   
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -49,30 +55,10 @@ const TableSix = () => {
         setLoading(false);
       }
     };
-
-    useEffect(() => {
-      fetchAchievements(1);
-    }, []);
-
-    // const handleDeleteAchievement = async (id: string | number) => {
-    //   try {
-    //     setLoadingDelete(true);
-    //     const response = await fetch(`/api/achievementsDelete/${id}`, {
-    //       method: 'DELETE',
-    //     });
     
-    //     if (!response.ok) {
-    //       throw new Error(response.statusText);
-    //     }
-    //     setAchievements((prevAchievements) => prevAchievements.filter((achievement) => achievement.id !== id));
-    //     setSelectedAchievement(null);
-    //     setIsOpen(false);
-    //   } catch (error) {
-    //     console.error(error);
-    //   } finally {
-    //     setLoadingDelete(false);
-    //   }
-    // };
+    useEffect(() => {
+      fetchAchievements(currentPage);
+    }, [currentPage]);
 
     const handleDeleteAchievement = async (_id: string | number) => {
       if (!selectedAchievement) return;
@@ -80,6 +66,10 @@ const TableSix = () => {
         setLoadingDelete(true);
         const response = await fetch(`/api/achievements/${selectedAchievement._id}`, {
           method: 'DELETE',
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
         });
     
         if (!response.ok) {
@@ -222,6 +212,7 @@ const TableSix = () => {
             </div>
           </div>
         )}
+        {achievements.length >= itemsPerPage && (
         <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
@@ -243,6 +234,7 @@ const TableSix = () => {
               Next
             </button>
         </div>
+        )}
       </div>
     </div>
   );

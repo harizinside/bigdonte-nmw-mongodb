@@ -1,10 +1,14 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Achievement from "@/models/achievements";
 import { NextResponse } from "next/server";
-import cloudinary from "@/lib/cloudinary";
+import { validateToken } from "@/lib/auth";
+import path from "path";
+import sharp from "sharp";
 
 // GET: Fetch all doctor
 export async function GET(req: { url: string | URL; }) {
+  const authError = validateToken(req);
+  if (authError) return authError;
   await connectToDatabase();
   
   try {
@@ -26,7 +30,7 @@ export async function GET(req: { url: string | URL; }) {
     const totalPages = Math.ceil(totalAchievements / limit);
 
     return NextResponse.json({
-      achievements,
+      achievements, 
       currentPage: page,
       totalPages,
       totalAchievements,
@@ -38,38 +42,47 @@ export async function GET(req: { url: string | URL; }) {
   }
 }
 
-// POST: Create a new achievement with Cloudinary upload
-export async function POST(req: { json: () => PromiseLike<{ title: any; description: any; date: any; image: any; }> | { title: any; description: any; date: any; image: any; }; }) {
+export async function POST(request: Request) {
   try {
-    await connectToDatabase();
-    const { title, description, image, date } = await req.json();
+    const authError = validateToken(request);
+    if (authError) return authError;
 
-    if (!title || !description || !image || !date) {
+    const formData = await request.formData();
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const date = formData.get("date") as string;
+    const imageFile = formData.get("image") as File;
+
+    if (!title || !description || !date || !imageFile) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    // Upload image to Cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(image, {
-      folder: "achievements",
-      transformation: [{ width: 500, height: 500, crop: "limit" }],
-    });
+    const timestamp = Date.now();
+    const originalName = imageFile.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, ""); // Hapus ekstensi
+    const fileName = `${timestamp}-${originalName}.webp`;
+    const imagePath = path.join(process.cwd(), "public", "uploads", "achievements",fileName);
 
-    if (!uploadResponse.secure_url) {
-      return NextResponse.json({ error: "Failed to upload image" }, { status: 500 });
-    }
+    // Konversi gambar ke WebP menggunakan Sharp
+    const imageByteData = await imageFile.arrayBuffer();
+    const buffer = Buffer.from(imageByteData);
+    await sharp(buffer)
+      .webp({ quality: 80 }) // Kompresi ke WebP dengan kualitas 80%
+      .toFile(imagePath);
 
-    // Save to MongoDB
+    // Simpan ke MongoDB
+    await connectToDatabase();
     const newAchievement = new Achievement({
       title,
       description,
       date,
-      image: uploadResponse.secure_url, // Save Cloudinary image URL
+      image: `/uploads/achievements/${fileName}`, // Path relatif untuk akses publik
     });
 
     await newAchievement.save();
-    
+
     return NextResponse.json(newAchievement, { status: 201 });
   } catch (error) {
+    console.error("Error creating achievement:", error);
     return NextResponse.json({ error: "Failed to create achievement" }, { status: 500 });
   }
 }

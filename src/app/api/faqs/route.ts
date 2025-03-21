@@ -1,33 +1,74 @@
+import { connectToDatabase } from "@/lib/mongodb";
+import Faq from "@/models/faqs";
 import { NextResponse } from "next/server";
+import { validateToken } from "@/lib/auth";
 
-export const dynamic = "force-dynamic";
-
+// GET: Fetch all faq documents
 export async function GET(req: Request) {
+  const authError = validateToken(req);
+  if (authError) return authError;
+
+  await connectToDatabase();
+
   try {
     const { searchParams } = new URL(req.url);
-    const page = searchParams.get("page") || "1";
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = 15;
 
-    const response = await fetch(`https://nmw.prahwa.net/api/faqs?page=${page}`);
+    const totalFaqs = await Faq.countDocuments();
+    const faqs = await Faq.find({})
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-    if (!response.ok) {
-      return NextResponse.json({ message: `Error: ${response.statusText}` }, { status: response.status });
-    }
+    return new NextResponse(JSON.stringify({
+      faqs,
+      currentPage: page,
+      totalPages: Math.ceil(totalFaqs / limit),
+      totalFaqs,
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
 
-    const data = await response.json();
-
-    return NextResponse.json({
-      data: data.data,
-      pagination: {
-        currentPage: data.meta?.current_page || 1,
-        totalPages: data.meta?.last_page || 1,
-        perPage: data.meta?.per_page || 10,
-        total: data.meta?.total || 0,
-        links: data.links || [],
-      },
-    }, { status: 200 });
   } catch (error) {
-    console.error("Error fetching doctors:", error);
-    return NextResponse.json({ message: "Failed to fetch doctors" }, { status: 500 });
+    console.error("❌ Error fetching faqs:", error);
+    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data faqs." }), { status: 500 });
   }
 }
 
+// POST: Create a new faq document
+export async function POST(req: { json: () => PromiseLike<{ question: any; answer: any;}> | { question: any; answer: any;}; }) {
+  try {
+    const authError = validateToken(req);
+    if (authError) return authError;
+    await connectToDatabase();
+
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (jsonError) {
+      console.error("❌ Error parsing JSON:", jsonError);
+      return NextResponse.json({ error: "Invalid JSON format" }, { status: 400 });
+    }
+
+    const { question, answer } = requestBody;
+
+    if (!question || !answer) {
+      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    }
+
+    // Save to MongoDB
+    const newFaq = new Faq({
+      question,
+      answer,
+    });
+
+    await newFaq.save();
+    
+    return NextResponse.json(newFaq, { status: 201 });
+  } catch (error) {
+    console.error("❌ Error creating faq:", error);
+    return NextResponse.json({ error: "Failed to create faq" }, { status: 500 });
+  }
+}

@@ -3,101 +3,118 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
-import { useState, useEffect, useRef  } from "react";
+import { useState, useEffect, useRef, useMemo  } from "react";
 import RichEditor from "@/components/rich-editor/page";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 
 const EditServiceList = () => {
-    const { id, slug } = useParams(); // Ambil ID dokter dari URL
+    const { slugServices, slug } = useParams(); // Ambil slug service dari URL
     const router = useRouter();
-
-    const [service, setService] = useState({ title: "", description: "", sensitiveContent: false, image2: "", image: "", serviceId: ""});
-    const [image, setImage] = useState<File | null>(null);
-    const [imageSecond, setImageSecond] = useState<File | null>(null);
+  
+    const [service, setService] = useState({ name: "", slug: "",description: "", sensitive_content: false, imageBanner: "", imageCover: ""});
+    const [loading, setLoading] = useState(true);
+    const [, setSlug] = useState("");
+    const [updating, setUpdating] = useState(false);
+    const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
+    const [imageSecond, setImageSecond] = useState<File | null>(null); // Perbaiki tipe state
     const [previewImage, setPreviewImage] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
-    const [updating, setUpdating] = useState(false);
-    const [serviceOneId, setServiceOneId] = useState<string>("");
-
+    // Pastikan state diinisialisasi dengan tipe boolean
+    const [sensitiveContent, setSensitiveContent] = useState<boolean>(service.sensitive_content);
+    const [template, setTemplate] = useState<boolean | null>(null);
+    const [isSlugEdited, setIsSlugEdited] = useState(false);
+    // Fetch data dokter berdasarkan ID
     useEffect(() => {
       if (!slug) return;
-  
+    
       const fetchService = async () => {
-        setLoading(true);
         try {
-          const res = await fetch(`/api/services/servicesTwoDetail/${slug}`);
-          if (!res.ok) throw new Error("Gagal mengambil data service");
-          const responseData = await res.json();
-          if (responseData && responseData.data) {
-            setService({
-              title: responseData.data.title || "",
-              description: responseData.data.description || "",
-              // Mengonversi angka (1/0) menjadi boolean
-              sensitiveContent: responseData.data.sensitive_content === 1,
-              image2: responseData.data.image2 || "",
-              image: responseData.data.image || "",
-              serviceId: responseData.data.id?.toString() || "" 
-            });
-            setPreviewImage(responseData.data.image);
-          }
-        } catch (error) {
+          const response = await fetch(`/api/servicesList/${slug}`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
+          });
+          
+          if (!response.ok) throw new Error("Gagal mengambil data service");
+    
+          const responseData = await response.json();
+    
+          setService(responseData)
+          // Konversi template ke string yang cocok dengan radio button
+          setSensitiveContent(responseData.sensitive_content);
+          setPreviewImage(responseData.imageCover);
+        } catch (error) { 
           console.error("Error fetching service:", error);
         } finally {
           setLoading(false);
         }
       };
-  
-      fetchService(); 
+    
+      fetchService();
     }, [slug]);
-     
-    useEffect(() => {
-      const fetchServiceOne = async () => {
-        try {
-          const res = await fetch("/api/services/servicesOne");
-          if (!res.ok) {
-            throw new Error(`Gagal mengambil data: ${res.statusText}`);
-          }
-          const responseData = await res.json();
-          // Misalnya, ambil service_id dari elemen pertama dari data
-          if (responseData.data && Array.isArray(responseData.data) && responseData.data.length > 0) {
-            setServiceOneId(responseData.data[0].id.toString());
-          }
-        } catch (error) {
-          console.error("Error fetching serviceOne:", error);
-        }
-      };
-  
-      fetchServiceOne();
-    }, []);
 
-      const handleUpdate = async (e: React.FormEvent) => { 
+    const handleSelection = (value: boolean) => {
+      setSensitiveContent(value);
+      setService((prev) => ({ ...prev, sensitive_content: value }));
+    };    
+
+    const handleSelectionTemplate = (value: boolean) => {
+      setTemplate(value);
+      setService((prev) => ({ ...prev, template: value }));
+    };
+
+    useEffect(() => {
+      setSensitiveContent(service.sensitive_content);
+    }, [service]);
+
+    useEffect(() => {
+      if (!isSlugEdited && service.name) {
+        const generatedSlug = service.name
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "") // Hapus karakter selain huruf, angka, spasi, dan "-"
+          .replace(/\s+/g, "-") // Ganti spasi dengan "-"
+          .replace(/-+/g, "-"); // Hapus duplikasi "-"
+    
+        setService((prev) => ({ ...prev, slug: generatedSlug }));
+      }
+    }, [service.name, isSlugEdited]);  
+    
+    const isTemplateChecked = (service: { template: any; }, value: any) => {
+      return service.template === value;
+    };
+  
+    // Handle Update
+    const handleUpdate = async (e: React.FormEvent) => { 
         e.preventDefault();
-        setLoading(true);
+        setUpdating(true);
       
         const formData = new FormData();
-        formData.append("title", service.title || "");
+        formData.append("name", service.name || "");
+        formData.append("slug", service.slug);
         formData.append("description", service.description || "");
-        formData.append("sensitive_content", service.sensitiveContent ? "true" : "false");
-        formData.append("service_id", serviceOneId || "");
+        formData.append("sensitive_content", service.sensitive_content ? "1" : "0"); 
       
         // Kirim file gambar jika ada
         if (image) {
-          formData.append("image", image);
+          formData.append("imageBanner", image);
         }
         if (imageSecond) {
-          formData.append("image2", imageSecond);
+          formData.append("imageCover", imageSecond);
         }
       
         try {
-          const res = await fetch(`/api/services/servicesTwoEdit/${service.serviceId}`, {
-            method: "POST",
-            body: formData, 
+          const response = await fetch(`/api/servicesList/${slug}`, {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
+            body: formData,
           });
       
-          if (!res.ok) throw new Error("Gagal memperbarui data promo");
+          if (!response.ok) throw new Error("Gagal memperbarui data services");
       
           setMessage("Service successfully updated!");
           setIsOpen(true);
@@ -106,20 +123,21 @@ const EditServiceList = () => {
           setMessage("Error updating service: " + error);
           setIsOpen(true);
         } finally {
-          setLoading(false);
+          setUpdating(false);
         }
       };
+      
   
-    const handlePush = () => {
-      setIsOpen(false);
-      router.push(`/services/list/${id}`);
-    }
+  const handlePush = () => {
+    setIsOpen(false);
+    router.push(`/services/${slugServices}`);
+  }
 
   return (
     <DefaultLayout>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="services" pageName="Manage Services" pageNameSecond="/ Manage List Services" pageNameThird="/ edit" pageNameFour={`/ ${service.title}`} pageNameFive=""/>
+          <Breadcrumb route="services" pageName="Manage Services" pageNameSecond="/ Edit" pageNameThird="" pageNameFour="" pageNameFive=""/>
         </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -132,11 +150,11 @@ const EditServiceList = () => {
                 <div className="flex gap-4.5 xl:flex-row mb-7 items-end">
                     <div className="w-full xl:w-1/2 ">
                         <div className="w-80 h-auto mb-5 overflow-hidden object-cover object-center ">
-                            {(service.image) && (
+                            {(service.imageBanner) && (
                                 <Image
                                     width="300"
                                     height="370"
-                                    src={`https://nmw.prahwa.net/storage/${service.image}`} 
+                                    src={`${service.imageBanner}`} 
                                     alt="Preview"
                                     priority
                                     className="w-full rounded-md"
@@ -145,7 +163,6 @@ const EditServiceList = () => {
                         </div>
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Banner Image
-                            <span className="text-red">*</span>
                         </label>
                         <input
                         type="file"
@@ -162,11 +179,11 @@ const EditServiceList = () => {
                     </div>
                     <div className="w-full xl:w-1/2">
                         <div className="w-80 h-auto mb-5 overflow-hidden object-cover object-center ">
-                            {(service.image2) && (
+                            {(service.imageCover) && (
                                 <Image
                                     width="300"
                                     height="370"
-                                    src={`https://nmw.prahwa.net/storage/${service.image2}`} 
+                                    src={`${service.imageCover}`} 
                                     alt="Preview"
                                     priority
                                     className="w-full rounded-md"
@@ -175,7 +192,6 @@ const EditServiceList = () => {
                         </div>
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Cover Image
-                            <span className="text-red">*</span>
                         </label>
                         <input
                         type="file"
@@ -192,50 +208,70 @@ const EditServiceList = () => {
                     </div>
                 </div>
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
-                  <div className="w-full xl:w-full">
+                  <div className="w-full xl:w-1/2">
                       <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                        Title
+                        Service Name
                         <span className="text-red">*</span>
-                      </label>
+                      </label> 
                       <input
                         type="text"
-                        placeholder="Enter title"
-                        defaultValue={service.title}
-                        onChange={(e) => setService({ ...service, title: e.target.value })}
+                        placeholder="Enter service name"
+                        defaultValue={service.name}
+                        onChange={(e) => setService({ ...service, name: e.target.value })}
                         className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                       />
                   </div>
                 </div>
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-col">
                   <div className="">
-                    <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Service Description <span className="text-red">*</span></label>
+                    <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Service Description</label>
                     <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
                       <RichEditor value={service?.description || ""} onChange={(html) => setService({ ...service, description: html })}/>
                     </div>
                   </div>
                 </div>
-                <div className="mb-7 flex flex-col gap-4.5 xl:flex-col">
-                  <label className="inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="form-checkbox h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      checked={service.sensitiveContent}
-                      onChange={(e) => {
-                        setService((prev) => ({ ...prev, sensitiveContent: e.target.checked }));
-                      }}
-                    />
-                    <span className="ml-2 text-gray-700 dark:text-white">
+
+                <div className="mt-7 w-full">
+                  <div className="flex gap-4">
+                    {/* Tombol untuk TRUE */}
+                    <button
+                      type="button"
+                      onClick={() => handleSelection(true)}
+                      className={`w-full xl:w-1/2 px-6 py-2 font-medium rounded-lg transition-all ${
+                        sensitiveContent === true ? "bg-red-500 border-red-500 text-white" : "bg-red-500 border-red-500 text-white opacity-30 hover:opacity-100"
+                      } border-2`}
+                    >
                       Sensitive Content
-                    </span>
-                  </label>
+                    </button>
+
+                    {/* Tombol untuk FALSE */}
+                    <button
+                      type="button"
+                      onClick={() => handleSelection(false)}
+                      className={`w-full xl:w-1/2 px-6 py-2 font-medium rounded-lg transition-all ${
+                        sensitiveContent === false ? "bg-green-500 border-green-500 text-white" : "bg-green-500 border-green-500 text-white opacity-30 hover:opacity-100"
+                      } border-2`}
+                    >
+                      Not Sensitive Content
+                    </button> 
+                  </div>
                 </div>
+                <input
+                  type="text"
+                  value={service.slug}
+                  onChange={(e) => {
+                    setService((prev) => ({ ...prev, slug: e.target.value }));
+                    setIsSlugEdited(true); // Tandai bahwa slug telah diedit user
+                  }}
+                  className="hidden"
+                />
 
                 <div className="flex gap-3 mt-7">
-                    <button type="submit" disabled={loading} className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
+                    <button type="submit" disabled={updating} className="flex w-max gap-2 justify-center rounded-[7px] bg-green-500 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
-                        {loading ? "Saving..." : "Save List Service"}
+                        {updating ? "Updating..." : "Update"}
                     </button>
-                    <Link href={`/services/list/${id}`}>
+                    <Link href={`/services/${slugServices}`}>
                         <button type="button" className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                             Cancel
@@ -249,26 +285,26 @@ const EditServiceList = () => {
 
       </div>
       {/* Modal */}
-      <div className={`fixed top-0 left-0 z-999 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
-        <div className="bg-white text-center rounded-2xl p-6 py-9 w-1/3 shadow-lg">
-          <div className="flex items-center justify-center mb-4">
-            {message.includes('Error') || message.includes('Please fill in all required fields!') ? (
-              <svg className="w-28 h-28 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
-              </svg>
-            ) : (
-              <svg className="w-28 h-28 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="4"><path d="M24 44a19.94 19.94 0 0 0 14.142-5.858A19.94 19.94 0 0 0 44 24a19.94 19.94 0 0 0-5.858-14.142A19.94 19.94 0 0 0 24 4A19.94 19.94 0 0 0 9.858 9.858A19.94 19.94 0 0 0 4 24a19.94 19.94 0 0 0 5.858 14.142A19.94 19.94 0 0 0 24 44Z"/><path strokeLinecap="round" d="m16 24l6 6l12-12"/></g></svg>
-            )}
-          </div>
-          <p className="text-gray-600 my-5 mb-9 text-center text-2xl font-medium">{message}</p>
-          <button 
-            onClick={() => message.includes('Error') || message.includes('Please fill in all required fields!') ? setIsOpen(false) : handlePush()} 
-            className={`text-lg text-white py-2 px-5 rounded-lg cursor-pointer ${message.includes('Error') || message.includes('Please fill in all required fields!') ? 'bg-red-500' : 'bg-green-500'}`}>
-            OK
-          </button>
+        <div className={`fixed top-0 left-0 z-999 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
+            <div className="bg-white text-center rounded-2xl p-6 py-9 w-1/3 shadow-lg">
+            <div className="flex items-center justify-center mb-4">
+                {message.includes('Error') ? (
+                <svg className="w-28 h-28 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                </svg>
+                ) : (
+                <svg className="w-28 h-28 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="4"><path d="M24 44a19.94 19.94 0 0 0 14.142-5.858A19.94 19.94 0 0 0 44 24a19.94 19.94 0 0 0-5.858-14.142A19.94 19.94 0 0 0 24 4A19.94 19.94 0 0 0 9.858 9.858A19.94 19.94 0 0 0 4 24a19.94 19.94 0 0 0 5.858 14.142A19.94 19.94 0 0 0 24 44Z"/><path strokeLinecap="round" d="m16 24l6 6l12-12"/></g></svg>
+                )}
+            </div>
+            <p className="text-gray-600 my-5 mb-9 text-center text-2xl font-medium">{message}</p>
+            <button 
+                onClick={() => message.includes('Error') ? setIsOpen(false) : handlePush()} 
+                className={`text-lg text-white py-2 px-5 rounded-lg cursor-pointer ${message.includes('Error') || message.includes('Please fill in all required fields!') ? 'bg-red-500' : 'bg-green-500'}`}>
+                OK
+            </button>
+            </div>
         </div>
-      </div>
-    </DefaultLayout> 
+    </DefaultLayout>
   );
 };
 

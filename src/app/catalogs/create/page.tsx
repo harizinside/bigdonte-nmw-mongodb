@@ -19,7 +19,7 @@ const CreateCatalog = () => {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file) { 
       setImage(file);
     }
   };
@@ -28,52 +28,6 @@ const CreateCatalog = () => {
     const file = e.target.files?.[0];
     if (file) {
       setDocument(file);
-    }
-  };
-
-  // 🔹 Konversi gambar ke WebP sebelum upload
-  const convertToWebP = (file: File): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const img = new Image();
-        img.src = reader.result as string;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return reject("Canvas tidak didukung");
-
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0, img.width, img.height);
-
-          canvas.toBlob((blob) => {
-            if (blob) resolve(blob);
-            else reject("Gagal mengonversi ke WebP");
-          }, "image/webp", 0.8);
-        };
-      };
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
-  // 🔹 Upload file ke Cloudinary
-  const uploadToCloudinary = async (file: File | Blob, folder: string) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "nmw-clinic"); // Ganti dengan upload_preset Cloudinary
-    formData.append("folder", "catalogs"); // Opsional: menyimpan dalam folder tertentu
-
-    try {
-      const response = await axios.post(
-        "https://api.cloudinary.com/v1_1/duwyojrax/upload",
-        formData
-      );
-      return response.data.secure_url; // URL file yang diunggah
-    } catch (error) {
-      console.error(`Error uploading ${folder}:`, error);
-      throw new Error(`Gagal mengunggah ${folder}`);
     }
   };
 
@@ -90,26 +44,23 @@ const CreateCatalog = () => {
     setMessage("");
 
     try {
-      // 🔹 Konversi & upload gambar ke WebP
-      const webpBlob = await convertToWebP(image);
-      const imageUrl = await uploadToCloudinary(webpBlob, "catalog_images");
 
-      // 🔹 Upload dokumen ke Cloudinary
-      const documentUrl = await uploadToCloudinary(documentFile, "catalog_documents");
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("date", date);
+      formData.append("image", image as Blob);
+      formData.append("document", documentFile as Blob);
 
-      // 🔹 Simpan URL di MongoDB (bukan file asli)
-      const formData = {
-        title,
-        date,
-        image: imageUrl, // URL WebP dari Cloudinary
-        document: documentUrl, // URL dokumen dari Cloudinary
-      };
-
-      console.log("Form Data sebelum dikirim:", formData);
-
-      const response = await axios.post("/api/catalogs", formData);
-
-      console.log("Response dari API:", response.data);
+      const response = await axios.post(
+        "/api/catalogs",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`, // Ganti `yourToken` dengan token yang sesuai
+            "Content-Type": "multipart/form-data",
+          }, 
+        }
+      );
 
       if (response.status === 201) {
         setIsOpen(true);
@@ -121,8 +72,7 @@ const CreateCatalog = () => {
       } else {
         setMessage("Gagal menambahkan katalog.");
       }
-    } catch (error) {
-      console.error("Error saat mengirim data:", error);
+    } catch {
       setMessage("Terjadi kesalahan.");
       setIsOpen(true);
     } finally {

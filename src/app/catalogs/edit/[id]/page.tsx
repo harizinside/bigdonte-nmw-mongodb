@@ -30,25 +30,31 @@ const [isOpen, setIsOpen] = useState(false);
 const [message, setMessage] = useState("");
 
 useEffect(() => {
-  if (!id) return;
+    if (!id) return;
 
-  const fetchCatalog = async () => {
-    try {
-      const res = await fetch(`/api/catalogs/${id}`);
-      if (!res.ok) throw new Error("Gagal mengambil data catalog");
+    const fetchCatalog = async () => {
+      try {
+        const response = await fetch(`/api/catalogs/${id}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        if (!response.ok) throw new Error("Gagal mengambil data Achievement");
 
-      const responseData: Catalog = await res.json();
-      setCatalog(responseData);
-      setPreviewImage(responseData.image);
-    } catch (error) {
-      console.error("Fetch error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const result: Catalog = await response.json();
+        setCatalog(result);
+      } catch (error) {
+        console.error(error);
+        
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchCatalog();
-}, [id]);
+    fetchCatalog();
+  }, [id]);
 
 const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
@@ -74,36 +80,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   });
 };
 
-const convertToWebP = (file: File): Promise<File> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const img = new window.Image();
-      img.src = reader.result as string;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        if (!ctx) return reject("Canvas tidak didukung");
-
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0, img.width, img.height);
-
-        canvas.toBlob((blob) => {
-          if (!blob) return reject("Gagal konversi ke WebP");
-          const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), {
-            type: "image/webp",
-          });
-          resolve(webpFile);
-        }, "image/webp", 0.8);
-      };
-    };
-    reader.onerror = (error) => reject(error);
-  });
-};
-
 const handleUpdate = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!catalog) return; 
@@ -111,63 +87,24 @@ const handleUpdate = async (e: React.FormEvent) => {
   setUpdating(true);
 
   try {
-    let imageUrl = catalog.image; 
-    let documentUrl = catalog.document; 
 
-    if (image) {
-      console.log("Converting image to WebP...");
-      const webpImage = await convertToWebP(image);
-
-      console.log("Uploading WebP image to Cloudinary...");
-      const formData = new FormData();
-      formData.append("file", webpImage);
-      formData.append("upload_preset", "nmw-clinic");
-      formData.append("folder", "catalogs");
-
-      const cloudinaryResponse = await axios.post(
-        "https://api.cloudinary.com/v1_1/duwyojrax/image/upload",
-        formData
-      );
-
-      console.log("Cloudinary Response:", cloudinaryResponse.data);
-      imageUrl = cloudinaryResponse.data.secure_url;
-    } else {
-      console.log("No new image uploaded, using existing image:", imageUrl);
-    }
-
-    // Upload document jika ada
-    if (documentFile) {
-      console.log("Uploading document to Cloudinary...");
-      const formData = new FormData();
-      formData.append("file", documentFile);
-      formData.append("upload_preset", "nmw-clinic");
-      formData.append("folder", "catalogs");
-
-      const cloudinaryResponse = await axios.post(
-        "https://api.cloudinary.com/v1_1/duwyojrax/raw/upload",
-        formData
-      );
-
-      console.log("Cloudinary Response:", cloudinaryResponse.data);
-      documentUrl = cloudinaryResponse.data.secure_url;
-    } else {
-      console.log("No new document uploaded, using existing document:", documentUrl);
-    }
-
-    const payload = {
-      title: catalog.title, 
-      date: catalog.date,
-      image: imageUrl,
-      document: documentUrl,
-    };
-
-    console.log("Sending payload to API:", payload);
-
-    const response = await fetch(`/api/catalogs/${catalog._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const formData = new FormData();
+      formData.append("title", catalog.title);
+      formData.append("date", catalog.date);
+      if (image) {
+        formData.append("image", image); // Include the new image file
+      }
+      if (documentFile) {
+        formData.append("document", documentFile); // Include the new image file
+      }
+  
+      const response = await fetch(`/api/catalogs/${catalog._id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+        body: formData, // Send FormData instead of JSON
+      });
 
     if (!response.ok) {
       throw new Error("Gagal menyimpan perubahan");
@@ -210,7 +147,7 @@ const handleUpdate = async (e: React.FormEvent) => {
                         height="300"
                         priority
                         src={`${previewImage || catalog?.image || ""}`} 
-                        alt="Preview"
+                        alt="Preview" 
                         className="w-full rounded-lg"
                         />
                     )} 

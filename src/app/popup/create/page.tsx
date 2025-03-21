@@ -5,6 +5,7 @@ import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const CreatePopup = () => {
     const [image, setImage] = useState<File | null>(null);
@@ -28,24 +29,32 @@ const CreatePopup = () => {
       }
   
       setLoading(true);
-      const formData = new FormData();
-      formData.append("link", link);
-      formData.append("image", image);
-      formData.append("use", "false");
   
       try {
-        const response = await fetch("/api/popupsPost", {
-          method: "POST",
-          body: formData,
-        });
+        const formData = new FormData();
+        formData.append("link", link); 
+        formData.append("image", image); 
+        formData.append("status", "1");
+
+        const response = await axios.post(
+          "/api/popups",
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
   
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.message || "Failed to create faq");
+        if (response.status === 201) {
+          setIsOpen(true);
+          setMessage("Popup berhasil ditambahkan!");
+          setLink("");
+          setImage(null);
+        } else {
+          setMessage("Gagal menambahkan Popup.");
         }
-  
-        setMessage("Popup created successfully!");
-        setIsOpen(true);
       } catch (error) {
         setMessage("Error creating popup: " + error);
         setIsOpen(true);

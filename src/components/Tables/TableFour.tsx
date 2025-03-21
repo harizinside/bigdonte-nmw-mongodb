@@ -32,9 +32,16 @@ const TableFour = () => {
 
   const fetchBranches = async (page = 1) => {
     try {
-      const response = await fetch(`/api/branches?page=${page}`);
+      const response = await fetch(`/api/branches?page=${page}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      });
+
       if (!response.ok) {
-        throw new Error("Gagal mengambil data cabang");
+        throw new Error("Gagal mengambil data cabang"); 
       }
   
       const result: BranchesResponse = await response.json();
@@ -47,54 +54,10 @@ const TableFour = () => {
     }
   };  
       
-  // Ambil halaman pertama saat load
-  useEffect(() => {
-    fetchBranches(1);
-  }, []);
 
-  // useEffect(() => {
-  //   fetchBranches(currentPage); 
-  // }, [currentPage]);
-
-  //   const fetchBranches = async (currentPage: number) => {
-  //     try {
-  //       const response = await fetch(`/api/branches?page=${currentPage}`);
-  
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! Status: ${response.status}`);
-  //       }
-  
-  //       const result = await response.json(); 
-        
-  //       setBranches(result.data); // Ambil hanya bagian 'data'
-  //       setCurrentPage(result.pagination.currentPage);
-  //       setTotalPages(result.pagination.totalPages);
-  //     } catch (error) {
-  //       console.error("Error fetching branches:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }; 
-
-    // const handleDeleteBranch = async (id: string | number) => {
-    //   try {
-    //     setLoadingDelete(true);
-    //     const response = await fetch(`/api/branchesDelete/${id}`, {
-    //       method: 'DELETE',
-    //     });
-    
-    //     if (!response.ok) {
-    //       throw new Error(response.statusText);
-    //     }
-    //     setBranches((prevBranches) => prevBranches.filter((branch) => branch.id !== id));
-    //     setSelectedBranches(null);
-    //     setIsOpen(false);
-    //   } catch (error) {
-    //     console.error(error);
-    //   } finally {
-    //     setLoadingDelete(false);
-    //   }
-    // };
+    useEffect(() => {
+      fetchBranches(currentPage);
+    }, [currentPage]);
 
     const handleDeleteBranch = async (_id: string | number) => {
       if (!selectedBranches) return;
@@ -102,6 +65,10 @@ const TableFour = () => {
         setLoadingDelete(true);
         const response = await fetch(`api/branches/${selectedBranches._id}`, {
           method: 'DELETE',
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
         });
     
         if (!response.ok) {
@@ -258,11 +225,12 @@ const TableFour = () => {
             </div>
           </div>
         )}
+        {branches.length >= itemsPerPage && (
         <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
-              disabled={currentPage === 1} 
-              onClick={() => fetchBranches(currentPage - 1)}
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
             >
               Prev
             </button>
@@ -273,13 +241,14 @@ const TableFour = () => {
 
             <button
               className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
-              disabled={currentPage === totalPages} 
-              onClick={() => fetchBranches(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
             >
               Next
             </button>
         </div>
-      </div>
+        )}
+      </div> 
     </div>
   );
 };

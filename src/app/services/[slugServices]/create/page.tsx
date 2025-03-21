@@ -3,73 +3,111 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
-import { useState, useEffect, useRef  } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, useMemo  } from "react";
 import RichEditor from "@/components/rich-editor/page";
-import { useParams } from "next/navigation";
+import Image from "next/image";
+import axios from "axios";
+import { useParams, useRouter } from "next/navigation";
 
-const CreateServiceList = () => {
-    const { id } = useParams();
-    const serviceId = Array.isArray(id) ? id[0] : id;
-
-    const [serviceTitle, setServiceTitle] = useState("");
+const CreateServiceList = () => { 
+    const { slugServices } = useParams(); // Ambil ID dokter dari URL
+    const slugServicesString = Array.isArray(slugServices) ? slugServices.join("/") : slugServices;
+    const router = useRouter();
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [slug, setSlug] = useState("");
     const [image, setImage] = useState<File | null>(null);
     const [imageSecond, setImageSecond] = useState<File | null>(null);
+    const [sensitiveContent, setSensitiveContent] = useState<boolean | null>(null);
+    const [template, setTemplate] = useState<boolean | null>(null);
     const [description, setDescription] = useState("");
     const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
-    const [sensitiveContent, setSensitiveContent] = useState(false);
-    const router = useRouter();
+
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files[0]) { 
-        setImage(e.target.files[0]);
+      const file = e.target.files?.[0];
+      if (file) { 
+        setImage(file);
       }
     };
+
     const handleImageChangeSecond = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files[0]) {
-        setImageSecond(e.target.files[0]);
+      const fileSecond = e.target.files?.[0];
+      if (fileSecond) { 
+        setImageSecond(fileSecond);
       }
     };
+
+    const handleTemplateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setTemplate(event.target.value === "template-1");
+    };
+
+    const handleSelection = (value: boolean) => {
+      setSensitiveContent(value);
+    };
+
+    const generatedSlug = useMemo(() => {
+      if (!name) return "";
+      return name
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+    }, [name]);
+    
+    useEffect(() => {
+      setSlug(generatedSlug);
+    }, [generatedSlug]);
   
     const handleSubmit = async () => {
-      if (!serviceTitle || !description || !image || !imageSecond) {
+      if (
+        !name || sensitiveContent === null || 
+        !description || !image || !imageSecond
+      ) {
         setMessage("Please fill in all required fields!");
         setIsOpen(true);
-        return; 
-      }
+        return;
+      }      
     
       setLoading(true);
-      const formData = new FormData();
-      formData.append("title", serviceTitle);
-      formData.append("description", description);
-      formData.append("image", image);
-      formData.append("image2", imageSecond);
-      formData.append("services_id", serviceId);
-      formData.append("sensitive_content", sensitiveContent ? "true" : "false");
-    
-      console.log("Form Data Entries:");
-      Array.from(formData.entries()).forEach(([key, value]) => {
-        console.log(`${key}:`, value);
-      });
     
       try {
-        const response = await fetch("/api/services/serviceTwoPost", {
-          method: "POST",
-          body: formData,
-        });
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("slug", slug || "default-slug");
+        formData.append("slugServices", slugServicesString || "");
+        formData.append("sensitive_content", sensitiveContent ? "1" : "0");
+        formData.append("description", description);
+        formData.append("imageBanner", image);
+        formData.append("imageCover", imageSecond);
+        
+        const response = await axios.post(
+          "/api/servicesList",
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
     
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.message || "Failed to create service");
+        if (response.status === 201) {
+          setIsOpen(true);
+          setMessage("Services List berhasil ditambahkan!");
+          setName("");
+          setSlug("");
+          setDescription("");
+          setSensitiveContent(true);
+          setImage(null);
+          setImageSecond(null);
+        } else {
+          setMessage("Gagal menambahkan Services List.");
         }
-    
-        setMessage("Service List created successfully!");
-        setIsOpen(true);
-      } catch (error: any) {
-        console.error("Error creating service:", error);
-        setMessage("Error creating service: " + error.message);
+      } catch (error) {
+        setMessage("Error creating service: " + error);
         setIsOpen(true);
       } finally {
         setLoading(false);
@@ -78,14 +116,14 @@ const CreateServiceList = () => {
   
     const handlePush = () => {
       setIsOpen(false);
-      router.push(`/services/list/${id}`);
+      router.push(`/services/${slugServices}`);
     }
 
   return (
     <DefaultLayout>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="services" pageName="Manage Services" pageNameSecond="/ Manage List Services" pageNameThird="/ Create" pageNameFour="" pageNameFive=""/>
+          <Breadcrumb route="services" pageName="Manage Services List" pageNameSecond="/ Create" pageNameThird="" pageNameFour="" pageNameFive=""/>
         </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -94,11 +132,10 @@ const CreateServiceList = () => {
           <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
             {/* <form action="#"> */}
               <div className="p-6.5 ">
-                <div className="flex gap-4.5 xl:flex-row mb-7">
+                <div className="flex gap-4.5 xl:flex-row mb-7 ">
                     <div className="w-full xl:w-1/2 ">
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Banner Image
-                            <span className="text-red">*</span>
                         </label>
                         <input
                         type="file"
@@ -110,7 +147,6 @@ const CreateServiceList = () => {
                     <div className="w-full xl:w-1/2">
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Cover Image
-                            <span className="text-red">*</span>
                         </label>
                         <input
                         type="file"
@@ -121,45 +157,60 @@ const CreateServiceList = () => {
                     </div>
                 </div>
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
-                  <div className="w-full xl:w-full">
+                  <div className="w-full xl:w-1/2">
                       <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                        Title
+                        Service Name
                         <span className="text-red">*</span>
                       </label>
                       <input
                         type="text"
-                        placeholder="Enter title"
-                        value={serviceTitle} onChange={(e) => setServiceTitle(e.target.value)}
+                        placeholder="Enter service name"
+                        value={name} onChange={(e) => setName(e.target.value)}
                         className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                       />
                   </div>
                 </div>
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-col">
                   <div className="">
-                    <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Service Description <span className="text-red">*</span></label>
+                    <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Service Description</label>
                     <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
                       <RichEditor onChange={setDescription}/>
                     </div>
                   </div>
                 </div>
-                <div className="mb-7 flex flex-col gap-4.5 xl:flex-col">
-                    <label className="inline-flex items-center cursor-pointer">
-                    <input
-                        checked={sensitiveContent}
-                        onChange={(e) => setSensitiveContent(e.target.checked)}
-                        type="checkbox"
-                        className="form-checkbox h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-gray-700 dark:text-white">Sensitive Content</span>
-                    </label>
-                </div>
 
+                <div className="mt-7 w-full">
+                  <div className="flex gap-4">
+                    {/* Tombol untuk TRUE */}
+                    <button
+                      type="button"
+                      onClick={() => handleSelection(true)}
+                      className={`w-full xl:w-1/2 px-6 py-2  font-medium rounded-lg transition-all ${
+                        sensitiveContent === true ? "bg-red-500 border-red-500 text-white" : "bg-transparent border-red-500 text-red-500"
+                      } border-2`}
+                    >
+                      Sensitive Content
+                    </button>
+
+                    {/* Tombol untuk FALSE */}
+                    <button
+                      type="button"
+                      onClick={() => handleSelection(false)}
+                      className={`w-full xl:w-1/2 px-6 py-2 font-medium rounded-lg transition-all ${
+                        sensitiveContent === false ? "bg-green-500 border-green-500 text-white" : "bg-transparent border-green-500 text-green-500"
+                      } border-2`}
+                    >
+                      Not Sensitive Content
+                    </button>
+                  </div>
+                </div>
+                <input type="text" value={slug} style={{visibility: 'hidden'}} onChange={(e) => setSlug(e.target.value)} readOnly />
                 <div className="flex gap-3 mt-7">
                     <button onClick={handleSubmit} disabled={loading} className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
-                        {loading ? "Saving..." : "Save List Service"}
+                        {loading ? "Saving..." : "Save Service"}
                     </button>
-                    <Link href={`/services/list/${id}`}>
+                    <Link href={`/services/${slugServices}`}>
                         <button className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                             Cancel

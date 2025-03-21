@@ -27,12 +27,18 @@ const TableFive = () => {
   const [selectedCatalog, setSelectedCatalog] = useState<Catalog | null>(null);
   const [loadingDelete, setLoadingDelete] = useState(false);
   
-  const itemsPerPage = 15;
+  const itemsPerPage = 15; 
 
   const fetchCatalogs = async (page = 1) => {
     setLoading(true); // Mulai loading sebelum fetch data
     try {
-      const response = await fetch(`/api/catalogs?page=${page}`);
+      const response = await fetch(`/api/catalogs?page=${page}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      });
   
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -50,18 +56,21 @@ const TableFive = () => {
       setLoading(false); // Pastikan loading dihentikan
     }
   };
-  
 
   useEffect(() => {
-    fetchCatalogs(1);
-  }, []);
+    fetchCatalogs(currentPage);
+  }, [currentPage]);
 
   const handleDeleteCatalog = async (_id: string | number) => {
     if (!selectedCatalog) return;
     try {
       setLoadingDelete(true);
-      const response = await fetch(`/api/catalogs/${selectedCatalog._id}`, {
+      const response = await fetch(`api/catalogs/${selectedCatalog._id}`, {
         method: 'DELETE',
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
       });
   
       if (!response.ok) {
@@ -215,7 +224,8 @@ const TableFive = () => {
           </div>
         </div>
       )}
-      <div className="flex justify-center mt-4 space-x-2">
+        {catalogs.length >= itemsPerPage && (
+        <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
               disabled={currentPage === 1}
@@ -236,6 +246,7 @@ const TableFive = () => {
               Next
             </button>
         </div>
+        )}
       </div>
     </div>
   );

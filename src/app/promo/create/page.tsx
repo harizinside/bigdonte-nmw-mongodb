@@ -3,15 +3,17 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
-import { useState, useEffect, useRef  } from "react";
+import { useState, useEffect, useRef, useMemo  } from "react";
 import { useRouter } from "next/navigation";
 import RichEditor from "@/components/rich-editor/page";
+import axios from "axios";
 
 const CreatePromo = () => {
   const [title, setTitle] = useState("");
   const [link, setLink] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [sk, setSk] = useState("");
+  const [slug, setSlug] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,19 +28,34 @@ const CreatePromo = () => {
     }
   };
 
+  const generatedSlug = useMemo(() => {
+        if (!title) return "";
+        return title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-");
+      }, [title]);
+      
+      useEffect(() => {
+        setSlug(generatedSlug);
+      }, [generatedSlug]);
+
   const handleSubmit = async () => { 
     setLoading(true);
     const formData = new FormData();
 
     if (isCustomLink) {
         formData.append("title", "");
+        formData.append("slug", "");
         formData.append("image", image || "");
         formData.append("sk", "");
         formData.append("start_date", "");
         formData.append("end_date", ""); 
         formData.append("link", link);
-    } else {
+    } else { 
         formData.append("title", title);
+        formData.append("slug", slug);
         formData.append("image", image || "");
         formData.append("sk", sk);
         formData.append("start_date", startDate);
@@ -47,18 +64,29 @@ const CreatePromo = () => {
     }
 
     try {
-        const response = await fetch("/api/promosPost", {
-            method: "POST",
-            body: formData,
-        });
+        const response = await axios.post(
+          "/api/promos",
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
 
-        const result = await response.json();
-        if (!response.ok) {
-            throw new Error(result.message || "Failed to create promo");
+        if (response.status === 201) {
+          setIsOpen(true);
+          setMessage("Promo berhasil ditambahkan!");
+          setLink("");
+          setSk("");
+          setStartDate("");
+          setEndDate("");
+          setTitle("");
+          setImage(null);
+        } else {
+          setMessage("Gagal menambahkan Promo.");
         }
-
-        setMessage("Promo created successfully!");
-        setIsOpen(true);
     } catch (error) {
         setMessage("Error creating Promo: " + error);
         setIsOpen(true);
@@ -193,9 +221,11 @@ const CreatePromo = () => {
                         </div>
                       </div>
                   </div>
-                </div>
+                </div> 
 
-                
+              <input type="text" value={slug} 
+              style={{visibility: 'hidden'}}
+               onChange={(e) => setSlug(e.target.value)} readOnly />
               <div className="flex gap-3">
                     <button onClick={handleSubmit} disabled={loading} className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>

@@ -1,33 +1,79 @@
+import { connectToDatabase } from "@/lib/mongodb";
+import Subscriber from "@/models/subscribers";
 import { NextResponse } from "next/server";
+import { validateToken } from "@/lib/auth";
 
-export const dynamic = "force-dynamic";
-
+// GET: Fetch all Subscriber documents
 export async function GET(req: Request) {
+  const authError = validateToken(req);
+  if (authError) return authError;
+
+  await connectToDatabase();
+
   try {
     const { searchParams } = new URL(req.url);
-    const page = searchParams.get("page") || "1";
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = 15;
 
-    const response = await fetch(`https://nmw.prahwa.net/api/subscribers?page=${page}`);
+    const totalSubscribers = await Subscriber.countDocuments();
+    const subscribers = await Subscriber.find({})
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-    if (!response.ok) {
-      return NextResponse.json({ message: `Error: ${response.statusText}` }, { status: response.status });
-    }
+    return new NextResponse(JSON.stringify({
+      subscribers,
+      currentPage: page,
+      totalPages: Math.ceil(totalSubscribers / limit),
+      totalSubscribers,
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
 
-    const data = await response.json();
-
-    return NextResponse.json({
-      data: data.data,
-      pagination: {
-        currentPage: data.meta?.current_page || 1,
-        totalPages: data.meta?.last_page || 1,
-        perPage: data.meta?.per_page || 10,
-        total: data.meta?.total || 0,
-        links: data.links || [],
-      },
-    }, { status: 200 });
   } catch (error) {
-    console.error("Error fetching subscribers:", error);
-    return NextResponse.json({ message: "Failed to fetch subscribers" }, { status: 500 });
+    console.error("❌ Error fetching subscriber:", error);
+    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data subscriber." }), { status: 500 });
   }
 }
 
+// POST: Create a new subscriber document
+export async function POST(req: { json: () => PromiseLike<{ email: any;}> | { email: any;}; }) {
+  try {
+    const authError = validateToken(req);
+    if (authError) return authError;
+    await connectToDatabase();
+
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (jsonError) {
+      console.error("❌ Error parsing JSON:", jsonError);
+      return NextResponse.json({ error: "Invalid JSON format" }, { status: 400 });
+    }
+
+    const { email } = requestBody;
+
+    if (!email) {
+      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    }
+
+    // Check if email already exists
+    const existingSubscriber = await Subscriber.findOne({ email });
+    if (existingSubscriber) {
+      return NextResponse.json({ error: "email sudah terdaftar" }, { status: 400 });
+    }
+
+    // Save to MongoDB
+    const newSubscriber = new Subscriber({
+      email,
+    });
+
+    await newSubscriber.save();
+    
+    return NextResponse.json(newSubscriber, { status: 201 });
+  } catch (error) {
+    console.error("❌ Error creating subscriber:", error);
+    return NextResponse.json({ error: "Failed to create subscriber" }, { status: 500 });
+  }
+}

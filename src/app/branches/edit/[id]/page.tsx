@@ -29,10 +29,16 @@ const EditBranch = () => {
     useEffect(() => {
       if (!id) return;
     
-      const fetchBranch = async () => {
+      const fetchBranch = async () => { 
         try {
           setLoading(true);
-          const res = await fetch(`/api/branches/${id}`);
+          const res = await fetch(`/api/branches/${id}`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              "Content-Type": "application/json",
+            },
+          });
           if (!res.ok) throw new Error("Gagal mengambil data cabang");
     
           const responseData = await res.json();
@@ -105,83 +111,34 @@ const EditBranch = () => {
     };
 
     // Handle submit form (Edit)
+    
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setLoading(true);
+
+      const formattedOperasional = formData.operasional.map((op) => `${op.day} : ${op.time}`);
     
       try {
-        // Fungsi konversi ke WebP
-        const convertToWebP = (file: File): Promise<File> => {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => {
-              const img = new window.Image();
-              img.src = reader.result as string;
-              img.onload = () => {
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-    
-                if (!ctx) return reject("Canvas tidak didukung");
-    
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0, img.width, img.height);
-    
-                canvas.toBlob((blob) => {
-                  if (!blob) return reject("Gagal konversi ke WebP");
-                  const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), {
-                    type: "image/webp",
-                  });
-                  resolve(webpFile);
-                }, "image/webp", 0.8);
-              };
-            };
-            reader.onerror = (error) => reject(error);
-          });
-        };
-    
-        let imageUrl = formData.image; // Gunakan gambar lama jika tidak ada perubahan
-    
+
+        const payload = new FormData();
+        payload.append("name", formData.name);
+        payload.append("address", formData.address);
+        payload.append("phone", formData.phone);
+        payload.append("location", formData.location);
+        
         if (image) {
-          console.log("Converting image to WebP...");
-          const webpImage = await convertToWebP(image);
-    
-          console.log("Uploading image to Cloudinary...");
-          const imageFormData = new FormData();
-          imageFormData.append("file", webpImage);
-          imageFormData.append("upload_preset", "nmw-clinic");
-          imageFormData.append("folder", "branches");
-    
-          // ✅ Pastikan Cloudinary mengonversi WebP
-          const cloudinaryResponse = await axios.post(
-            "https://api.cloudinary.com/v1_1/duwyojrax/image/upload",
-            imageFormData,
-            {
-              headers: { "Content-Type": "multipart/form-data" }
-            }
-          );
-    
-          console.log("Cloudinary Response:", cloudinaryResponse.data);
-          imageUrl = cloudinaryResponse.data.secure_url;
-          console.log("Final WebP Image URL:", imageUrl);
-        } else {
-          console.log("No new image uploaded, using existing image:", imageUrl);
+          payload.append("image", image); // Include the new image file
         }
-    
-        const formattedOperasional = formData.operasional.map((op) => `${op.day} : ${op.time}`);
-    
-        // Payload update
-        const payload = {
-          ...formData,
-          image: imageUrl,
-          operasional: formattedOperasional,
-        };
-    
+        formattedOperasional.forEach((item) => {
+          payload.append("operasional", item);
+        });
+
         const response = await fetch(`/api/branches/${id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          },
+          body: payload, // Send FormData instead of JSON 
         });
     
         if (!response.ok) throw new Error("Gagal mengupdate cabang");

@@ -22,7 +22,7 @@ const SubscriberPage = () => {
         <TableSeven /> 
       </div>
     </DefaultLayout>
-  );
+  ); 
 };
 
 export default SubscriberPage;

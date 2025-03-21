@@ -4,7 +4,7 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
 import RichEditor from "@/components/rich-editor/page";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 type Doctor = {
@@ -22,9 +22,11 @@ type Service = {
 const CreatArticle = () => {
   const [doctors, setDoctors] = useState<any[]>([]); 
   const [services, setServices] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [imageSourceName, setImageSourceName] = useState("");
   const [imageSourceLink, setImageSourceLink] = useState("");
   const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [authorName, setAuthorName] = useState("");
@@ -32,9 +34,7 @@ const CreatArticle = () => {
   const [tags, setTags] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [SourceLink, setSourceLink] = useState("");
-  const [products, setProducts] = useState<{ productName: string; productLink: string; productDescription: string; productImage: string }[]>([
-    { productName: "", productLink: "", productDescription: "", productImage: "" },
-  ]);
+
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -43,6 +43,7 @@ const CreatArticle = () => {
   const [selectedDoctor, setSelectedDoctor] = useState<string>("");
   const [selectedService, setSelectedService] = useState<string>("");
   const [message, setMessage] = useState("");
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -50,21 +51,38 @@ const CreatArticle = () => {
     }
   };
 
+  const toggleProduct = (productId: string) => {
+    setSelectedProducts((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+    );
+  };
+
   const handleImageProduct = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    if (e.target.files && e.target.files[0]) {
-      handleProductChange(index, e.target.files[0], "productImage");
-    }
-};
+    const file = e.target.files?.[0]; // Ambil file pertama
+  
+    setProducts((prev) =>
+      prev.map((product, i) =>
+        i === index ? { ...product, productImage: file || "" } : product
+      )
+    );
+  };
+  
 
   const addProduct = () => {
     setProducts([...products, { productName: "", productLink: "", productDescription: "", productImage: "" }]);
   };
 
-  const handleProductChange = (index: number, value: string | File, type: "productName" | "productLink" | "productDescription" | "productImage") => {
-    const updatedProducts = [...products];
-    updatedProducts[index] = { ...updatedProducts[index], [type]: value };
-    setProducts(updatedProducts);
-};
+  const handleProductChange = (
+    index: number,
+    value: string | File,
+    type: "productName" | "productLink" | "productDescription" | "productImage"
+  ) => {
+    setProducts((prev) =>
+      prev.map((product, i) =>
+        i === index ? { ...product, [type]: value } : product
+      )
+    );
+  };  
 
   const removeProduct = (index: number) => {
     if (products.length > 1) {
@@ -72,62 +90,68 @@ const CreatArticle = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!title || !date || !description || !authorName || !image || !editorName || products.some(op => !op.productName || !op.productLink || !op.productDescription || !op.productImage)) {
-      alert("Please fill in all required fields!");
-      return;
-    }
+  const generatedSlug = useMemo(() => {
+        if (!title) return "";
+        return title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-");
+      }, [title]);
+      
+      useEffect(() => {
+        setSlug(generatedSlug);
+      }, [generatedSlug]);
 
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("date", date);
-    formData.append("description", description);
-    formData.append("author", authorName);
-    formData.append("editor", editorName);
-    formData.append("image_source_name", imageSourceName);
-    formData.append("image_source", imageSourceLink);
-    formData.append("source_link", SourceLink);
-    formData.append("image", image);
-    formData.append("doctor_id", selectedDoctor);
-    formData.append("tags", tags);
-    formData.append("service_id", selectedService);
-    formData.append("category_id", "1");
+      const handleSubmit = async () => {
+        if (!title || !date || !slug || !description || !authorName || !image || !editorName) {
+          alert("Please fill in all required fields!");
+          return;
+        }
 
-    // Menyimpan produk ke dalam formData
-    products.forEach((product, index) => {
-      formData.append(`product_name_${index}`, product.productName);
-      formData.append(`product_link_${index}`, product.productLink);
-      formData.append(`product_description_${index}`, product.productDescription);
-      formData.append(`product_image_${index}`, product.productImage);
-    });
-
-    console.log("Form Data Entries:");
-    Array.from(formData.entries()).forEach(([key, value]) => {
-        console.log(`${key}:`, value);
-    });
-
-
-    try {
-      const response = await fetch("/api/articlesPost", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to create article");
-      }
-
-      setMessage("Article created successfully!");
-      setIsOpen(true);
-    } catch (error) {
-      setMessage("Error creating article: " + error);
-      setIsOpen(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const formattedTags = tags.split(",").map(tag => tag.trim());
+    
+        setLoading(true);
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("date", date);
+        formData.append("slug", slug || "default-slug");
+        formData.append("description", description);
+        formData.append("author", authorName);
+        formData.append("editor", editorName);
+        formData.append("imageSourceName", imageSourceName);
+        formData.append("imageSourceLink", imageSourceLink);
+        formData.append("sourceLink", SourceLink);
+        formData.append("image", image);
+        formData.append("doctorId", selectedDoctor);
+        formattedTags.forEach(tag => formData.append("tags", tag));
+        formData.append("serviceId", selectedService);
+        selectedProducts.forEach((product) => formData.append("products", product));
+    
+        try {
+          const response = await fetch(`/api/articles`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
+            body: formData,
+          });
+    
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result.message || "Failed to create article");
+          }
+    
+          setMessage("Article created successfully!");
+          setIsOpen(true);
+        } catch (error) {
+          setMessage("Error creating article: " + error);
+          setIsOpen(true);
+        } finally {
+          setLoading(false);
+        }
+    };
+    
 
   const handlePush = () => {
     setIsOpen(false);
@@ -141,13 +165,18 @@ const CreatArticle = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await fetch('/api/doctorsAll');
+        const response = await fetch(`/api/doctors`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          },
+        });
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        const result = await response.json();
+        const result = await response.json(); 
         // Asumsikan data dokter ada di result
-        setDoctors(result);
+        setDoctors(result.doctors);
       } catch (error) {
         console.error("Error fetching doctors:", error);
       } finally {
@@ -160,13 +189,18 @@ const CreatArticle = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch(`/api/servicesOne`);
+        const response = await fetch(`/api/services`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          },
+        });
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const result = await response.json();
         // Asumsikan data layanan ada di result.data
-        setServices(result.data);
+        setServices(result.services);
       } catch (error) {
         console.error("Error fetching services:", error);
       } finally {
@@ -174,6 +208,30 @@ const CreatArticle = () => {
       }
     };
     fetchServices();
+  }, []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`/api/products`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const result = await response.json();
+        // Asumsikan data layanan ada di result.data
+        setProducts(result.products);
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
   }, []);
 
   return (
@@ -188,6 +246,7 @@ const CreatArticle = () => {
           {/* <!-- Contact Form --> */}
           <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
             <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
+              <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)} readOnly />
               <h3 className="font-semibold text-dark dark:text-white">
                 Article Image
               </h3>
@@ -313,7 +372,7 @@ const CreatArticle = () => {
                         Choose Doctor
                       </option>
                       {doctors.map((doctor) => (
-                        <option key={doctor.id} value={doctor.id} className="text-dark-6">
+                        <option key={doctor._id} value={doctor._id} className="text-dark-6">
                           {doctor.name}
                         </option>
                       ))}
@@ -357,7 +416,7 @@ const CreatArticle = () => {
                           Choose Service
                         </option>
                         {services.map((service) => (
-                          <option key={service.id} value={service.id} className="text-dark-6">
+                          <option key={service._id} value={service._id} className="text-dark-6">
                             {service.name}
                           </option>
                         ))}
@@ -441,75 +500,26 @@ const CreatArticle = () => {
                 </h3>
             </div>
             <div className="p-6 5">
-                <div className="flex flex-col w-full mb-7">
-                    <div className="mb-10 flex flex-col gap-8 xl:flex-col">
-                    {products.map((op, index) => (
-                        <div className="flex flex-row gap-5 w-full border border-stroke dark:border-dark-3 p-6" key={index}>
-                            <div className="w-full">
-                                <div className=" w-full flex flex-col mb-5 gap-4.5 xl:flex-row">
-                                    <div className="w-full xl:w-1/2">
-                                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                            Upload Image
-                                        </label>
-                                        <input
-                                        type="file"
-                                        onChange={(e) => handleImageProduct(e, index)}
-                                        className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
-                                        />
-                                    </div>
-                                    <div className="w-full xl:w-1/2">
-                                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                            Product Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            placeholder="Enter Product Name"
-                                            value={op.productName} 
-                                            onChange={(e) => handleProductChange(index, e.target.value, "productName")}
-                                            className="w-full rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-                                        />
-                                    </div>
-                                    <div className="w-full xl:w-1/2">
-                                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                            Product Link
-                                        </label>
-                                        <input
-                                            type="text"
-                                            placeholder="Enter product link"
-                                            value={op.productLink} 
-                                            onChange={(e) => handleProductChange(index, e.target.value, "productLink")}
-                                            className="w-full rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-                                        />
-                                    </div>
-                                </div>
-                                <div className=" w-full flex flex-col gap-4.5 xl:flex-row">
-                                    <div className="w-full xl:w-full">
-                                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                            Product Description
-                                        </label>
-                                        <textarea
-                                            value={op.productDescription} 
-                                            onChange={(e) => handleProductChange(index, e.target.value, "productDescription")}
-                                            placeholder="Enter product description"
-                                            className="w-full rounded-[7px] h-[140px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-                                        />
-                                    </div>
-                                </div>
-                                <button onClick={() => removeProduct(index)}  className="cursor-pointer text-start text-red-500 cursor-default mt-2">Delete Product</button>
-                            </div>
-                        </div>
-                    ))}
-                    </div>
-                    <button onClick={addProduct} className="cursor-pointer text-orange-400 border cursor-pointer border-orange-400 px-3 py-2 rounded-[7px] hover:bg-orange-400 hover:text-white cursor-default">
-                        Add Product
+                <div className="flex flex-row w-full mb-7 gap-4">
+                  {products.map((product) => (
+                    <button
+                      key={product._id}
+                      type="button"
+                      onClick={() => toggleProduct(product._id)}
+                      className={`flex w-max border border-orange-400 justify-center gap-2 rounded-[7px] px-5 py-[9px] font-medium text-dark dark:text-white hover:bg-opacity-90 ${
+                        selectedProducts.includes(product._id) ? "bg-orange-400" : "bg-transparent"
+                      }`}
+                    >
+                      {product.name}
                     </button>
+                  ))}
                 </div>
                 <div className="flex gap-3">
                     <button onClick={handleSubmit} disabled={loading} className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
-                        {loading ? "Saving..." : "Save Branch"}
+                        {loading ? "Saving..." : "Save Article"}
                     </button>
-                    <Link href={'/branches'}>
+                    <Link href={'/articles'}>
                         <button className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                             Cancel

@@ -3,68 +3,110 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
-import { useState, useEffect, useRef  } from "react";
+import { useState, useEffect, useRef, useMemo  } from "react";
 import { useRouter } from "next/navigation";
 import RichEditor from "@/components/rich-editor/page";
 import Image from "next/image";
+import axios from "axios";
 
-const CreateService = () => {
-    const [serviceName, setServiceName] = useState("");
-    const [servicePhone, setServicePhone] = useState("");
+const CreateService = () => { 
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [slug, setSlug] = useState("");
     const [image, setImage] = useState<File | null>(null);
     const [imageSecond, setImageSecond] = useState<File | null>(null);
+    const [template, setTemplate] = useState<boolean | null>(null);
     const [description, setDescription] = useState("");
     const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const router = useRouter();
 
+
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files[0]) {
-        setImage(e.target.files[0]);
+      const file = e.target.files?.[0];
+      if (file) { 
+        setImage(file);
       }
     };
+
     const handleImageChangeSecond = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files[0]) {
-        setImageSecond(e.target.files[0]);
+      const fileSecond = e.target.files?.[0];
+      if (fileSecond) { 
+        setImageSecond(fileSecond);
       }
     };
+
+    const handleTemplateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setTemplate(event.target.value === "template-1");
+    };
+
+    const generatedSlug = useMemo(() => {
+      if (!name) return "";
+      return name
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+    }, [name]);
+    
+    useEffect(() => {
+      setSlug(generatedSlug);
+    }, [generatedSlug]);
   
     const handleSubmit = async () => {
-      if (!serviceName || !servicePhone || !image || !imageSecond) {
+      if (
+        !name || !phone || template === null || 
+        !description || !image || !imageSecond
+      ) {
         setMessage("Please fill in all required fields!");
         setIsOpen(true);
-        return; 
-      }
-  
+        return;
+      }      
+    
       setLoading(true);
-      const formData = new FormData();
-      formData.append("name", serviceName);
-      formData.append("description", description);
-      formData.append("phone", servicePhone);
-      formData.append("image", image);
-      formData.append("image_2", imageSecond);
-  
+    
       try {
-        const response = await fetch("/api/services/servicesOnePost", {
-          method: "POST",
-          body: formData,
-        });
-  
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.message || "Failed to create service");
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("slug", slug || "default-slug");
+        formData.append("template", template ? "1" : "0");
+        formData.append("description", description);
+        formData.append("phone", phone);
+        formData.append("imageBanner", image);
+        formData.append("imageCover", imageSecond);
+        
+        const response = await axios.post(
+          "/api/services",
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+    
+        if (response.status === 201) {
+          setIsOpen(true);
+          setMessage("Services berhasil ditambahkan!");
+          setName("");
+          setSlug("");
+          setDescription("");
+          setPhone("");
+          setTemplate(true);
+          setImage(null);
+          setImageSecond(null);
+        } else {
+          setMessage("Gagal menambahkan Services.");
         }
-  
-        setMessage("Service created successfully!");
-        setIsOpen(true);
       } catch (error) {
         setMessage("Error creating service: " + error);
         setIsOpen(true);
       } finally {
         setLoading(false);
       }
-    };
+    };    
   
     const handlePush = () => {
       setIsOpen(false);
@@ -117,7 +159,7 @@ const CreateService = () => {
                       <input
                         type="text"
                         placeholder="Enter service name"
-                        value={serviceName} onChange={(e) => setServiceName(e.target.value)}
+                        value={name} onChange={(e) => setName(e.target.value)}
                         className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                       />
                   </div>
@@ -129,7 +171,7 @@ const CreateService = () => {
                       <input
                         type="text"
                         placeholder="Enter service phone (Ex: 6281280360370 )"
-                        value={servicePhone} onChange={(e) => setServicePhone(e.target.value)}
+                        value={phone} onChange={(e) => setPhone(e.target.value)}
                         className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                       />
                   </div>
@@ -149,37 +191,65 @@ const CreateService = () => {
                     </label>
                     <ul className="grid w-full gap-6 md:grid-cols-2">
                         <li>
-                            <input type="radio" id="hosting-small" name="hosting" value="hosting-small" className="hidden peer" required />
-                            <label htmlFor="hosting-small" className="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-orange-500 peer-checked:border-orange-600 dark:peer-checked:border-orange-600 peer-checked:text-orange-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">                           
-                                <div className="block w-full xl:w-full">
-                                    <Image
-                                        width={500}
-                                        height={52}
-                                        src={"/images/template/template_1.png"}
-                                        alt="Logo"
-                                        style={{ width: "auto", height: "auto", borderRadius: "1vw" }}
-                                    />
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z" clip-rule="evenodd"/></svg>                            
-                            </label>
+                          <input
+                            type="radio"
+                            id="template-1"
+                            name="template"
+                            value="template-1"
+                            className="hidden peer"
+                            checked={template === true}
+                            onChange={handleTemplateChange}
+                          />
+                          <label
+                            htmlFor="template-1"
+                            className="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-orange-500 peer-checked:border-orange-600 dark:peer-checked:border-orange-600 peer-checked:text-orange-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                          >
+                            <div className="block w-full xl:w-full">
+                              <Image
+                                width={500}
+                                height={52}
+                                src={"/images/template/template_1.png"}
+                                alt="Template 1"
+                                style={{ width: "auto", height: "auto", borderRadius: "1vw" }}
+                              />
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10" viewBox="0 0 24 24">
+                              <path fill="currentColor" fillRule="evenodd" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z" />
+                            </svg>
+                          </label>
                         </li>
                         <li>
-                            <input type="radio" id="hosting-big" name="hosting" value="hosting-big" className="hidden peer"/>
-                            <label htmlFor="hosting-big" className="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-orange-500 peer-checked:border-orange-600 dark:peer-checked:border-orange-600 peer-checked:text-orange-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                <div className="block w-full xl:w-full">
-                                    <Image
-                                        width={500}
-                                        height={52}
-                                        src={"/images/template/template_2.png"}
-                                        alt="Logo"
-                                        style={{ width: "auto", height: "auto", borderRadius: "1vw" }}
-                                    />
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10"  viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z" clip-rule="evenodd"/></svg>
-                            </label>
+                          <input
+                            type="radio"
+                            id="template-2"
+                            name="template"
+                            value="template-2"
+                            className="hidden peer"
+                            checked={template === false}
+                            onChange={handleTemplateChange}
+                          />
+                          <label
+                            htmlFor="template-2"
+                            className="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-orange-500 peer-checked:border-orange-600 dark:peer-checked:border-orange-600 peer-checked:text-orange-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                          >
+                            <div className="block w-full xl:w-full">
+                              <Image
+                                width={500}
+                                height={52}
+                                src={"/images/template/template_2.png"}
+                                alt="Template 2"
+                                style={{ width: "auto", height: "auto", borderRadius: "1vw" }}
+                              />
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10" viewBox="0 0 24 24">
+                              <path fill="currentColor" fillRule="evenodd" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z" />
+                            </svg>
+                          </label>
                         </li>
                     </ul>
                 </div>
+
+                <input type="text" value={slug} style={{visibility: 'hidden'}} onChange={(e) => setSlug(e.target.value)} readOnly />
                 <div className="flex gap-3 mt-7">
                     <button onClick={handleSubmit} disabled={loading} className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>

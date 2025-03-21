@@ -31,21 +31,27 @@ const TableThree: React.FC<TableProps> = ({ limit = null, showPagination = true 
     const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
     const [loadingDelete, setLoadingDelete] = useState(false);
    
-    const itemsPerPage = 15;
+    const itemsPerPage = 15; 
 
     const fetchDoctors = async (page = 1, limit?: number | null) => {
       try {
-        const response = await fetch(`/api/doctors?page=${page}`);
+        const response = await fetch(`/api/doctors?page=${page}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        });
+    
         if (!response.ok) {
           throw new Error("Gagal mengambil data dokter");
         }
     
         const result: DoctorsResponse = await response.json();
-        
+    
         // Jika ada limit, potong hasil data dokter
         const doctorsData = limit ? result.doctors.slice(0, limit) : result.doctors;
     
-        
         setDoctors(doctorsData);
         setCurrentPage(result.currentPage);
         setTotalPages(result.totalPages);
@@ -53,11 +59,12 @@ const TableThree: React.FC<TableProps> = ({ limit = null, showPagination = true 
         console.error("Gagal mengambil data dokter:", error);
       }
     };
-    
-    // Ambil halaman pertama saat load
+  
     useEffect(() => {
-      fetchDoctors(1, limit);
-    }, [limit]);
+      fetchDoctors(currentPage, limit);
+    }, [currentPage, limit]);
+
+    
 
     const handleDeleteDoctor = async (_id: string | number) => {
       if (!selectedDoctor) return;
@@ -65,6 +72,10 @@ const TableThree: React.FC<TableProps> = ({ limit = null, showPagination = true 
         setLoadingDelete(true);
         const response = await fetch(`api/doctors/${selectedDoctor._id}`, {
           method: 'DELETE',
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
         });
     
         if (!response.ok) {
@@ -191,12 +202,12 @@ const TableThree: React.FC<TableProps> = ({ limit = null, showPagination = true 
           </div>
         </div>
       )}
-      {showPagination && (
+      {doctors.length >= itemsPerPage && (
         <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
-              disabled={currentPage === 1} 
-              onClick={() => fetchDoctors(currentPage - 1)}
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
             >
               Prev
             </button>
@@ -207,13 +218,13 @@ const TableThree: React.FC<TableProps> = ({ limit = null, showPagination = true 
 
             <button
               className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
-              disabled={currentPage === totalPages} 
-              onClick={() => fetchDoctors(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
             >
               Next
             </button>
         </div>
-      )}
+        )}
       </div>
     </div>
   );

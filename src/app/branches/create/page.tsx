@@ -28,77 +28,14 @@ const CreateBranch = () => {
     });
   };
 
-  // Konversi gambar ke WebP sebelum upload ke Cloudinary
-  const convertToWebP = (file: File): Promise<File> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const img = new Image();
-        img.src = reader.result as string;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-  
-          if (!ctx) return reject("Canvas tidak didukung");
-  
-          // Atur ukuran canvas sesuai gambar
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0, img.width, img.height);
-  
-          // Konversi ke WebP dengan kualitas 0.8
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                // Konversi Blob ke File dan pertahankan nama asli
-                const webpFile = new File([blob], file.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
-                resolve(webpFile);
-              } else {
-                reject("Gagal mengonversi ke WebP");
-              }
-            },
-            "image/webp",
-            0.8
-          );
-        };
-      };
-      reader.onerror = (error) => reject(error);
-    });
-  };  
-
   // Handle unggah gambar ke Cloudinary
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setLoading(true);
-      const webpBlob = await convertToWebP(file);
-
-      const formData = new FormData();
-      formData.append("file", webpBlob);
-      formData.append("upload_preset", "nmw-clinic");
-      formData.append("folder", "branches"); 
-
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/duwyojrax/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) throw new Error("Gagal mengunggah gambar");
-
-      const data = await response.json();
-      setFormData((prev) => ({ ...prev, image: data.secure_url })); // Simpan URL gambar
-
-      console.log("Gambar berhasil diunggah:", data.secure_url);
-    } catch (error) {
-      console.error("Error upload gambar:", error);
-    } finally {
-      setLoading(false);
+    if (file) {
+      setFormData((prevFormData) => ({
+        ...prevFormData, // Menjaga data lama tetap ada
+        image: file, // Mengupdate hanya bagian image
+      }));
     }
   };
 
@@ -107,7 +44,7 @@ const CreateBranch = () => {
     const newOperasional = [...formData.operasional];
     newOperasional[index][field] = value;
     setFormData({ ...formData, operasional: newOperasional });
-  };
+  }; 
 
   // Menambah jam operasional baru
   const addOperasionalHour = () => {
@@ -132,18 +69,24 @@ const CreateBranch = () => {
       const formattedOperasional = formData.operasional.map(
         (op) => `${op.day} : ${op.time}`
       );
-
-      const payload = {
-        ...formData,
-        operasional: formattedOperasional, // Konversi ke array of string
-      };
+      
+      const payload = new FormData();
+      payload.append("name", formData.name);
+      payload.append("address", formData.address);
+      payload.append("phone", formData.phone);
+      payload.append("location", formData.location);
+      payload.append("image", formData.image as File);
+      
+      formattedOperasional.forEach((item) => {
+        payload.append("operasional", item);
+      });
 
       const response = await fetch("/api/branches", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
         },
-        body: JSON.stringify(payload),
+        body: payload, // Kirim sebagai FormData
       });
 
       if (!response.ok) {

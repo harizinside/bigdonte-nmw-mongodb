@@ -13,6 +13,7 @@ type Doctor = {
   image: string;
   name: string;
   position: string;
+  id_position: string;
 };
 
 const EditDoctor = () => {
@@ -25,24 +26,59 @@ const EditDoctor = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [positions, setPositions] = useState<{ _id: string, title: string }[]>([]);
+  const [position, setPosition] = useState("");
+  const [id_position, setId_position] = useState("");
+  const [isAddingPosition, setIsAddingPosition] = useState(false);
+  const [newPosition, setNewPosition] = useState(""); 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchPosition = async () => {
+      try {
+        const response = await fetch(`/api/position`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data position");
+        }
+        const result = await response.json();
+        setPositions(result); // Menyimpan daftar posisi dari API
+      } catch (error) {
+        console.error("Gagal mengambil data position:", error);
+      }
+    };
+  
+    fetchPosition();
+  }, []);
 
   // Fetch data dokter berdasarkan ID
   useEffect(() => {
     if (!id) return;
 
     const fetchDoctorById = async () => {
-      setLoading(true);
       try {
-        const response = await fetch(`/api/doctors/${id}`);
+        const response = await fetch(`/api/doctors/${id}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        });
+    
         if (!response.ok) {
           throw new Error("Gagal mengambil data dokter");
         }
+    
         const result: Doctor = await response.json();
         setDoctor(result);
-      } catch (err) {
-        setMessage("Gagal memuat data dokter");
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        console.error("Gagal mengambil data dokter:", error);
       }
     };
 
@@ -68,101 +104,89 @@ const EditDoctor = () => {
     }
   };
 
-  // Simpan perubahan dokter
-  const handleSave = async (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!doctor) return;
-  
     setUpdating(true);
   
     try {
-      // Fungsi untuk mengonversi gambar ke WebP sebelum upload
-      const convertToWebP = (file: File): Promise<File> => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = () => {
-            const img = new window.Image();
-            img.src = reader.result as string;
-            img.onload = () => {
-              const canvas = document.createElement("canvas");
-              const ctx = canvas.getContext("2d");
-  
-              if (!ctx) return reject("Canvas tidak didukung");
-  
-              canvas.width = img.width;
-              canvas.height = img.height;
-              ctx.drawImage(img, 0, 0, img.width, img.height);
-  
-              canvas.toBlob((blob) => {
-                if (!blob) return reject("Gagal konversi ke WebP");
-                const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), {
-                  type: "image/webp",
-                });
-                resolve(webpFile);
-              }, "image/webp", 0.8);
-            };
-          };
-          reader.onerror = (error) => reject(error);
-        });
-      };
-  
-      let imageUrl = doctor.image; // Gunakan gambar lama jika tidak ada perubahan
-  
+      const formData = new FormData();
+      formData.append("name", doctor.name);
+      formData.append("position", position || doctor.position); 
+      formData.append("id_position", id_position || doctor.id_position ? doctor.id_position.toString() : "");
       if (image) {
-        console.log("Converting image to WebP...");
-        const webpImage = await convertToWebP(image); // Konversi ke WebP sebelum upload
-  
-        console.log("Uploading WebP image to Cloudinary...");
-  
-        const formData = new FormData();
-        formData.append("file", webpImage);
-        formData.append("upload_preset", "nmw-clinic");
-        formData.append("folder", "doctors");
-  
-        const cloudinaryResponse = await axios.post(
-          "https://api.cloudinary.com/v1_1/duwyojrax/image/upload",
-          formData
-        );
-  
-        console.log("Cloudinary Response:", cloudinaryResponse.data);
-  
-        imageUrl = cloudinaryResponse.data.secure_url;
-        console.log("Final WebP Image URL:", imageUrl);
-      } else {
-        console.log("No new image uploaded, using existing image:", imageUrl);
+        formData.append("image", image); // Include the new image file
       }
-  
-      const payload = {
-        name: doctor.name,
-        position: doctor.position,
-        image: imageUrl,
-      };
-  
-      console.log("Sending payload to API:", payload);
   
       const response = await fetch(`/api/doctors/${doctor._id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+        body: formData, // Send FormData instead of JSON 
       });
   
-      if (!response.ok) {
-        throw new Error("Gagal menyimpan perubahan");
-      }
+      if (!response.ok) throw new Error("Failed to update Doctor");
   
       setMessage("Doctor successfully updated!");
       setIsOpen(true);
     } catch (error) {
-      console.error("Error updating doctor:", error);
-      setMessage("Error updating Doctor");
+      console.error("Update error:", error);
+      setMessage("Error updating Doctor: " + error);
       setIsOpen(true);
     } finally {
       setUpdating(false);
     }
   };
+
+  const handleSelectPosition = (pos: { _id: string; title: string }) => {
+    setPosition(pos.title); // Simpan title
+    setId_position(pos._id); // Simpan ID
+    setIsDropdownOpen(false);
+  };
+
+  const handleAddPosition = async () => {
+    if (!newPosition.trim()) return;
   
+    try {
+      const formData = new FormData();
+      formData.append("title", newPosition); // Menggunakan newPosition
   
+      const response = await axios.post("/api/position", formData, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      if (response.status === 201) {
+        const newPos = response.data; // Ambil data dari API
+        setPositions((prev) => [...prev, newPos]); 
+        setNewPosition("");
+        setIsAddingPosition(false); // Kembali ke select
+      } else {
+        setIsAddingPosition(false);
+      }
+    } catch (error) {
+      setIsAddingPosition(false);
+    } finally {
+      setIsAddingPosition(false);
+    }
+  };
+
+  const handleDeletePosition = async (id: string) => {
+    try {
+      await axios.delete(`/api/position/${id}`, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+      });
+  
+      setPositions((prev) => prev.filter((pos) => pos._id !== id));
+    } catch (error) {
+      console.error("Gagal menghapus posisi:", error);
+    }
+  };
 
   const handlePush = () => {
     setIsOpen(false);
@@ -181,7 +205,7 @@ const EditDoctor = () => {
             <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
               <h3 className="font-semibold text-dark dark:text-white">Edit Doctor</h3>
             </div>
-            <form onSubmit={handleSave} encType="multipart/form-data">
+            <form onSubmit={handleUpdate} encType="multipart/form-data">
               <div className="p-6.5">
                 <div className="w-60 h-auto mb-5 overflow-hidden object-cover object-center">
                   {(previewImage || doctor?.image || "") && (
@@ -221,15 +245,95 @@ const EditDoctor = () => {
                       className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                     />
                   </div>
-                  <div className="w-full xl:w-1/2">
-                    <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Position</label>
-                    <input
-                      type="text"
-                      name="position"
-                      value={doctor?.position || ""} onChange={handleChange}
-                      className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
-                    />
-                  </div>
+                  <div className="w-full xl:w-1/2 relative">
+                      <div className="w-full flex justify-between mb-3">
+                        <label className="xl:w-1/2 block text-body-sm font-medium text-dark dark:text-white">
+                          Doctor Position
+                          <span className="text-red">*</span>
+                        </label>
+                        <button
+                          className="w-max text-body-sm font-medium text-dark dark:text-white"
+                          type="button"
+                          onClick={() => setIsAddingPosition(true)}
+                        >
+                          +Add Position
+                        </button>
+                      </div>
+
+                      {/* Jika sedang menambah posisi, tampilkan input */}
+                      {isAddingPosition ? (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newPosition}
+                            onChange={(e) => setNewPosition(e.target.value)}
+                            placeholder="Enter new position"
+                            className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white"
+                          />
+                          <button
+                            type="button"
+                            className="bg-transparent border-[1.5px] border-orange-400 text-black dark:text-white px-4 py-2 rounded-md"
+                            onClick={handleAddPosition}
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            className="bg-transparent border-[1.5px] border-red-400 text-black dark:text-white px-4 py-2 rounded-md"
+                            onClick={() => setIsAddingPosition(false)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          {/* Button untuk membuka dropdown */}
+                          <button
+                            type="button"
+                            className="w-full flex justify-between rounded-[7px] border-[1.5px] text-start border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                          >
+                            {position || doctor?.position || "Choose Position"}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M16.53 9.47a.75.75 0 0 1 0 1.06L12 15.06l-4.53-4.53a.75.75 0 1 1 1.06-1.06L12 12.94l3.47-3.47a.75.75 0 0 1 1.06 0"/></svg>
+                          </button>
+
+                          {/* Dropdown daftar posisi */}
+                          {isDropdownOpen && (
+                            <div className="absolute top-full mt-2 w-full bg-white border border-stroke rounded-lg shadow-lg dark:bg-dark-2 dark:border-dark-3 z-10">
+                              {positions.length > 0 ? (
+                                positions.map((pos) => (
+                                  <div
+                                    key={pos._id}
+                                    className="flex items-center justify-between px-4 py-2 hover:bg-gray-200 dark:hover:bg-dark-3 cursor-pointer"
+                                  >
+                                    <span
+                                      className="w-full block"
+                                      onClick={() => {
+                                        setPosition(pos.title);
+                                        setId_position(pos._id)
+                                        setDoctor((prev) => (prev ? { ...prev, position: pos.title,  id_position: pos._id } : null));
+                                        setIsDropdownOpen(false);
+                                      }}
+                                    >
+                                      {pos.title}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      className="text-red-600"
+                                      onClick={() => handleDeletePosition(pos._id)}
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="m15.241 3.721l.293 2.029H19.5a.75.75 0 0 1 0 1.5h-.769l-.873 10.185c-.053.62-.096 1.13-.165 1.542c-.07.429-.177.813-.386 1.169a3.25 3.25 0 0 1-1.401 1.287c-.372.177-.764.25-1.198.284c-.417.033-.928.033-1.55.033h-2.316c-.622 0-1.133 0-1.55-.033c-.434-.034-.826-.107-1.198-.284a3.25 3.25 0 0 1-1.401-1.287c-.21-.356-.315-.74-.386-1.169c-.069-.413-.112-.922-.165-1.542L5.269 7.25H4.5a.75.75 0 0 1 0-1.5h3.966l.293-2.029l.011-.061c.182-.79.86-1.41 1.71-1.41h3.04c.85 0 1.528.62 1.71 1.41zM9.981 5.75h4.037l-.256-1.776c-.048-.167-.17-.224-.243-.224h-3.038c-.073 0-.195.057-.243.224zm1.269 4.75a.75.75 0 0 0-1.5 0v5a.75.75 0 0 0 1.5 0zm3 0a.75.75 0 0 0-1.5 0v5a.75.75 0 0 0 1.5 0z"/></svg>
+                                    </button>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="px-4 py-2 text-gray-500">No positions available</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                 </div>
                 <div className="flex gap-3">
                     <button type="submit" disabled={updating} className="flex w-max gap-2 justify-center rounded-[7px] bg-green-500 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
@@ -273,188 +377,3 @@ const EditDoctor = () => {
 };
 
 export default EditDoctor;
-
-// "use client"
-// import { useEffect, useState } from "react";
-// import { useParams, useRouter } from "next/navigation";
-// import Image from "next/image";
-// import Link from "next/link";
-
-// type Doctor = {
-//   _id: number;
-//   image: string;
-//   name: string;
-//   position: string;
-// };
-
-// const EditDoctorPage = () => {
-//   const [doctor, setDoctor] = useState<Doctor | null>(null);
-//   const [loading, setLoading] = useState(false);
-//   const [updating, setUpdating] = useState(false);
-//   const [message, setMessage] = useState("");
-//   const [previewImage, setPreviewImage] = useState<string | null>(null);
-//   const [image, setImage] = useState<File | null>(null);
-//   const router = useRouter();
-//   const { id } = useParams();
-
-//   // Fetch data dokter berdasarkan ID
-//   useEffect(() => {
-//     if (!id) return;
-
-//     const fetchDoctorById = async () => {
-//       setLoading(true);
-//       try {
-//         const response = await fetch(`/api/doctors/${id}`);
-//         if (!response.ok) {
-//           throw new Error("Gagal mengambil data dokter");
-//         }
-//         const result: Doctor = await response.json();
-//         setDoctor(result);
-//       } catch (err) {
-//         setMessage("Gagal memuat data dokter");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchDoctorById();
-//   }, [id]);
-
-//   // Fungsi untuk menangani perubahan input text
-//   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     if (!doctor) return;
-
-//     setDoctor({
-//       ...doctor,
-//       [e.target.name]: e.target.value, // Update field yang diubah
-//     });
-//   };
-
-//   // Fungsi untuk menangani unggah gambar
-//   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const file = e.target.files?.[0];
-//     if (file) {
-//       setImage(file);
-//       setPreviewImage(URL.createObjectURL(file));
-//     }
-//   };
-
-//   // Simpan perubahan dokter
-//   const handleSave = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!doctor) return;
-
-//     setUpdating(true);
-//     try {
-//       const formData = new FormData();
-//       formData.append("name", doctor.name);
-//       formData.append("position", doctor.position);
-//       if (image) formData.append("image", image);
-
-//       const response = await fetch(`/api/doctors/${doctor._id}`, {
-//         method: "PUT",
-//         body: formData, // Gunakan FormData untuk upload gambar
-//       });
-
-//       if (!response.ok) {
-//         throw new Error("Gagal menyimpan perubahan");
-//       }
-
-//       alert("Data dokter berhasil diperbarui!");
-//       router.push("/doctors"); // Kembali ke daftar dokter
-//     } catch (err) {
-//       setMessage("Gagal menyimpan perubahan");
-//     } finally {
-//       setUpdating(false);
-//     }
-//   };
-
-//   if (!doctor) return <p>Data dokter tidak ditemukan</p>;
-
-//   return (
-//     <form onSubmit={handleSave} encType="multipart/form-data">
-//       <div className="p-6.5">
-//         {/* Preview Gambar */}
-//         <div className="w-60 h-auto mb-5 overflow-hidden object-cover object-center">
-//           {(previewImage || doctor.image) && (
-//             <Image
-//               width={300}
-//               height={300}
-//               priority
-//               src={previewImage || doctor.image}
-//               alt="Preview"
-//               className="w-full rounded-lg"
-//             />
-//           )}
-//         </div>
-
-//         {/* Input Upload Gambar */}
-//         <div className="mb-5">
-//           <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-//             Upload Image
-//           </label>
-//           <input
-//             type="file"
-//             accept="image/*"
-//             onChange={handleImageChange}
-//             className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
-//           />
-//         </div>
-
-//         {/* Input Nama & Posisi */}
-//         <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
-//           <div className="w-full xl:w-1/2">
-//             <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-//               Doctor Name
-//             </label>
-//             <input
-//               type="text"
-//               name="name"
-//               placeholder="Enter doctor name (Ex : dr. Doctor Name)"
-//               value={doctor?.name || ""}
-//               onChange={handleChange}
-//               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
-//             />
-//           </div>
-//           <div className="w-full xl:w-1/2">
-//             <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-//               Position
-//             </label>
-//             <input
-//               type="text"
-//               name="position"
-//               value={doctor?.position || ""}
-//               onChange={handleChange}
-//               className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
-//             />
-//           </div>
-//         </div>
-
-//         {/* Tombol Submit & Cancel */}
-//         <div className="flex gap-3">
-//           <button
-//             type="submit"
-//             disabled={updating}
-//             className="flex w-max gap-2 justify-center rounded-[7px] bg-green-500 p-[9px] px-5 font-medium text-white hover:bg-opacity-90"
-//           >
-//             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-//               <path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z" />
-//             </svg>
-//             {updating ? "Updating..." : "Update"}
-//           </button>
-
-//           <Link href="/doctors">
-//             <button
-//               type="button"
-//               className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90"
-//             >
-//               Cancel
-//             </button>
-//           </Link>
-//         </div>
-//       </div>
-//     </form>
-//   );
-// };
-
-// export default EditDoctorPage;

@@ -2,10 +2,21 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Achievement from "@/models/achievements";
 import { NextResponse } from "next/server";
 import cloudinary from "@/lib/cloudinary"; 
+import { validateToken } from "@/lib/auth";
+import path from "path";
+import fs from "fs/promises";
+import sharp from "sharp";
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 // GET: Get achievement by ID
 export async function GET(req: any, { params }: any) {
+  const authError = validateToken(req);
+    if (authError) return authError;
   await connectToDatabase();
   const achievement = await Achievement.findById(params.id);
   if (!achievement) return NextResponse.json({ message: "achievement not found" }, { status: 404 });
@@ -14,9 +25,16 @@ export async function GET(req: any, { params }: any) {
 
 // PUT: Update achievement
 export async function PUT(req: any, { params }: { params: { id: string } }) {
+  const authError = validateToken(req);
+  if (authError) return authError;
+
   await connectToDatabase();
 
-  const { title, description, image, date } = await req.json();
+  const formData = await req.formData();
+  const title = formData.get("title") as string;
+  const description = formData.get("description") as string;
+  const date = formData.get("date") as string;
+  const imageFile = formData.get("image") as File;
 
   const existingAchievement = await Achievement.findById(params.id);
   if (!existingAchievement) {
@@ -25,27 +43,37 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
 
   let finalImageUrl = existingAchievement.image; // Gunakan gambar lama jika tidak ada perubahan
 
-  if (image && existingAchievement.image !== image) {
+  if (imageFile) {
     try {
       // Hapus gambar lama jika ada
-      const oldImageUrl = existingAchievement.image;
-      const publicIdMatch = oldImageUrl.match(/\/v\d+\/achievements\/([^/.]+)/);
-      const oldPublicId = publicIdMatch ? `achievements/${publicIdMatch[1]}` : null;
-
-      if (oldPublicId) {
-        console.log("Menghapus gambar lama dari Cloudinary:", oldPublicId);
-        await cloudinary.uploader.destroy(oldPublicId);
+      if (existingAchievement.image) {
+        const oldImagePath = path.join(process.cwd(), "public", existingAchievement.image);
+        console.log("Menghapus gambar lama:", oldImagePath);
+        await fs.access(oldImagePath); // Periksa apakah file ada
+        await fs.unlink(oldImagePath); // Hapus file
       }
 
-      // ✅ Pastikan URL baru benar-benar WebP
-      finalImageUrl = image.replace("/upload/", "/upload/f_webp,q_auto/");
+      // Simpan gambar baru
+      const timestamp = Date.now();
+      const originalName = imageFile.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, ""); // Hapus ekstensi
+      const fileName = `${timestamp}-${originalName}.webp`; // Simpan sebagai WebP
+      const newImagePath = path.join(process.cwd(), "public", "uploads", "achievements",fileName);
 
-      console.log("Final WebP Image URL:", finalImageUrl);
+      // Konversi gambar ke WebP menggunakan Sharp
+      const imageByteData = await imageFile.arrayBuffer();
+      const buffer = Buffer.from(imageByteData);
+      await sharp(buffer)
+        .webp({ quality: 80 }) // Kompresi ke WebP dengan kualitas 80%
+        .toFile(newImagePath);
+
+      finalImageUrl = `/uploads/achievements/${fileName}`; // Path relatif untuk akses publik
+      console.log("Gambar baru berhasil disimpan:", finalImageUrl);
     } catch (error) {
-      console.error("Gagal menghapus atau mengubah gambar:", error);
+      console.error("Gagal menghapus atau mengunggah gambar baru:", error);
     }
   }
 
+  // Perbarui data Achievement di database
   const updatedAchievement = await Achievement.findByIdAndUpdate(
     params.id,
     { title, description, date, image: finalImageUrl },
@@ -57,6 +85,9 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
 
 // DELETE: Delete Achievement
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+  const authError = validateToken(req);
+  if (authError) return authError;
+
   await connectToDatabase();
 
   console.log("Menghapus achievement dengan ID:", params.id);
@@ -64,24 +95,21 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   // Cari Achievement berdasarkan ID
   const achievement = await Achievement.findById(params.id);
   if (!achievement) {
-    console.log("achievement tidak ditemukan di database.");
-    return NextResponse.json({ message: "achievement not found" }, { status: 404 });
+    console.log("Achievement tidak ditemukan di database.");
+    return NextResponse.json({ message: "Achievement not found" }, { status: 404 });
   }
 
-  // Jika ada gambar, hapus dari Cloudinary
+  // Jika ada gambar, hapus dari folder uploads
   if (achievement.image) {
     try {
-      // Ambil public_id dari URL Cloudinary
-      const imageUrl = achievement.image;
-      const publicIdMatch = imageUrl.match(/\/v\d+\/achievements\/([^/.]+)/);
-      const publicId = publicIdMatch ? `achievements/${publicIdMatch[1]}` : null;
+      const imagePath = path.join(process.cwd(), "public", achievement.image); // Path lengkap ke file gambar
+      console.log("Menghapus gambar dari folder uploads:", imagePath);
 
-      if (publicId) {
-        console.log("Menghapus gambar dari Cloudinary:", publicId);
-        await cloudinary.uploader.destroy(publicId);
-      }
+      // Periksa apakah file ada sebelum menghapus
+      await fs.access(imagePath);
+      await fs.unlink(imagePath); // Hapus file
     } catch (error) {
-      console.error("Gagal menghapus gambar dari Cloudinary:", error);
+      console.error("Gagal menghapus gambar dari folder uploads:", error);
     }
   }
 

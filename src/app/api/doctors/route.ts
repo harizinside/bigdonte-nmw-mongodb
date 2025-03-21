@@ -2,73 +2,90 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Doctor from "@/models/doctors";
 import { NextResponse } from "next/server";
 import cloudinary from "@/lib/cloudinary";
+import { validateToken } from "@/lib/auth";
+import path from "path";
+import sharp from "sharp";
+import mongoose from "mongoose";
 
-// GET: Fetch all doctor
-export async function GET(req: { url: string | URL; }) {
+// GET: Fetch all doctors
+export async function GET(req: Request) {
+  const authError = validateToken(req);
+  if (authError) return authError;
+
   await connectToDatabase();
-  
+
   try {
-    // Ambil query parameter `page`, default ke 1 jika tidak ada
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = 15; // Jumlah data per halaman
+    const limit = 15;
 
-    // Hitung total data
     const totalDoctors = await Doctor.countDocuments();
-    
-    // Ambil data dengan pagination (skip & limit)
     const doctors = await Doctor.find({})
-      .skip((page - 1) * limit) // Lewati data sesuai halaman
-      .limit(limit) // Batasi ke 15 data per halaman
-      .sort({ createdAt: -1 }); // Urutkan dari terbaru
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-    // Hitung total halaman
-    const totalPages = Math.ceil(totalDoctors / limit);
-
-    return NextResponse.json({
+    return new NextResponse(JSON.stringify({
       doctors,
       currentPage: page,
-      totalPages,
+      totalPages: Math.ceil(totalDoctors / limit),
       totalDoctors,
-    }, { status: 200 });
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
 
   } catch (error) {
     console.error("❌ Error fetching doctors:", error);
-    return NextResponse.json({ message: "Gagal mengambil data dokter." }, { status: 500 });
+    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data dokter." }), { status: 500 });
   }
 }
 
-// POST: Create a new doctor with Cloudinary upload
-export async function POST(req: { json: () => PromiseLike<{ name: any; position: any; image: any; }> | { name: any; position: any; image: any; }; }) {
+export async function POST(request: Request) {
   try {
-    await connectToDatabase();
-    const { name, position, image } = await req.json();
+    const authError = validateToken(request);
+    if (authError) return authError;
 
-    if (!name || !position || !image) {
+    const formData = await request.formData();
+    const name = formData.get("name") as string;
+    const position = formData.get("position") as string;
+    const id_position = formData.get("id_position") as string;
+    const imageFile = formData.get("image") as File;
+
+    if (!name || !position || !imageFile || !id_position) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    // Upload image to Cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(image, {
-      folder: "doctors",
-      transformation: [{ width: 500, height: 500, crop: "limit" }],
-    });
+    const idPositionObjectId = mongoose.Types.ObjectId.isValid(id_position)
+  ? new mongoose.Types.ObjectId(id_position)
+  : null;
 
-    if (!uploadResponse.secure_url) {
-      return NextResponse.json({ error: "Failed to upload image" }, { status: 500 });
-    }
+    const timestamp = Date.now();
+    const originalName = imageFile.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, ""); // Hapus ekstensi
+    const fileName = `${timestamp}-${originalName}.webp`;
+    const imagePath = path.join(process.cwd(), "public", "uploads", "doctors",fileName);
 
-    // Save to MongoDB
+    // Konversi gambar ke WebP menggunakan Sharp
+    const imageByteData = await imageFile.arrayBuffer();
+    const buffer = Buffer.from(imageByteData);
+    await sharp(buffer)
+      .webp({ quality: 80 }) // Kompresi ke WebP dengan kualitas 80%
+      .toFile(imagePath);
+
+    // Simpan ke MongoDB
+    await connectToDatabase();
     const newDoctor = new Doctor({
       name,
       position,
-      image: uploadResponse.secure_url, // Save Cloudinary image URL
+      id_position: idPositionObjectId,
+      image: `/uploads/doctors/${fileName}`, // Path relatif untuk akses publik
     });
 
     await newDoctor.save();
-    
+
     return NextResponse.json(newDoctor, { status: 201 });
   } catch (error) {
+    console.error("Error creating doctor:", error);
     return NextResponse.json({ error: "Failed to create doctor" }, { status: 500 });
   }
 }

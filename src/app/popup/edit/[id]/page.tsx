@@ -7,16 +7,17 @@ import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Image from "next/image";
 import Link from "next/link";
 
+type Popup = {
+  _id: number;
+  link:string;
+  image: string;
+  status: boolean;
+};
+
 const EditPopup = () => {
-    const { id } = useParams(); // Ambil ID dokter dari URL
+      const { id } = useParams(); // Ambil ID dokter dari URL
       const router = useRouter();
-    
-      // Ubah tipe state popup agar use: boolean
-      const [popup, setPopup] = useState<{ link: string; image: string; use: boolean }>({
-        link: "",
-        image: "",
-        use: false,
-      });
+      const [popup, setPopup] = useState<Popup | null>(null);
 
       const [loading, setLoading] = useState(true);
       const [updating, setUpdating] = useState(false);
@@ -24,67 +25,71 @@ const EditPopup = () => {
       const [document, setDocument] = useState<File | null>(null); // Perbaiki tipe state
       const [previewImage, setPreviewImage] = useState<string | null>(null);
       const [isOpen, setIsOpen] = useState(false);
-      const [message, setMessage] = useState("");
+      const [message, setMessage] = useState(""); 
+
+        useEffect(() => {
+          if (!id) return;
       
-      useEffect(() => {
-        if (!id) return;
-    
-        const fetchPopup = async () => {
-          try {
-    
-            const res = await fetch(`/api/popupsDetails/${id}`);
-            if (!res.ok) throw new Error("Gagal mengambil data promo");
-    
-            const responseData = await res.json();
-    
-            if (responseData) {
-              setPopup(responseData);
-              setPreviewImage(responseData.image);
+          const fetchPopup = async () => {
+            try {
+              const response = await fetch(`/api/popups/${id}`, {
+                method: "GET",
+                headers: {
+                  "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+                  "Content-Type": "multipart/form-data",
+                },
+              });
+              if (!response.ok) throw new Error("Gagal mengambil data Popup");
+      
+              const result: Popup = await response.json();
+              setPopup(result);
+            } catch (error) {
+              console.error(error);
+              
+            } finally {
+              setLoading(false);
             }
-            
+          };
+      
+          fetchPopup();
+        }, [id]);
+
+        const handleUpdate = async (e: React.FormEvent) => { 
+          e.preventDefault();
+          setUpdating(true);
+        
+          if (!popup) return; // Pastikan popup tidak null sebelum mengakses propertinya
+        
+          const formData = new FormData();
+          formData.append("link", popup.link);
+          formData.append("status", popup.status ? "1" : "0");
+        
+          // Kirim file gambar jika ada perubahan
+          if (image) {
+            formData.append("image", image);
+          }
+        
+          try {
+            const res = await fetch(`/api/popups/${popup._id}`, {
+              method: "PUT",
+              headers: {
+                Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              },
+              body: formData, // Send FormData instead of JSON
+            });
+        
+            if (!res.ok) throw new Error("Gagal memperbarui data popup");
+        
+            setMessage("Popup successfully updated!");
+            setIsOpen(true);
           } catch (error) {
-            console.error(error);
-            
+            console.error("Update error:", error);
+            setMessage("Error updating Popup: " + error);
+            setIsOpen(true);
           } finally {
-            setLoading(false);
+            setUpdating(false);
           }
         };
-    
-        fetchPopup();
-      }, [id]);
-
-      const handleUpdate = async (e: React.FormEvent) => { 
-        e.preventDefault();
-        setUpdating(true);
-      
-        const formData = new FormData();
-        formData.append("link", popup.link);
-        // Konversi nilai boolean ke string "true" atau "false"
-        formData.append("use", popup.use ? "true" : "false");
-      
-        // Kirim file gambar jika ada perubahan
-        if (image) {
-          formData.append("image", image);
-        }
-      
-        try {
-          const res = await fetch(`/api/popupsPost`, {
-            method: "POST", // Sesuai dengan backend 
-            body: formData,
-          });
-      
-          if (!res.ok) throw new Error("Gagal memperbarui data popup");
-      
-          setMessage("Popup successfully updated!");
-          setIsOpen(true);
-        } catch (error) {
-          console.error("Update error:", error);
-          setMessage("Error updating Popup: " + error);
-          setIsOpen(true);
-        } finally {
-          setUpdating(false);
-        }
-      };
       
     
     const handlePush = () => {
@@ -109,15 +114,15 @@ const EditPopup = () => {
             {/* <form action="#"> */}
               <div className="p-6.5">
                 <div className="w-60 h-auto mb-5 overflow-hidden object-cover object-center ">
-                    {(popup.image) && (
-                        <Image
-                        width="300"
-                        height="300"
-                        src={`https://nmw.prahwa.net/storage/${popup.image}`} 
-                        alt="Preview" 
+                    {(previewImage || popup?.image) && (
+                      <Image
+                        width={800}
+                        height={800}
+                        src={(previewImage || popup?.image) as string}
                         priority
+                        alt="Preview"
                         className="w-full rounded-lg"
-                        />
+                      />
                     )}
                 </div>
                 <div className="mb-5">
@@ -131,13 +136,14 @@ const EditPopup = () => {
                     const file = e.target.files?.[0];
                     if (file) {
                         setImage(file);
+                        setPreviewImage(URL.createObjectURL(file));
                     }
                     }}
                     className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                     />
                 </div>
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
-                  <div className="w-full">
+                  <div className="w-full xl:w-1/2">
                     <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                       Popup Link
                       <span className="text-red">*</span>
@@ -145,26 +151,33 @@ const EditPopup = () => {
                     <input
                       type="text"
                       placeholder="Enter popup link (Ex: Https://nmwclinic.co.id)"
-                      value={popup.link}
-                      onChange={(e) => setPopup({ ...popup, link: e.target.value })}
+                      value={popup?.link}
+                      onChange={(e) =>
+                        setPopup((prev) => ({
+                          ...(prev || { _id: 0, link: "", image: "", status: false }), // Pastikan prev tidak null
+                          link: e.target.value,
+                        }))
+                      }
                       className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                     />
                   </div>
-                  <div className="mb-4.5">
+                  <div className=" w-full xl:w-1/2">
                     <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                      Use
+                      Status
                     </label>
                     <select
-                      value={popup.use ? "true" : "false"}
+                      value={popup?.status ? "true" : "false"}
                       onChange={(e) =>
-                        setPopup((prev) => ({ ...prev, use: e.target.value === "true" }))
+                        setPopup((prev) => ({
+                          ...(prev || { _id: 0, link: "", image: "", status: false }), // Pastikan prev tidak null
+                          status: e.target.value === "true",
+                        }))
                       }
                       className="relative z-20 w-full appearance-none rounded-[7px] border border-stroke bg-transparent px-5.5 py-3 outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400"
                     >
-                      <option value="true">True</option>
-                      <option value="false">False</option>
+                      <option value="true">Active</option>
+                      <option value="false">Disable</option>
                     </select>
-
                   </div>
                 </div>
                 <div className="flex gap-3">

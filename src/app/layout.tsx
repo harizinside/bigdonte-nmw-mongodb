@@ -24,14 +24,14 @@ export default function RootLayout({
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  const { token } = useAuth();
-  const router = useRouter();
+  // const { token } = useAuth();
+  // const router = useRouter();
 
-    useEffect(() => {
-      if (!token) {
-        router.push("/login");
-      }
-    }, [token, router]);
+  //   useEffect(() => {
+  //     if (!token) {
+  //       router.push("/login");
+  //     }
+  //   }, [token, router]);
 
   return (
     <html lang="en">

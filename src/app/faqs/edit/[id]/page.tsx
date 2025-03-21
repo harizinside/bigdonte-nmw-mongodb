@@ -23,14 +23,19 @@ const EditFaq = () => {
 
     const fetchFaq = async () => {
       try {
-
-        const res = await fetch(`/api/faqsDetail/${id}`);
+        const res = await fetch(`/api/faqs/${id}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        });
         if (!res.ok) throw new Error("Gagal mengambil data faq");
 
         const responseData = await res.json();
 
-        if (responseData.data) {
-          setFaq(responseData.data);
+        if (responseData) {
+          setFaq(responseData);
         }
         
       } catch (error) {
@@ -56,11 +61,11 @@ const EditFaq = () => {
     };
 
     try {
-        const res = await fetch(`/api/faqsDetail/${id}`, {
+        const res = await fetch(`/api/faqs/${id}`, {
             method: "PUT", // Sesuai dengan backend
             headers: {
-                "Content-Type": "application/json", // Wajib ada untuk raw JSON
-                "Accept": "application/json"
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              "Content-Type": "application/json",
             },
             body: JSON.stringify(requestData),
         });

@@ -12,7 +12,7 @@ const EditPromo = () => {
     const { id } = useParams(); // Ambil ID dokter dari URL
     const router = useRouter();
   
-    const [promo, setPromo] = useState({ title: "", start_date: "", end_date: "", link: "", image: "", sk: "" });
+    const [promo, setPromo] = useState({ title: "", start_date: "", slug: "",end_date: "", link: "", image: "", sk: "" });
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
     const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
@@ -20,11 +20,24 @@ const EditPromo = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [isCustomLink, setIsCustomLink] = useState(false);
+    const [isSlugEdited, setIsSlugEdited] = useState(false);
 
     useEffect(() => {
-        setIsCustomLink(!!promo.link);
-    }, [promo.link]); 
-  
+        setIsCustomLink(!!promo?.link); 
+    }, [promo?.link]); 
+
+    useEffect(() => {
+          if (!isSlugEdited && promo.title) {
+            const generatedSlug = promo.title
+              .toLowerCase()
+              .replace(/[^\w\s-]/g, "") // Hapus karakter selain huruf, angka, spasi, dan "-"
+              .replace(/\s+/g, "-") // Ganti spasi dengan "-"
+              .replace(/-+/g, "-"); // Hapus duplikasi "-"
+        
+            setPromo((prev) => ({ ...prev, slug: generatedSlug }));
+          }
+        }, [promo.title, isSlugEdited]);  
+   
     // Fetch data dokter berdasarkan ID
     useEffect(() => {
       if (!id) return;
@@ -32,7 +45,13 @@ const EditPromo = () => {
       const fetchPromo = async () => {
         try {
   
-          const res = await fetch(`/api/promosDetail/${id}`);
+          const res = await fetch(`/api/promos/${id}`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
+          });
+
           if (!res.ok) throw new Error("Gagal mengambil data promo");
   
           const responseData = await res.json();
@@ -62,6 +81,7 @@ const EditPromo = () => {
         
         formData.append("title", promo.title || "");
         formData.append("sk", promo.sk || "");
+        formData.append("slug", promo.slug);
         formData.append("start_date", promo.start_date || "");
         formData.append("end_date", promo.end_date || "");
         formData.append("link", promo.link || "");
@@ -74,8 +94,11 @@ const EditPromo = () => {
         }
       
         try {
-          const res = await fetch(`/api/promosDetail/${id}`, {
-            method: "POST",
+          const res = await fetch(`/api/promos/${id}`, {
+            method: "PUT",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
             body: formData, 
           });
       
@@ -115,16 +138,16 @@ const EditPromo = () => {
                     </div>
                     
                     <div className="p-6.5">
-                    <div className="w-80 h-auto mb-5 overflow-hidden object-cover object-center ">
-                        {(promo.image) && (
-                            <Image
-                                width="300"
-                                height="370"
-                                src={`https://nmw.prahwa.net/storage/${promo.image}`} 
-                                alt="Preview"
-                                priority
-                                className="w-full rounded-md"
-                            />
+                    <div className="w-40 h-auto mb-5 overflow-hidden object-cover object-center ">
+                        {(previewImage || promo?.image) && (
+                          <Image
+                            width={800}
+                            height={800}
+                            src={(previewImage || promo?.image) as string}
+                            priority
+                            alt="Preview"
+                            className="w-full rounded-lg"
+                          />
                         )}
                     </div>
                     {isCustomLink ? (
@@ -241,6 +264,15 @@ const EditPromo = () => {
                             </div>
                             </div>
                         </div>
+                        <input
+                          type="text"
+                          value={promo.slug}
+                          onChange={(e) => {
+                            setPromo((prev) => ({ ...prev, slug: e.target.value }));
+                            setIsSlugEdited(true); // Tandai bahwa slug telah diedit user
+                          }}
+                          className="hidden"
+                        />
                         </>
                     )}
                         <div className="flex gap-3">

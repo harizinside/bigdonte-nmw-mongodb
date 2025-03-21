@@ -3,79 +3,84 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
+type Position = {
+  _id: number;
+  title: string;
+};
+
 const CreateDoctor = () => {
   const [name, setName] = useState("");
-  const [position, setPosition] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
+  const [positions, setPositions] = useState<{ _id: string, title: string }[]>([]);
+  const [position, setPosition] = useState("");
+  const [id_position, setId_position] = useState("");
+  const [isAddingPosition, setIsAddingPosition] = useState(false);
+  const [newPosition, setNewPosition] = useState(""); 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
+  useEffect(() => {
+    const fetchPosition = async () => {
+      try {
+        const response = await fetch(`/api/position`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data position");
+        }
+        const result = await response.json();
+        setPositions(result); // Menyimpan daftar posisi dari API
+      } catch (error) {
+        console.error("Gagal mengambil data position:", error);
+      }
+    };
+  
+    fetchPosition();
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        setImage(file); // Simpan file asli
-      };
+      setImage(file); // Simpan file asli
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-  
+  const handleSubmit = async () => {
     if (!name || !position || !image) {
-      setMessage("Semua field harus diisi!");
+      setMessage("Please fill in all required fields!");
       setIsOpen(true);
       return;
     }
   
     setLoading(true);
-    setMessage("");
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("position", position);
+    formData.append("id_position", id_position ? id_position.toString() : "");
+    formData.append("image", image as Blob);
+
+    Array.from(formData.entries()).forEach(([key, value]) => {
+      console.log(key, value);
+    });
   
     try {
-      // Fungsi untuk mengonversi gambar ke WebP
-      const convertToWebP = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = () => {
-            const img = new Image();
-            img.src = reader.result as string;
-            img.onload = () => {
-              const canvas = document.createElement("canvas");
-              const ctx = canvas.getContext("2d");
-  
-              if (!ctx) return reject("Canvas tidak didukung");
-  
-              // Atur ukuran canvas sesuai gambar
-              canvas.width = img.width;
-              canvas.height = img.height;
-              ctx.drawImage(img, 0, 0, img.width, img.height);
-  
-              // Konversi ke WebP dengan kualitas 0.8
-              const webpImage = canvas.toDataURL("image/webp", 0.8);
-              resolve(webpImage);
-            };
-          };
-          reader.onerror = (error) => reject(error);
-        });
-      };
-  
-      // Konversi gambar ke WebP
-      const webpImage = await convertToWebP(image);
-  
-      // Kirim data ke API
-      const response = await axios.post("/api/doctors", {
-        name,
-        position,
-        image: webpImage, // Kirim gambar WebP
+      const response = await axios.post("/api/doctors", formData, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
   
       if (response.status === 201) {
@@ -85,13 +90,62 @@ const CreateDoctor = () => {
         setPosition("");
         setImage(null);
       } else {
-        setMessage("Gagal menambahkan doctor.");
+        setMessage("Gagal menambahkan Doctor.");
       }
     } catch (error) {
-      setMessage("Terjadi kesalahan.");
+      setMessage("Error creating Doctor: " + error);
       setIsOpen(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSelectPosition = (pos: { _id: string; title: string }) => {
+    setPosition(pos.title); // Simpan title
+    setId_position(pos._id); // Simpan ID
+    setIsDropdownOpen(false);
+  };
+
+  const handleAddPosition = async () => {
+    if (!newPosition.trim()) return;
+  
+    try {
+      const formData = new FormData();
+      formData.append("title", newPosition); // Menggunakan newPosition
+  
+      const response = await axios.post("/api/position", formData, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      if (response.status === 201) {
+        const newPos = response.data; // Ambil data dari API
+        setPositions((prev) => [...prev, newPos]); 
+        setNewPosition("");
+        setIsAddingPosition(false); // Kembali ke select
+      } else {
+        setIsAddingPosition(false);
+      }
+    } catch (error) {
+      setIsAddingPosition(false);
+    } finally {
+      setIsAddingPosition(false);
+    }
+  };
+
+  const handleDeletePosition = async (id: string) => {
+    try {
+      await axios.delete(`/api/position/${id}`, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+      });
+  
+      setPositions((prev) => prev.filter((pos) => pos._id !== id));
+    } catch (error) {
+      console.error("Gagal menghapus posisi:", error);
     }
   };
 
@@ -140,31 +194,97 @@ const CreateDoctor = () => {
                       className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                     />
                   </div>
-                  <div className="w-full xl:w-1/2">
-                    <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                      Doctor Position
-                      <span className="text-red">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter doctor position"
-                      value={position} onChange={(e) => setPosition(e.target.value)}
-                      className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
-                    />
+                  <div className="w-full xl:w-1/2 relative">
+                    <div className="w-full flex justify-between mb-3">
+                      <label className="xl:w-1/2 block text-body-sm font-medium text-dark dark:text-white">
+                        Doctor Position
+                        <span className="text-red">*</span>
+                      </label>
+                      <button
+                        className="w-max text-body-sm font-medium text-dark dark:text-white"
+                        type="button"
+                        onClick={() => setIsAddingPosition(true)}
+                      >
+                        +Add Position
+                      </button>
+                    </div>
+
+                    {/* Jika sedang menambah posisi, tampilkan input */}
+                    {isAddingPosition ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newPosition}
+                          onChange={(e) => setNewPosition(e.target.value)}
+                          placeholder="Enter new position"
+                          className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white"
+                        />
+                        <button
+                          className="bg-transparent border-[1.5px] border-orange-400 text-black dark:text-white px-4 py-2 rounded-md"
+                          onClick={handleAddPosition}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="bg-transparent border-[1.5px] border-red-400 text-black dark:text-white px-4 py-2 rounded-md"
+                          onClick={() => setIsAddingPosition(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        {/* Button untuk membuka dropdown */}
+                        <button
+                          className="w-full flex justify-between  rounded-[7px] border-[1.5px] text-start border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        >
+                          {position || "Choose Position"}
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M16.53 9.47a.75.75 0 0 1 0 1.06L12 15.06l-4.53-4.53a.75.75 0 1 1 1.06-1.06L12 12.94l3.47-3.47a.75.75 0 0 1 1.06 0"/></svg>
+                        </button>
+
+                        {/* Dropdown daftar posisi */}
+                        {isDropdownOpen && (
+                          <div className="absolute top-full mt-2 w-full bg-white border border-stroke rounded-lg shadow-lg dark:bg-dark-2 dark:border-dark-3 z-10">
+                            {positions.length > 0 ? (
+                              positions.map((pos) => (
+                                <div
+                                  key={pos._id}
+                                  className="flex items-center justify-between px-4 py-2 hover:bg-gray-200 dark:hover:bg-dark-3 cursor-pointer"
+                                >
+                                  <span className="w-full block" onClick={() => { handleSelectPosition(pos); setIsDropdownOpen(false); }}>
+                                    {pos.title}
+                                  </span>
+                                  <button
+                                    className="text-red-600"
+                                    onClick={() => handleDeletePosition(pos._id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="px-4 py-2 text-gray-500">No positions available</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
+
                 </div>
-            <div className="flex gap-3">
-                <button onClick={handleSubmit} disabled={loading}  className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
-                    {loading ? "Saving..." : "Save Doctor"}
-                </button>
-                <Link href={'/doctors'}>
-                    <button className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
-                        Cancel
+                <div className="flex gap-3">
+                    <button onClick={handleSubmit} disabled={loading}  className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
+                        {loading ? "Saving..." : "Save Doctor"}
                     </button>
-                </Link>
-            </div>
+                    <Link href={'/doctors'}>
+                        <button className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
+                            Cancel
+                        </button>
+                    </Link>
+                </div>
             
               </div>
           </div>

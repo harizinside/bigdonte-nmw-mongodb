@@ -6,8 +6,7 @@ import RichEditor from "@/components/rich-editor/page";
 import { useEffect, useState } from "react";
 
 const CreateLegality = () => {
-  const [privacy, setPrivacy] = useState({ kebijakan: "" });
-  const [term, setTerm] = useState({ syarat: "" });
+  const [legality, setLegality] = useState({ privacyPolicy: "", termsCondition: "" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,13 +16,18 @@ const CreateLegality = () => {
   useEffect(() => {
     const fetchDataPrivacy = async () => {
       try {
-        const res = await fetch("/api/privacyPolicy");
+        const res = await fetch(`/api/legality`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        });
+        
         if (!res.ok) throw new Error("Gagal mengambil data");
 
         const result = await res.json();
-        if (result.length > 0) {
-          setPrivacy(result[0]);
-        }
+        setLegality(result); 
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -34,45 +38,26 @@ const CreateLegality = () => {
     fetchDataPrivacy();
   }, []);
 
-  useEffect(() => {
-    const fetchDataTerm = async () => {
-      try {
-        const res = await fetch("/api/termsCondition");
-        if (!res.ok) throw new Error("Gagal mengambil data");
-
-        const result = await res.json();
-        if (result.length > 0) {
-          setTerm(result[0]);
-        }
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDataTerm();
-  }, []);
-
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setError(null);
 
     try {
-      const res = await fetch("/api/skPost", {
-        method: "POST",
+      const res = await fetch("/api/legality", {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
         },
         body: JSON.stringify({
-          kebijakan: privacy.kebijakan,
-          syarat: term.syarat,
+          privacyPolicy: legality.privacyPolicy,
+          termsCondition: legality.termsCondition,
         }),
       });
 
       if (!res.ok) throw new Error("Gagal menyimpan data");
 
-      setMessage("Legality successfully update!");
+      setMessage("Legality successfully updated!");
       setIsOpen(true);
     } catch (err: any) {
       setError(err.message);
@@ -100,8 +85,8 @@ const CreateLegality = () => {
                 </label>
                 <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
                   <RichEditor
-                    value={privacy.kebijakan || ""}
-                    onChange={(html) => setPrivacy({ ...privacy, kebijakan: html })}
+                    value={legality.privacyPolicy || ""}
+                    onChange={(html) => setLegality({ ...legality, privacyPolicy: html })}
                   />
                 </div>
               </div>
@@ -113,8 +98,8 @@ const CreateLegality = () => {
                 </label>
                 <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
                   <RichEditor
-                    value={term.syarat || ""}
-                    onChange={(html) => setTerm({ ...term, syarat: html })}
+                    value={legality.termsCondition || ""}
+                    onChange={(html) => setLegality({ ...legality, termsCondition: html })}
                   />
                 </div>
               </div>

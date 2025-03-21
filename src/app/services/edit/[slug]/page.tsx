@@ -3,40 +3,49 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
-import { useState, useEffect, useRef  } from "react";
+import { useState, useEffect, useRef, useMemo  } from "react";
 import RichEditor from "@/components/rich-editor/page";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 
 const EditService = () => {
-    const { id } = useParams(); // Ambil ID dokter dari URL
+    const { slug } = useParams(); // Ambil slug service dari URL
     const router = useRouter();
   
-    const [service, setService] = useState({ name: "", description: "", phone: "", image_2: "", image: ""});
+    const [service, setService] = useState({ name: "", slug: "",description: "", phone: "", sensitive_content: false, template:false, imageBanner: "", imageCover: ""});
     const [loading, setLoading] = useState(true);
+    const [, setSlug] = useState("");
     const [updating, setUpdating] = useState(false);
     const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
     const [imageSecond, setImageSecond] = useState<File | null>(null); // Perbaiki tipe state
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
-    
+    // Pastikan state diinisialisasi dengan tipe boolean
+    const [template, setTemplate] = useState<boolean | null>(null);
+    const [isSlugEdited, setIsSlugEdited] = useState(false);
     // Fetch data dokter berdasarkan ID
     useEffect(() => {
-      if (!id) return;
+      if (!slug) return;
     
       const fetchService = async () => {
         try {
-          const res = await fetch(`/api/services/servicesOneDetail/${id}`);
-          if (!res.ok) throw new Error("Gagal mengambil data service");
+          const response = await fetch(`/api/services/${slug}`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
+          });
+          
+          if (!response.ok) throw new Error("Gagal mengambil data service");
     
-          const responseData = await res.json();
+          const responseData = await response.json();
     
-          if (responseData && responseData.data) {
-            setService(responseData.data);
-            setPreviewImage(responseData.data.image);
-          }
-        } catch (error) {
+          setService(responseData)
+
+          setTemplate(responseData.template);
+          setPreviewImage(responseData.imageCover);
+        } catch (error) { 
           console.error("Error fetching service:", error);
         } finally {
           setLoading(false);
@@ -44,8 +53,32 @@ const EditService = () => {
       };
     
       fetchService();
-    }, [id]);
+    }, [slug]);
+
+    const handleSelectionTemplate = (value: boolean) => {
+      setTemplate(value);
+      setService((prev) => ({ ...prev, template: value }));
+    };
+
+    useEffect(() => {
+      setTemplate(service.template);
+    }, [service]);
+
+    useEffect(() => {
+      if (!isSlugEdited && service.name) {
+        const generatedSlug = service.name
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "") // Hapus karakter selain huruf, angka, spasi, dan "-"
+          .replace(/\s+/g, "-") // Ganti spasi dengan "-"
+          .replace(/-+/g, "-"); // Hapus duplikasi "-"
     
+        setService((prev) => ({ ...prev, slug: generatedSlug }));
+      }
+    }, [service.name, isSlugEdited]);  
+    
+    const isTemplateChecked = (service: { template: any; }, value: any) => {
+      return service.template === value;
+    };
   
     // Handle Update
     const handleUpdate = async (e: React.FormEvent) => { 
@@ -54,24 +87,29 @@ const EditService = () => {
       
         const formData = new FormData();
         formData.append("name", service.name || "");
+        formData.append("slug", service.slug);
         formData.append("description", service.description || "");
         formData.append("phone", service.phone || "");
+        formData.append("template", service.template ? "1" : "0");
       
         // Kirim file gambar jika ada
         if (image) {
-          formData.append("image", image);
+          formData.append("imageBanner", image);
         }
         if (imageSecond) {
-          formData.append("image_2", imageSecond);
+          formData.append("imageCover", imageSecond);
         }
       
         try {
-          const res = await fetch(`/api/services/servicesOneEdit/${id}`, {
-            method: "POST",
-            body: formData, 
+          const response = await fetch(`/api/services/${slug}`, {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
+            body: formData,
           });
       
-          if (!res.ok) throw new Error("Gagal memperbarui data promo");
+          if (!response.ok) throw new Error("Gagal memperbarui data services");
       
           setMessage("Service successfully updated!");
           setIsOpen(true);
@@ -107,11 +145,11 @@ const EditService = () => {
                 <div className="flex gap-4.5 xl:flex-row mb-7 items-end">
                     <div className="w-full xl:w-1/2 ">
                         <div className="w-80 h-auto mb-5 overflow-hidden object-cover object-center ">
-                            {(service.image) && (
+                            {(service.imageBanner) && (
                                 <Image
                                     width="300"
                                     height="370"
-                                    src={`https://nmw.prahwa.net/storage/${service.image}`} 
+                                    src={`${service.imageBanner}`} 
                                     alt="Preview"
                                     priority
                                     className="w-full rounded-md"
@@ -136,11 +174,11 @@ const EditService = () => {
                     </div>
                     <div className="w-full xl:w-1/2">
                         <div className="w-80 h-auto mb-5 overflow-hidden object-cover object-center ">
-                            {(service.image_2) && (
+                            {(service.imageCover) && (
                                 <Image
                                     width="300"
                                     height="370"
-                                    src={`https://nmw.prahwa.net/storage/${service.image_2}`} 
+                                    src={`${service.imageCover}`} 
                                     alt="Preview"
                                     priority
                                     className="w-full rounded-md"
@@ -169,7 +207,7 @@ const EditService = () => {
                       <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                         Service Name
                         <span className="text-red">*</span>
-                      </label>
+                      </label> 
                       <input
                         type="text"
                         placeholder="Enter service name"
@@ -201,43 +239,99 @@ const EditService = () => {
                   </div>
                 </div>
                 
-                <div>
+                <div> 
                     <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                         Choose Service Page Template
                     </label>
                     <ul className="grid w-full gap-6 md:grid-cols-2">
-                        <li>
-                            <input type="radio" id="hosting-small" name="hosting" value="hosting-small" className="hidden peer" />
-                            <label htmlFor="hosting-small" className="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-orange-500 peer-checked:border-orange-600 dark:peer-checked:border-orange-600 peer-checked:text-orange-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">                           
-                                <div className="block w-full xl:w-full">
-                                    <Image
-                                        width={500}
-                                        height={52}
-                                        src={"/images/template/template_1.png"}
-                                        alt="Logo"
-                                        style={{ width: "auto", height: "auto", borderRadius: "1vw" }}
-                                    />
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z" clip-rule="evenodd"/></svg>                            
-                            </label>
-                        </li>
-                        <li>
-                            <input type="radio" id="hosting-big" name="hosting" value="hosting-big" className="hidden peer"/>
-                            <label htmlFor="hosting-big" className="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-orange-500 peer-checked:border-orange-600 dark:peer-checked:border-orange-600 peer-checked:text-orange-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">
-                                <div className="block w-full xl:w-full">
-                                    <Image
-                                        width={500}
-                                        height={52}
-                                        src={"/images/template/template_2.png"}
-                                        alt="Logo"
-                                        style={{ width: "auto", height: "auto", borderRadius: "1vw" }}
-                                    />
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10"  viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z" clip-rule="evenodd"/></svg>
-                            </label>
-                        </li>
+                      <li>
+                        <input
+                          type="radio"
+                          id="template-1"
+                          name="hosting"
+                          value="true"
+                          checked={template === true}
+                          onChange={() => handleSelectionTemplate(true)}
+                          className="hidden peer"
+                        />
+                        <label
+                          htmlFor="template-1"
+                          className="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-orange-500 peer-checked:border-orange-600 dark:peer-checked:border-orange-600 peer-checked:text-orange-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                        >
+                          <div className="block w-full xl:w-full">
+                            <Image
+                              width={500}
+                              height={52}
+                              src={"/images/template/template_1.png"}
+                              alt="Template 1"
+                              style={{ width: "auto", height: "auto", borderRadius: "1vw" }}
+                            />
+                          </div>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-10 h-10"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              fill="currentColor"
+                              fillRule="evenodd"
+                              d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </label>
+                      </li>
+
+                      <li>
+                        <input
+                          type="radio"
+                          id="template-2"
+                          name="hosting"
+                          value="false"
+                          checked={template === false}
+                          onChange={() => handleSelectionTemplate(false)}
+                          className="hidden peer"
+                        />
+                        <label
+                          htmlFor="template-2"
+                          className="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 dark:peer-checked:text-orange-500 peer-checked:border-orange-600 dark:peer-checked:border-orange-600 peer-checked:text-orange-600 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700"
+                        >
+                          <div className="block w-full xl:w-full">
+                            <Image
+                              width={500}
+                              height={52}
+                              src={"/images/template/template_2.png"}
+                              alt="Template 2"
+                              style={{ width: "auto", height: "auto", borderRadius: "1vw" }}
+                            />
+                          </div>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-10 h-10"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              fill="currentColor"
+                              fillRule="evenodd"
+                              d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </label>
+                      </li>
+
                     </ul>
                 </div>
+                <input
+                  type="text"
+                  value={service.slug}
+                  onChange={(e) => {
+                    setService((prev) => ({ ...prev, slug: e.target.value }));
+                    setIsSlugEdited(true); // Tandai bahwa slug telah diedit user
+                  }}
+                  className="hidden"
+                />
+
                 <div className="flex gap-3 mt-7">
                     <button type="submit" disabled={updating} className="flex w-max gap-2 justify-center rounded-[7px] bg-green-500 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>

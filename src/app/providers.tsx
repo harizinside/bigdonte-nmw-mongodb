@@ -9,11 +9,11 @@ interface Props {
 
 const Providers: FC<Props> = ({ children }) => {
   return (
-    <AuthProvider>
+    // <AuthProvider>
       <ImageProvider>
         {children}
       </ImageProvider>
-    </AuthProvider>
+    // </AuthProvider>
   )
 }
 

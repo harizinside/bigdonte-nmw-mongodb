@@ -5,20 +5,32 @@ import Image from "next/image";
 import Link from "next/link";
 
 type Services = {
-  id: number;
+  _id: number;
   name: string;
-  image: string;
+  description: string;
+  phone:string;
+  slug:string;
+  imageBanner:string;
+  sensitive_content:boolean;
+  template:boolean;
+  imageCover: string;
 }
+
+type ServicesResponse = {
+  services: Services[];
+  currentPage: number;
+  totalPages: number;
+};
 
 interface ServiceDetail {
   image: string;
   image_2: string;
-  description: string;
+  description: string; 
   phone: string;
 }
 
 const TableTwelve = () => {
-  const [services, setServices] = useState<any[]>([]);
+  const [services, setServices] = useState<Services[]>([]);
   const [serviceDetails, setServiceDetails] = useState<{ [id: string]: ServiceDetail }>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -29,57 +41,49 @@ const TableTwelve = () => {
 
   const itemsPerPage = 15;
 
-  const fetchService = async () => {
-    try {
-      const response = await fetch(`/api/services/servicesOne`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+  const fetchServices = async (page = 1) => {
+      try {
+        const response = await fetch(`/api/services?page=${page}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data services"); 
+        }
+    
+        const result: ServicesResponse = await response.json();
+    
+        setServices(result.services);
+        setCurrentPage(result.currentPage);
+        setTotalPages(result.totalPages);
+      } catch (error) {
+        console.error("Gagal mengambil data services:", error);
       }
-      const result = await response.json();
-      const servicesData = result.data; // Misalnya array service
-  
-      // Lakukan fetch detail untuk setiap service dan gabungkan hasilnya ke dalam objek service
-      const servicesWithDetail = await Promise.all(
-        servicesData.map(async (service: any) => {
-          try {
-            const detailRes = await fetch(`/api/services/servicesOneDetail/${service.id}`);
-            if (!detailRes.ok) {
-              throw new Error(`HTTP error! Status: ${detailRes.status}`);
-            }
-            const detailResult = await detailRes.json();
-            // Gabungkan detail (misalnya, properti description, phone, dll) ke dalam service
-            return { ...service, ...detailResult.data };
-          } catch (error) {
-            console.error("Error fetching detail for service id", service.id, error);
-            // Jika gagal fetch detail, kembalikan service tanpa detail
-            return service;
-          }
-        })
-      );
-  
-      setServices(servicesWithDetail);
-    } catch (error) {
-      console.error("Error fetching services:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };  
+        
+    // Ambil halaman pertama saat load
+    useEffect(() => {
+      fetchServices(currentPage);
+    }, [currentPage]);
 
-  useEffect(() => {
-    fetchService();
-  }, []);
-
-  const handleDeleteServices = async (id: string | number) => {
+  const handleDeleteServices = async (slug: string) => {
     try {
       setLoadingDelete(true);
-      const response = await fetch(`/api/services/servicesOneDelete/${id}`, {
-        method: 'DELETE',
+      const response = await fetch(`/api/services/${slug}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
       });
   
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      setServices((prevServices) => prevServices.filter((service) => service.id !== id));
+      setServices((prevServices) => prevServices.filter((service) => service.slug !== slug));
       setSelectedServices(null);
       setIsOpen(false);
     } catch (error) {
@@ -87,7 +91,7 @@ const TableTwelve = () => {
     } finally {
       setLoadingDelete(false);
     }
-  };
+  }; 
 
   const stripHTML = (html: string): string => {
     return html.replace(/<[^>]*>/g, '');
@@ -96,9 +100,9 @@ const TableTwelve = () => {
   return (
     <div className="rounded-[10px] border border-stroke bg-white p-4 shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card sm:p-7.5">
       <div className="max-w-full overflow-x-auto">
-      {loading ? (
+      {/* {loading ? (
           <p className="text-center text-gray-500 dark:text-white mb-5 text-2xl font-semibold">Loading...</p>
-        ) : (
+        ) : ( */}
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-[#F7F9FC] text-left dark:bg-dark-2">
@@ -124,9 +128,8 @@ const TableTwelve = () => {
           </thead>
           <tbody>
           {services.map((service, index) => {
-            const detail: ServiceDetail = serviceDetails[service.id] || {};
             return (
-              <tr key={service.id}>
+              <tr key={index}>
                 {/* No. */}
                 <td
                   className={`border-[#eee] px-4 text-center py-4 dark:border-dark-3 w-0 xl:pl-9 ${
@@ -141,11 +144,11 @@ const TableTwelve = () => {
                     index === services.length - 1 ? "border-b-0" : "border-b"
                   }`}
                 >
-                  <div className="h-auto w-30">
+                  <div className="h-auto w-48">
                     <Image
-                      src={`https://nmw.prahwa.net/storage/${detail.image || service.image_2}`} // gunakan detail jika ada, jika tidak fallback ke service.image
-                      width={300}
-                      height={300}
+                      src={service.imageCover} // gunakan detail jika ada, jika tidak fallback ke service.image
+                      width={800}
+                      height={800}
                       alt={service.name}
                       priority
                       className="rounded-md w-full"
@@ -187,17 +190,17 @@ const TableTwelve = () => {
                   }`}
                 >
                   <div className="flex items-center justify-end space-x-3.5">
-                    <Link href={`/services/edit/${service.id}`} className="p-0 m-0 flex items-center justify-center">
+                    <Link href={`/services/edit/${service.slug}`} className="p-0 m-0 flex items-center justify-center">
                       <button className="hover:text-orange-400">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M21.455 5.416a.75.75 0 0 1-.096.943l-9.193 9.192a.75.75 0 0 1-.34.195l-3.829 1a.75.75 0 0 1-.915-.915l1-3.828a.8.8 0 0 1 .161-.312L17.47 2.47a.75.75 0 0 1 1.06 0l2.829 2.828a1 1 0 0 1 .096.118m-1.687.412L18 4.061l-8.518 8.518l-.625 2.393l2.393-.625z" clipRule="evenodd"/><path fill="currentColor" d="M19.641 17.16a44.4 44.4 0 0 0 .261-7.04a.4.4 0 0 1 .117-.3l.984-.984a.198.198 0 0 1 .338.127a46 46 0 0 1-.21 8.372c-.236 2.022-1.86 3.607-3.873 3.832a47.8 47.8 0 0 1-10.516 0c-2.012-.225-3.637-1.81-3.873-3.832a46 46 0 0 1 0-10.67c.236-2.022 1.86-3.607 3.873-3.832a48 48 0 0 1 7.989-.213a.2.2 0 0 1 .128.34l-.993.992a.4.4 0 0 1-.297.117a46 46 0 0 0-6.66.255a2.89 2.89 0 0 0-2.55 2.516a44.4 44.4 0 0 0 0 10.32a2.89 2.89 0 0 0 2.55 2.516c3.355.375 6.827.375 10.183 0a2.89 2.89 0 0 0 2.55-2.516"/></svg>
                       </button>
                     </Link>
-                    <Link href={`/services/list/${service.id}`} className="p-0 m-0 flex items-center justify-center">
+                    <Link href={`/services/${service.slug}`} className="p-0 m-0 flex items-center justify-center">
                       <button className="hover:text-orange-400">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="22"
-                          height="22"
+                          height="22" 
                           viewBox="0 0 24 24"
                         >
                           <g
@@ -250,7 +253,7 @@ const TableTwelve = () => {
 
           </tbody>
         </table>
-        )}
+        {/* )} */}
         {isOpen && selectedServices && (
           <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-35 z-999 flex justify-center items-center z-50">
             <div className="bg-white rounded-2xl p-6 py-9 w-1/3 shadow-lg">
@@ -266,11 +269,44 @@ const TableTwelve = () => {
                 <button className="bg-gray-200 hover:bg-gray-300 text-lg text-gray-600 py-2 px-5 rounded-lg cursor-pointer" onClick={() => setSelectedServices(null)}>
                   Cancel
                 </button>
-                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteServices(selectedServices.id)}>
+                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteServices(selectedServices.slug)}>
                   {loadingDelete ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </div>
+          </div>
+        )}
+        {services.length >= itemsPerPage && (
+          <div className="flex justify-center mt-4 space-x-2">
+            <button
+              className={`px-4 py-2 rounded ${
+                currentPage === 1
+                  ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed"
+                  : "bg-orange-400 text-white hover:bg-orange-600"
+              }`}
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            >
+              Prev
+            </button>
+
+            <span className="px-4 py-2 rounded text-orange-400 font-medium">
+              {currentPage} / {totalPages}
+            </span>
+
+            <button
+              className={`px-4 py-2 rounded ${
+                currentPage === totalPages
+                  ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed"
+                  : "bg-orange-400 text-white hover:bg-orange-600"
+              }`}
+              disabled={currentPage === totalPages}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+            >
+              Next
+            </button>
           </div>
         )}
       </div>

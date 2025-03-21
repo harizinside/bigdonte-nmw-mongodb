@@ -6,6 +6,7 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Image from "next/image";
 import RichEditor from "@/components/rich-editor/page";
+import Link from "next/link";
  
 type Product = {
     productName: string;
@@ -15,20 +16,21 @@ type Product = {
   };
   
   type Article = {
+    _id:number;
     title: string;
     image: string;
-    image_source_name: string;
-    image_source: string;
+    imageSourceName: string;
+    imageSourceLink: string;
     author: string;
     editor: string;
-    source_link: string;
-    category_id: string;
+    sourceLink: string;
     description: string;
-    tags: string;
+    slug: string;
+    tags: string[];
     date: string;
-    service: string;
-    doctor: string;
-    products: string | Product[];
+    serviceId: string;
+    doctorId: string;
+    products: string[];
   };
   
 
@@ -37,23 +39,25 @@ const EditArticle = () => {
     const router = useRouter();
     
     const [doctors, setDoctors] = useState<any[]>([]); 
+    const [products, setProducts] = useState<any[]>([]); 
     const [services, setServices] = useState<any[]>([]);
-    const [article, setArticle] = useState<Article>({
-        title: "",
-        image: "",
-        image_source_name: "",
-        image_source: "",
-        author: "",
-        editor: "",
-        source_link: "",
-        category_id: "",
-        description: "",
-        tags: "",
-        date: "",
-        service: "",
-        doctor: "",
-        products: [], // inisial sebagai array kosong
-      });
+    const [article, setArticle] = useState<Article | null>(null);
+    // const [article, setArticle] = useState<Article>({
+    //     title: "",
+    //     image: "",
+    //     image_source_name: "",
+    //     image_source: "",
+    //     author: "",
+    //     editor: "",
+    //     source_link: "",
+    //     category_id: "",
+    //     description: "",
+    //     tags: "",
+    //     date: "",
+    //     service: "",
+    //     doctor: "",
+    //     products: "", // inisial sebagai array kosong
+    //   });
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
     const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
@@ -64,95 +68,124 @@ const EditArticle = () => {
     const [selectedDoctor, setSelectedDoctor] = useState<string>("");
     const [selectedService, setSelectedService] = useState<string>("");
     const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
+    const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+    const [isSlugEdited, setIsSlugEdited] = useState(false);
       
-    useEffect(() => {
-        // Hanya lakukan parsing jika article.products masih berupa string
-        if (article.products && typeof article.products === "string") {
-          try {
-            const parsed = JSON.parse(article.products);
-            if (Array.isArray(parsed)) {
-              const formattedProducts = parsed.map((prod: any) => ({
-                productName: prod.name ? prod.name.trim() : "",
-                productLink: prod.link ? prod.link.trim() : "",
-                productDescription: prod.description ? prod.description.trim() : "",
-                productImage: prod.image ? prod.image.trim() : "",
-              }));
-              // Hanya update state jika format baru berbeda dari state saat ini
-              setArticle((prev) => ({ ...prev, products: formattedProducts }));
-            }
-          } catch (error) {
-            console.error("Error parsing products:", error);
-          }
-        }
-        // Jika article.products sudah berupa array, jangan lakukan update lagi
-      }, [article.products]);
+    // useEffect(() => {
+    //     // Hanya lakukan parsing jika article.products masih berupa string
+    //     if (article.products && typeof article.products === "string") {
+    //       try {
+    //         const parsed = JSON.parse(article.products);
+    //         if (Array.isArray(parsed)) {
+    //           const formattedProducts = parsed.map((prod: any) => ({
+    //             productName: prod.name ? prod.name.trim() : "",
+    //             productLink: prod.link ? prod.link.trim() : "",
+    //             productDescription: prod.description ? prod.description.trim() : "",
+    //             productImage: prod.image ? prod.image.trim() : "",
+    //           }));
+    //           // Hanya update state jika format baru berbeda dari state saat ini
+    //           setArticle((prev) => ({ ...prev, products: formattedProducts }));
+    //         }
+    //       } catch (error) {
+    //         console.error("Error parsing products:", error);
+    //       }
+    //     }
+    //     // Jika article.products sudah berupa array, jangan lakukan update lagi
+    //   }, [article.products]);
        // Jalankan hanya saat `branch.operasional` berubah      
       
 
-       const addProduct = () => {
-            setArticle((prev) => ({
-            ...prev,
-            products: typeof prev.products === "string"
-                ? [{ productName: "", productLink: "", productDescription: "", productImage: "" }]
-                : [...prev.products, { productName: "", productLink: "", productDescription: "", productImage: "" }],
-            }));
-        };
+      //  const addProduct = () => {
+      //       setArticle((prev) => ({
+      //       ...prev,
+      //       products: typeof prev.products === "string"
+      //           ? [{ productName: "", productLink: "", productDescription: "", productImage: "" }]
+      //           : [...prev.products, { productName: "", productLink: "", productDescription: "", productImage: "" }],
+      //       }));
+      //   };
       
     
-        const handleProductChange = (
-            index: number,
-            value: string,
-            field: "productName" | "productLink" | "productDescription" | "productImage"
-          ) => {
-            setArticle((prev) => {
-              if (typeof prev.products === "string") {
-                // Jika products masih berupa string, kita konversi ke array kosong terlebih dahulu.
-                return {
-                  ...prev,
-                  products: []
-                };
-              }
-              return {
-                ...prev,
-                products: prev.products.map((op, i) =>
-                  i === index ? { ...op, [field]: value } : op
-                )
-              };
-            });
-          };
+        // const handleProductChange = (
+        //     index: number,
+        //     value: string,
+        //     field: "productName" | "productLink" | "productDescription" | "productImage"
+        //   ) => {
+        //     setArticle((prev) => {
+        //       if (typeof prev.products === "string") {
+        //         // Jika products masih berupa string, kita konversi ke array kosong terlebih dahulu.
+        //         return {
+        //           ...prev,
+        //           products: []
+        //         };
+        //       }
+        //       return {
+        //         ...prev,
+        //         products: prev.products.map((op, i) =>
+        //           i === index ? { ...op, [field]: value } : op
+        //         )
+        //       };
+        //     });
+        //   };
     
-          const removeProduct = (index: number) => {
-            setArticle((prev) => {
-              if (typeof prev.products === "string") {
-                // Jika products masih berupa string, kita bisa mengubahnya menjadi array kosong atau melakukan penanganan lain
-                return { ...prev, products: [] };
-              }
-              return {
-                ...prev,
-                products: prev.products.length > 1
-                  ? prev.products.filter((_, i) => i !== index)
-                  : prev.products, // Mencegah penghapusan semua data
-              };
-            });
-          };          
+        //   const removeProduct = (index: number) => {
+        //     setArticle((prev) => {
+        //       if (typeof prev.products === "string") {
+        //         // Jika products masih berupa string, kita bisa mengubahnya menjadi array kosong atau melakukan penanganan lain
+        //         return { ...prev, products: [] };
+        //       }
+        //       return {
+        //         ...prev,
+        //         products: prev.products.length > 1
+        //           ? prev.products.filter((_, i) => i !== index)
+        //           : prev.products, // Mencegah penghapusan semua data
+        //       };
+        //     });
+        //   };          
 
     // Fetch data dokter berdasarkan ID
+    // useEffect(() => {
+    //     if (!id) return;
+    
+    //     const fetchArticles = async () => {
+    //       try {
+    
+    //         const res = await fetch(`/api/articles/${id}`); 
+    //         if (!res.ok) throw new Error("Gagal mengambil data articles");
+    
+    //         const responseData = await res.json();
+    
+    //         if (responseData.data) {
+    //           setArticle(responseData.data);
+    //           setPreviewImage(responseData.data.image);
+    //         }
+            
+    //       } catch (error) {
+    //         console.error(error);
+            
+    //       } finally {
+    //         setLoading(false);
+    //       }
+    //     };
+    
+    //     fetchArticles();
+    //   }, [id]);
+
     useEffect(() => {
         if (!id) return;
     
-        const fetchBranch = async () => {
+        const fetchArticle = async () => {
           try {
+            const response = await fetch(`/api/articles/${id}`, {
+              method: "GET",
+              headers: {
+                "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              },
+            });
+
+            if (!response.ok) throw new Error("Gagal mengambil data article");
     
-            const res = await fetch(`/api/articlesDetail/${id}`);
-            if (!res.ok) throw new Error("Gagal mengambil data branch");
-    
-            const responseData = await res.json();
-    
-            if (responseData.data) {
-              setArticle(responseData.data);
-              setPreviewImage(responseData.data.image);
-            }
-            
+            const result: Article = await response.json();
+            setArticle(result);
           } catch (error) {
             console.error(error);
             
@@ -161,19 +194,107 @@ const EditArticle = () => {
           }
         };
     
-        fetchBranch();
+        fetchArticle();
       }, [id]);
+
+      const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!article) return;
+      
+        const { name, value } = e.target;
+      
+        setArticle({
+          ...article,
+          [name]: name === "tags" ? value.split(",").map(tag => tag.trim()) : value, // Ubah tags menjadi array
+        });
+      };   
+    
+      const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          setImage(file);
+          setPreviewImage(URL.createObjectURL(file));
+        }
+      };
+
+      useEffect(() => {
+        if (!isSlugEdited && article?.title) {
+          const generatedSlug = article.title
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, "") // Hapus karakter selain huruf, angka, spasi, dan "-"
+            .replace(/\s+/g, "-") // Ganti spasi dengan "-"
+            .replace(/-+/g, "-"); // Hapus duplikasi "-"
+      
+          setArticle((prev) => prev ? { ...prev, slug: generatedSlug } : null);
+        }
+      }, [article?.title, isSlugEdited]);      
+
+      const handleUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!article) return;
+        setUpdating(true);
+
+      
+        try {
+          const formData = new FormData();
+          formData.append("title", article.title);
+          formData.append("description", article.description);
+          formData.append("date", article.date);
+          formData.append("slug", article.slug || ""); // Pastikan selalu string
+          formData.append("imageSourceName", article.imageSourceName);
+          formData.append("imageSourceLink", article.imageSourceLink);
+          formData.append("description", article.description);
+          formData.append("author", article.author);
+          formData.append("editor", article.editor);
+          formData.append("sourceLink", article.sourceLink);
+          formData.append("doctorId", selectedDoctor);
+          formData.append("serviceId", selectedService);
+          formData.append("serviceId", selectedService);
+
+          article.tags.forEach(tag => formData.append("tags", tag));
+
+          selectedProducts.forEach(productId => formData.append("products", productId));
+
+          if (image) {
+            formData.append("image", image); // Include the new image file
+          }
+      
+          const response = await fetch(`/api/articles/${article._id}`, {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
+            body: formData, // Send FormData instead of JSON 
+          });
+      
+          if (!response.ok) throw new Error("Failed to update Article");
+      
+          setMessage("Article successfully updated!");
+          setIsOpen(true);
+        } catch (error) {
+          console.error("Update error:", error);
+          setMessage("Error updating Article: " + error);
+          setIsOpen(true);
+        } finally {
+          setUpdating(false);
+        }
+      };
 
       useEffect(() => {
         const fetchDoctors = async () => {
           try {
-            const response = await fetch('/api/doctorsAll');
+            const response = await fetch(`/api/doctors`, {
+              method: "GET",
+              headers: {
+                "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              },
+            });
+
             if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const result = await response.json();
             // Asumsikan data dokter ada di result
-            setDoctors(result);
+            setDoctors(result.doctors);
           } catch (error) {
             console.error("Error fetching doctors:", error);
           } finally {
@@ -186,13 +307,18 @@ const EditArticle = () => {
       useEffect(() => {
         const fetchServices = async () => {
           try {
-            const response = await fetch(`/api/servicesOne`);
+            const response = await fetch(`/api/services`, {
+              method: "GET",
+              headers: {
+                "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              },
+            });
             if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const result = await response.json();
             // Asumsikan data layanan ada di result.data
-            setServices(result.data);
+            setServices(result.services);
           } catch (error) {
             console.error("Error fetching services:", error);
           } finally {
@@ -203,30 +329,62 @@ const EditArticle = () => {
       }, []);
 
       useEffect(() => {
-        if (article.doctor) {
+        const fetchProducts = async () => {
           try {
-            const doctorData = JSON.parse(article.doctor);
-            setSelectedDoctor(String(doctorData.id));
+            const response = await fetch(`/api/products`, {
+              method: "GET",
+              headers: {
+                "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+              },
+            });
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const result = await response.json();
+            // Asumsikan data layanan ada di result.data
+            setProducts(result.products);
           } catch (error) {
-            console.error("Error parsing article.doctor:", error);
+            console.error("Error fetching services:", error);
+          } finally {
+            setLoading(false);
           }
-        }
-      }, [article.doctor]);
+        };
+        fetchProducts();
+      }, []);
 
       useEffect(() => {
-        if (article.service) {
-          try {
-            const serviceData = JSON.parse(article.service);
-            setSelectedService(String(serviceData.id));
-          } catch (error) {
-            console.error("Error parsing article.doctor:", error);
-          }
+        if (article?.doctorId && doctors.length > 0) {
+          setSelectedDoctor(String(article.doctorId));
         }
-      }, [article.service]);
+      }, [article?.doctorId, doctors]);
+
+      useEffect(() => {
+        if (article?.serviceId && services.length > 0) {
+          setSelectedService(String(article.serviceId));
+        }
+      }, [article?.serviceId, services]);
+
+      useEffect(() => {
+        if (article?.products && Array.isArray(article.products)) {
+          setSelectedProducts(article.products);
+        }
+      }, [article?.products]);
+       // Hanya dijalankan ketika `article.products` berubah
+      
+      const toggleProduct = (productId: string) => {
+        setSelectedProducts(prev =>
+          prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
+        );
+      };      
 
       const changeTextColor = () => {
         setIsOptionSelected(true);
       };
+
+      const handlePush = () => {
+        setIsOpen(false);
+        router.push("/articles");
+      }
 
   return (
     <DefaultLayout>
@@ -244,16 +402,17 @@ const EditArticle = () => {
                 Article Image
               </h3>
             </div>
-            {/* <form action="#"> */}
+            <form onSubmit={handleUpdate} encType="multipart/form-data">
               <div className="p-6.5">
                 <div className="h-auto mb-6 w-44 rounded-lg bg-white flex items-center justify-center">
                     <>
-                    {(article.image) && (
+                    {(previewImage || article?.image || "") && (
                         <Image
-                        width="100"
-                        height="100"
-                        src={`${article.image}`} 
-                        alt={article.title} 
+                        width="800"
+                        height="800"
+                        priority
+                        src={`${previewImage || article?.image || ""}`} 
+                        alt="Preview"
                         className="w-full rounded-lg"
                         />
                     )}
@@ -265,6 +424,7 @@ const EditArticle = () => {
                     </label>
                     <input
                     type="file"
+                    onChange={handleImageChange}
                     className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                     />
                 </div>
@@ -275,7 +435,9 @@ const EditArticle = () => {
                         </label>
                         <input
                         type="text"
-                        value={article.image_source_name}
+                        defaultValue={article?.imageSourceName}
+                        name="imageSourceName"
+                        onChange={handleChange}
                         placeholder="Image By : "
                         className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                         />
@@ -286,7 +448,9 @@ const EditArticle = () => {
                         </label>
                         <input
                         type="text"
-                        value={article.image_source}
+                        name="imageSourceLink"
+                        onChange={handleChange}
+                        defaultValue={article?.imageSourceLink}
                         placeholder="Enter image source link"
                         className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                         />
@@ -309,7 +473,9 @@ const EditArticle = () => {
                         </label>
                         <input
                         type="text"
-                        value={article.title}
+                        name="title"
+                        onChange={handleChange}
+                        defaultValue={article?.title}
                         placeholder="Enter article title"
                         className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                         />
@@ -322,7 +488,9 @@ const EditArticle = () => {
                         <div className="relative">
                             <input 
                                 type="date" 
-                                value={article.date}
+                                name="date"
+                                onChange={handleChange}
+                                defaultValue={article?.date ? new Date(article.date).toISOString().split("T")[0] : ""}
                                 className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-2.5 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-dark-6 dark:focus:border-orange-400"
                             />
                             <div className="flex absolute inset-y-0 right-0 items-center pe-5.5 pointer-events-none">
@@ -339,8 +507,13 @@ const EditArticle = () => {
                     <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Article Description</label>
                     <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
                         <RichEditor
-                            value={article.description || ""}
-                            onChange={(html) => setArticle({ ...article, description: html })}
+                            value={article?.description || ""}
+                            onChange={(html) =>
+                              setArticle((prev) => ({
+                                ...prev!,
+                                description: html,
+                              }))
+                            }                            
                         />
                     </div>
                   </div>
@@ -353,7 +526,7 @@ const EditArticle = () => {
                 Article Additional
               </h3>
             </div>
-            {/* <form action="#"> */}
+            {/* <form onSubmit={handleUpdate} encType="multipart/form-data"> */}
               <div className="p-6.5">
                 <div className="mb-4.5 flex flex-col gap-4.5 xl:flex-row">
                   <div className="flex flex-col w-full xl:w-1/2">
@@ -376,11 +549,11 @@ const EditArticle = () => {
                         <option value="" disabled className="text-dark-6">
                             Choose Doctor
                         </option>
-                        {doctors.map((doctor) => (
-                            <option key={doctor.id} value={doctor.id} className="text-dark-6">
-                            {doctor.name}
-                            </option>
-                        ))}
+                          {doctors.map((doctor) => (
+                              <option key={doctor._id} value={doctor._id} className="text-dark-6">
+                                {doctor.name}
+                              </option>
+                          ))}
                         </select>
                         <span className="absolute right-4 top-1/2 z-30 -translate-y-1/2">
                         <svg
@@ -418,10 +591,10 @@ const EditArticle = () => {
                         }`}
                         >
                         <option value="" disabled className="text-dark-6">
-                            Choose Doctor
+                            Choose Service
                         </option>
                         {services.map((service) => (
-                          <option key={service.id} value={service.id} className="text-dark-6">
+                          <option key={service._id} value={service._id} className="text-dark-6">
                             {service.name}
                           </option>
                         ))}
@@ -452,7 +625,9 @@ const EditArticle = () => {
                         </label>
                         <input
                             type="text"
-                            value={article.author}
+                            defaultValue={article?.author}
+                            name="author"
+                            onChange={handleChange}
                             placeholder="Enter author name"
                             className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                         />
@@ -463,7 +638,9 @@ const EditArticle = () => {
                         </label>
                         <input
                             type="text"
-                            value={article.editor}
+                            name="editor"
+                            onChange={handleChange}
+                            defaultValue={article?.editor}
                             placeholder="Enter editor name"
                             className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                         />
@@ -475,10 +652,12 @@ const EditArticle = () => {
                             Article Tags
                         </label>
                         <input
-                            type="text"
-                            value={article.tags}
-                            placeholder="separate with commas (clinic, nmw, skincare)"
-                            className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                          type="text"
+                          name="tags"
+                          onChange={handleChange}
+                          value={article?.tags?.join(", ") || ""} // Ubah array menjadi string dengan koma
+                          placeholder="Separate with commas (clinic, nmw, skincare)"
+                          className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                         />
                     </div>
                     <div className="w-full xl:w-1/2">
@@ -487,7 +666,9 @@ const EditArticle = () => {
                         </label>
                         <input
                             type="text"
-                            value={article.source_link}
+                            name="sourceLink"
+                            onChange={handleChange}
+                            defaultValue={article?.sourceLink}
                             placeholder="Enter article source"
                             className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                         />
@@ -501,82 +682,66 @@ const EditArticle = () => {
                     </h3>
                 </div>
                 <div className="p-6 5">
-                    <div className="flex flex-col w-full mb-7">
-                        {Array.isArray(article.products) && article.products.map((op, index) => (
-                            <div key={index} className="mb-10 flex flex-col gap-0 xl:flex-col border border-stroke dark:border-dark-3 p-6">
-                                <div className="flex flex-row gap-5 w-full">
-                                <div className="h-36 mb-3 w-44 rounded-lg bg-white flex items-center justify-center">
-                                    {op.productImage && (
-                                    <Image
-                                        width={100}
-                                        height={100}
-                                        src={`https://nmw.prahwa.net/storage/${op.productImage}`}
-                                        alt={op.productName}
-                                        className="w-full rounded-lg"
-                                    />
-                                    )}
-                                </div>
-                                <div className="w-full">
-                                    <div className="w-full flex flex-col mb-5 gap-4.5 xl:flex-row">
-                                    <div className="w-full xl:w-1/2">
-                                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                        Upload Image
-                                        </label>
-                                        <input
-                                        type="file"
-                                        className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400"
-                                        />
-                                    </div>
-                                    <div className="w-full xl:w-1/2">
-                                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                        Product Name
-                                        </label>
-                                        <input
-                                        type="text"
-                                        defaultValue={op.productName}
-                                        placeholder="Enter Product Name"
-                                        className="w-full rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-                                        />
-                                    </div>
-                                    <div className="w-full xl:w-1/2">
-                                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                        Product Link
-                                        </label>
-                                        <input
-                                        type="text"
-                                        defaultValue={op.productLink}
-                                        placeholder="Enter product link"
-                                        className="w-full rounded-[7px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-                                        />
-                                    </div>
-                                    </div>
-                                    <div className="w-full flex flex-col gap-4.5 xl:flex-row">
-                                    <div className="w-full xl:w-full">
-                                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                        Product Description
-                                        </label>
-                                        <textarea
-                                        defaultValue={op.productDescription}
-                                        placeholder="Enter product description"
-                                        className="w-full rounded-[7px] h-[140px] border-[1.5px] border-stroke px-5.5 py-3 text-dark outline-none transition dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-                                        />
-                                    </div>
-                                    </div>
-                                    <button type="button" onClick={() => removeProduct(index)} className="cursor-pointer text-start text-red-500 cursor-default mt-2">Delete Product</button>
-                                </div>
-                                </div>
-                            </div>
-                            ))}
-
-                        <button type="button" onClick={addProduct} className="cursor-pointer text-orange-400 border cursor-pointer border-orange-400 px-3 py-2 rounded-[7px] hover:bg-orange-400 hover:text-white cursor-default">
-                            Add Product
-                        </button>
-                    </div>
+                  <div className="flex flex-row w-full mb-7 gap-4">
+                    {products.map((product) => (
+                      <button
+                        key={product._id}
+                        type="button"
+                        onClick={() => toggleProduct(product._id)}
+                        className={`flex w-max border border-orange-400 justify-center gap-2 rounded-[7px] px-5 py-[9px] font-medium text-dark dark:text-white hover:bg-opacity-90 ${
+                          selectedProducts.includes(product._id) ? "bg-orange-400 text-white" : "bg-transparent"
+                        }`}
+                      >
+                        {product.name}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={article?.slug || ""}
+                    onChange={(e) => {
+                      setArticle((prev) => prev ? { ...prev, slug: e.target.value } : null);
+                      setIsSlugEdited(true);
+                    }}
+                    className="hidden"
+                  />
+                  <div className="flex gap-3">
+                      <button type="submit" onClick={handleUpdate} disabled={loading} className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
+                          {loading ? "Updating..." : "Update Article"}
+                      </button>
+                      <Link href={'/articles'}>
+                          <button type="button" className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
+                              Cancel
+                          </button>
+                      </Link>
+                  </div>
                 </div>
-            {/* </form> */}
+            </form>
           </div>
         </div>
 
+      </div>
+      {/* Modal */}
+      <div className={`fixed top-0 left-0 z-999 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
+        <div className="bg-white text-center rounded-2xl p-6 py-9 w-1/3 shadow-lg">
+          <div className="flex items-center justify-center mb-4">
+            {message.includes('Error') ? (
+              <svg className="w-28 h-28 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+              </svg>
+            ) : (
+              <svg className="w-28 h-28 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="4"><path d="M24 44a19.94 19.94 0 0 0 14.142-5.858A19.94 19.94 0 0 0 44 24a19.94 19.94 0 0 0-5.858-14.142A19.94 19.94 0 0 0 24 4A19.94 19.94 0 0 0 9.858 9.858A19.94 19.94 0 0 0 4 24a19.94 19.94 0 0 0 5.858 14.142A19.94 19.94 0 0 0 24 44Z"/><path strokeLinecap="round" d="m16 24l6 6l12-12"/></g></svg>
+            )}
+          </div>
+          <p className="text-gray-600 my-5 mb-9 text-center text-2xl font-medium">{message}</p>
+          <button 
+            onClick={() => message.includes('Error') ? setIsOpen(false) : handlePush()} 
+            className={`text-lg text-white py-2 px-5 rounded-lg cursor-pointer ${message.includes('Error') || message.includes('Please fill in all required fields!') ? 'bg-red-500' : 'bg-green-500'}`}>
+            OK
+          </button>
+        </div>
       </div>
     </DefaultLayout>
   );

@@ -14,8 +14,8 @@ type Achievement = {
   title: string;
   description: string;
   date: string;
-};
-
+}; 
+ 
 const EditAchievement = () => { 
   const { id } = useParams(); // Ambil ID dokter dari URL
   const router = useRouter();
@@ -34,8 +34,13 @@ const EditAchievement = () => {
 
     const fetchAchievement = async () => {
       try {
-
-        const response = await fetch(`/api/achievements/${id}`);
+        const response = await fetch(`/api/achievements/${id}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        });
         if (!response.ok) throw new Error("Gagal mengambil data Achievement");
 
         const result: Achievement = await response.json();
@@ -69,93 +74,40 @@ const EditAchievement = () => {
   };
 
   // Handle Update
-  const handleUpdate = async (e: React.FormEvent) => { 
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!achievement) return;
     setUpdating(true);
-
+  
     try {
-      const convertToWebP = (file: File): Promise<File> => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = () => {
-            const img = new window.Image();
-            img.src = reader.result as string;
-            img.onload = () => {
-              const canvas = document.createElement("canvas");
-              const ctx = canvas.getContext("2d");
-  
-              if (!ctx) return reject("Canvas tidak didukung");
-  
-              canvas.width = img.width;
-              canvas.height = img.height;
-              ctx.drawImage(img, 0, 0, img.width, img.height);
-  
-              canvas.toBlob((blob) => {
-                if (!blob) return reject("Gagal konversi ke WebP");
-                const webpFile = new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), {
-                  type: "image/webp",
-                });
-                resolve(webpFile);
-              }, "image/webp", 0.8);
-            };
-          };
-          reader.onerror = (error) => reject(error);
-        });
-      };
-
-      let imageUrl = achievement.image;
-
+      const formData = new FormData();
+      formData.append("title", achievement.title);
+      formData.append("description", achievement.description);
+      formData.append("date", achievement.date);
       if (image) {
-        console.log("Converting image to WebP...");
-        const webpImage = await convertToWebP(image); // Konversi ke WebP sebelum upload
-  
-        console.log("Uploading WebP image to Cloudinary...");
-  
-        const formData = new FormData();
-        formData.append("file", webpImage);
-        formData.append("upload_preset", "nmw-clinic");
-        formData.append("folder", "achievements");
-  
-        const cloudinaryResponse = await axios.post(
-          "https://api.cloudinary.com/v1_1/duwyojrax/image/upload",
-          formData
-        );
-  
-        console.log("Cloudinary Response:", cloudinaryResponse.data);
-  
-        imageUrl = cloudinaryResponse.data.secure_url;
-        console.log("Final WebP Image URL:", imageUrl);
-      } else {
-        console.log("No new image uploaded, using existing image:", imageUrl);
+        formData.append("image", image); // Include the new image file
       }
-
-      const payload = {
-        title: achievement.title,
-        description: achievement.description,
-        date: achievement.date,
-        image: imageUrl,
-      };
-
+  
       const response = await fetch(`/api/achievements/${achievement._id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+        body: formData, // Send FormData instead of JSON 
       });
-
-      if (!response.ok) throw new Error("Gagal memperbarui data Achievement");
-
-      setMessage("Achievement successfully update!");
+  
+      if (!response.ok) throw new Error("Failed to update Achievement");
+  
+      setMessage("Achievement successfully updated!");
       setIsOpen(true);
     } catch (error) {
       console.error("Update error:", error);
-      setMessage("Error creating Achievement: " + error);
+      setMessage("Error updating Achievement: " + error);
       setIsOpen(true);
     } finally {
       setUpdating(false);
     }
-};
+  };
 
 const handlePush = () => {
   setIsOpen(false);

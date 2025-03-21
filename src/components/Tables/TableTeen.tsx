@@ -6,7 +6,7 @@ import Link from "next/link";
 import { SetStateAction, useEffect, useState } from "react";
 
 type Promo = {
-  id: number;
+  _id: number;
   image: string;
   title: string;
   sk: string;
@@ -14,6 +14,12 @@ type Promo = {
   end_date: string;
   link: string;
 }
+
+type PromoResponse = {
+  promo: Promo[];
+  currentPage: number;
+  totalPages: number;
+};
 
 const TableTeen = () => {
     const [promos, setPromos] = useState<Promo[]>([]);
@@ -26,41 +32,50 @@ const TableTeen = () => {
   
     const itemsPerPage = 15;
     
-      useEffect(() => {
-        fetchPromos(currentPage);
-      }, [currentPage]);
-    
-      const fetchPromos = async (currentPage: number) => {
-        try {
-          const response = await fetch(`/api/promos?page=${currentPage}`);
-    
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-    
-          const result = await response.json(); 
-          
-          setPromos(result.data); // Ambil hanya bagian 'data'
-          setCurrentPage(result.pagination.currentPage);
-          setTotalPages(result.pagination.totalPages);
-        } catch (error) {
-          console.error("Error fetching promos:", error);
-        } finally {
-          setLoading(false);
+    const fetchPromos = async (page = 1) => {
+      try {
+
+        const response = await fetch(`/api/promos?page=${page}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-      };
+  
+        const result: PromoResponse = await response.json();
+        
+        setPromos(result.promo); // Ambil hanya bagian 'data'
+        setCurrentPage(result.currentPage);
+        setTotalPages(result.totalPages);
+      } catch (error) {
+        console.error("Error fetching promos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    useEffect(() => {
+      fetchPromos(currentPage);
+    }, [currentPage]);
   
       const handleDeletePromo = async (id: string | number) => {
         try {
           setLoadingDelete(true);
-          const response = await fetch(`/api/promosDelete/${id}`, {
+          const response = await fetch(`/api/promos/${id}`, {
             method: 'DELETE',
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
           });
       
           if (!response.ok) {
             throw new Error(response.statusText);
           }
-          setPromos((prevPromos) => prevPromos.filter((promo) => promo.id !== id));
+          setPromos((prevPromos) => prevPromos.filter((promo) => promo._id !== id));
           setSelectedPromo(null);
           setIsOpen(false);
         } catch (error) {
@@ -105,11 +120,11 @@ const TableTeen = () => {
                     <div className="w-0">{(currentPage - 1) * itemsPerPage + index + 1}</div>
                   </td>
                 <td className={`border-[#eee] px-4 py-4 dark:border-dark-3 w-10 xl:pl-7.5 ${index === promos.length - 1 ? "border-b-0" : "border-b"}`}>
-                  <div className="h-auto w-60 overflow-hidden">
+                  <div className="h-auto w-40 overflow-hidden">
                     <Image
                       src={promo.image}
-                      width={200}
-                      height={200}
+                      width={800}
+                      height={800}
                       alt="Product"
                       priority
                       className="w-full rounded-md"
@@ -128,7 +143,7 @@ const TableTeen = () => {
                   className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pr-7.5 ${index === promos.length - 1 ? "border-b-0" : "border-b"}`}
                 >
                   <div className="flex items-center justify-end space-x-3.5">
-                      <Link href={`/promo/edit/${promo.id}`} className="p-0 m-0 flex items-center justify-center">
+                      <Link href={`/promo/edit/${promo._id}`} className="p-0 m-0 flex items-center justify-center">
                         <button className="hover:text-orange-400">
                           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M21.455 5.416a.75.75 0 0 1-.096.943l-9.193 9.192a.75.75 0 0 1-.34.195l-3.829 1a.75.75 0 0 1-.915-.915l1-3.828a.8.8 0 0 1 .161-.312L17.47 2.47a.75.75 0 0 1 1.06 0l2.829 2.828a1 1 0 0 1 .096.118m-1.687.412L18 4.061l-8.518 8.518l-.625 2.393l2.393-.625z" clipRule="evenodd"/><path fill="currentColor" d="M19.641 17.16a44.4 44.4 0 0 0 .261-7.04a.4.4 0 0 1 .117-.3l.984-.984a.198.198 0 0 1 .338.127a46 46 0 0 1-.21 8.372c-.236 2.022-1.86 3.607-3.873 3.832a47.8 47.8 0 0 1-10.516 0c-2.012-.225-3.637-1.81-3.873-3.832a46 46 0 0 1 0-10.67c.236-2.022 1.86-3.607 3.873-3.832a48 48 0 0 1 7.989-.213a.2.2 0 0 1 .128.34l-.993.992a.4.4 0 0 1-.297.117a46 46 0 0 0-6.66.255a2.89 2.89 0 0 0-2.55 2.516a44.4 44.4 0 0 0 0 10.32a2.89 2.89 0 0 0 2.55 2.516c3.355.375 6.827.375 10.183 0a2.89 2.89 0 0 0 2.55-2.516"/></svg>
                         </button>
@@ -184,7 +199,7 @@ const TableTeen = () => {
                 <button className="bg-gray-200 hover:bg-gray-300 text-lg text-gray-600 py-2 px-5 rounded-lg cursor-pointer" onClick={() => setSelectedPromo(null)}>
                   Cancel
                 </button>
-                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeletePromo(selectedPromo.id)}>
+                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeletePromo(selectedPromo._id)}>
                   {loadingDelete ? 'Deleting...' : 'Delete'}
                 </button>
               </div>

@@ -3,7 +3,7 @@
 import { SetStateAction, useEffect, useState } from "react";
 
 type Subscriber = {
-  id: number;
+  _id: number;
   email: string;
 }
 
@@ -16,15 +16,18 @@ const TableSeven = () => {
   const [selectedSubscribers, setSelectedSubscribers] = useState<Subscriber | null>(null);
   const [loadingDelete, setLoadingDelete] = useState(false);
 
-  const itemsPerPage = 15;
+  const itemsPerPage = 15; 
 
-  useEffect(() => {
-    fetchSubscribers(currentPage);
-  }, [currentPage]);
-
-  const fetchSubscribers = async (currentPage: number) => {
+  const fetchSubscribers = async (currentPage = 1) => { 
     try {
-      const response = await fetch(`/api/subscribers?page=${currentPage}`);
+      // const response = await fetch(`/api/subscribers?page=${currentPage}`);
+      const response = await fetch(`/api/subscribers?page=${currentPage}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -32,9 +35,9 @@ const TableSeven = () => {
 
       const result = await response.json(); 
       
-      setSubscribers(result.data); // Ambil hanya bagian 'data'
-      setCurrentPage(result.pagination.currentPage);
-      setTotalPages(result.pagination.totalPages);
+      setSubscribers(result.subscribers); // Ambil hanya bagian 'data'
+      setCurrentPage(result.currentPage);
+      setTotalPages(result.totalPages);
     } catch (error) {
       console.error("Error fetching achievements:", error);
     } finally {
@@ -42,17 +45,25 @@ const TableSeven = () => {
     }
   };
 
+  useEffect(() => {
+    fetchSubscribers(currentPage);
+  }, [currentPage]);
+
   const handleDeleteAchievement = async (id: string | number) => {
     try {
       setLoadingDelete(true);
-      const response = await fetch(`/api/subscribersDelete/${id}`, {
+      const response = await fetch(`/api/subscribers/${id}`, {
         method: 'DELETE',
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
       });
   
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      setSubscribers((prevSubscribers) => prevSubscribers.filter((subscriber) => subscriber.id !== id));
+      setSubscribers((prevSubscribers) => prevSubscribers.filter((subscriber) => subscriber._id !== id));
       setSelectedSubscribers(null);
       setIsOpen(false);
     } catch (error) {
@@ -85,7 +96,7 @@ const TableSeven = () => {
             <tbody>
               {subscribers.map((subscriber, index) => (
                 <tr key={index}>
-                  <td
+                     <td
                     className={`border-[#eee] px-4 text-center py-4 dark:border-dark-3 w-0 xl:pl-9 ${
                       index === subscribers.length - 1 ? "border-b-0" : "border-b"
                     }`}
@@ -154,14 +165,15 @@ const TableSeven = () => {
                 <button className="bg-gray-200 hover:bg-gray-300 text-lg text-gray-600 py-2 px-5 rounded-lg cursor-pointer" onClick={() => setSelectedSubscribers(null)}>
                   Cancel
                 </button>
-                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteAchievement(selectedSubscribers.id)}>
+                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteAchievement(selectedSubscribers._id)}>
                   {loadingDelete ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </div>
           </div>
         )}
-        <div className="flex justify-center mt-4 space-x-2">
+        {subscribers.length >= itemsPerPage && (
+          <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
               disabled={currentPage === 1}
@@ -181,7 +193,8 @@ const TableSeven = () => {
             >
               Next
             </button>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
