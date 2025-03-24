@@ -6,40 +6,51 @@ import path from "path";
 import sharp from "sharp";
 import { writeFile } from "fs/promises";
 
-// GET: Fetch all doctor
-export async function GET(req: { url: string | URL; }) {
+export async function GET(req: Request) {
   const authError = validateToken(req);
   if (authError) return authError;
-  await connectToDatabase(); 
-  
+
+  await connectToDatabase();
+
   try {
-    // Ambil query parameter `page`, default ke 1 jika tidak ada
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = 15; // Jumlah data per halaman
+    const pageParam = searchParams.get("page");
+    const limit = 15;
 
-    // Hitung total data
+    if (!pageParam || pageParam === "all") {
+      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter
+      const catalogs = await Catalog.find({}).sort({ createdAt: -1 });
+
+      return new NextResponse(JSON.stringify({
+        catalogs,
+        totalCatalogs: catalogs.length,
+      }), { 
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Jika `page` ada, jalankan pagination seperti biasa
+    const page = parseInt(pageParam, 10);
     const totalCatalogs = await Catalog.countDocuments();
-    
-    // Ambil data dengan pagination (skip & limit)
     const catalogs = await Catalog.find({})
-      .skip((page - 1) * limit) // Lewati data sesuai halaman
-      .limit(limit) // Batasi ke 15 data per halaman
-      .sort({ createdAt: -1 }); // Urutkan dari terbaru
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-    // Hitung total halaman
-    const totalPages = Math.ceil(totalCatalogs / limit);
-
-    return NextResponse.json({
+    return new NextResponse(JSON.stringify({
       catalogs,
       currentPage: page,
-      totalPages,
+      totalPages: Math.ceil(totalCatalogs / limit),
       totalCatalogs,
-    }, { status: 200 });
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
 
   } catch (error) {
     console.error("❌ Error fetching catalogs:", error);
-    return NextResponse.json({ message: "Gagal mengambil data catalog." }, { status: 500 });
+    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data catalogs." }), { status: 500 });
   }
 }
 

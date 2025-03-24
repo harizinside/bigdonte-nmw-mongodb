@@ -77,7 +77,16 @@ const TableThree: React.FC<TableProps> = ({ limit = null, showPagination = true 
         if (!response.ok) {
           throw new Error(response.statusText);
         }
-        setProducts((prevProducts) => prevProducts.filter((product) => product._id !== _id));
+        
+        const updatedProducts = products.filter((product) => product._id !== _id);
+        const newTotalPages = Math.ceil(updatedProducts.length / itemsPerPage);
+
+        // Jika di halaman terakhir dan semua item dihapus, pindah ke halaman sebelumnya
+        const newPage = currentPage > newTotalPages ? newTotalPages || 1 : currentPage;
+        setCurrentPage(newPage);
+
+        // **Panggil ulang fetchServices() untuk update otomatis**
+        fetchProducts(newPage);
         setSelectedProduct(null);
         setIsOpen(false);
       } catch (error) {
@@ -198,7 +207,7 @@ const TableThree: React.FC<TableProps> = ({ limit = null, showPagination = true 
           </div>
         </div>
       )}
-      {products.length >= itemsPerPage && (
+      {totalPages > 1 && products.length > 0 && (
         <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
@@ -220,7 +229,7 @@ const TableThree: React.FC<TableProps> = ({ limit = null, showPagination = true 
               Next
             </button>
         </div>
-        )}
+      )}
       </div>
     </div>
   );

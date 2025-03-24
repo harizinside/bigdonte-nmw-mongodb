@@ -15,7 +15,7 @@ const PopupPage = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="popup" pageName="Manage Popup"  pageNameSecond="" pageNameThird="" pageNameFour="" pageNameFive=""/>
+            <Breadcrumb route="popup" pageName="Manage Popup" routeSecond="" pageNameSecond="" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
             <ButtonDefault
                     label="Add New Popup"
                     link="/popup/create"

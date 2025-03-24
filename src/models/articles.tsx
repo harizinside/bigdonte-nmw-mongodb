@@ -11,6 +11,7 @@ const ArticleSchema = new mongoose.Schema({
   imageSourceName: { type: String },
   imageSourceLink: { type: String },
   sourceLink: { type: String },
+  status: { type: Boolean, required: true },
   doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "Doctor" },
   serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
   products: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],

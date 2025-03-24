@@ -190,8 +190,6 @@ const TableNine = () => {
                   >
                     {popup.status ? 'Disable' : 'Activate'}
                   </button>
-
-
                 </td>
                 <td
                   className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pr-7.5 ${index === popups.length - 1 ? "border-b-0" : "border-b"}`}

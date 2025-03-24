@@ -5,11 +5,22 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type Article = {
-  _id: number;
-  image: string;
+  _id:number;
   title: string;
+  image: string;
+  imageSourceName: string;
+  imageSourceLink: string;
+  author: string;
+  editor: string;
+  sourceLink: string;
+  description: string;
+  status: boolean;
+  slug: string;
+  tags: string[];
   date: string;
-  slug:string;
+  serviceId: string;
+  doctorId: string;
+  products: string[];
 };
 
 interface TableProps {
@@ -26,37 +37,99 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
     const [selectedArticles, setSelectedArticles] = useState<Article | null>(null);
     const [loadingDelete, setLoadingDelete] = useState(false);
   
-    const itemsPerPage = 15;
-  
+    const itemsPerPage = 15; 
+
     useEffect(() => {
-      const fetchArticles = async (page= 1) => {
-        try {
-          const response = await fetch(`/api/articles?page=${page}`, {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-            },
-          });
-    
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-    
-          const result = await response.json();
-          const data = limit ? result.articles.slice(0, limit) : result.articles;
-
-          setArticles(data);
-          setCurrentPage(result.currentPage);
-          setTotalPages(result.totalPages);
-        } catch (error) {
-          console.error("Error fetching articles:", error);
-        } finally {
-          setLoading(false);
-        }
-      }; 
-
       fetchArticles(currentPage);
     }, [currentPage, limit]);
+  
+    const fetchArticles = async (currentPage: number) => {
+      try {
+        const response = await fetch(`/api/articles?page=${currentPage}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+  
+        const result = await response.json(); 
+        const data = limit ? result.articles.slice(0, limit) : result.articles;
+        
+        setArticles(data); // Ambil hanya bagian 'data'
+        setCurrentPage(result.currentPage);
+        setTotalPages(result.totalPages);
+      } catch (error) {
+        console.error("Error fetching articles:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
+    const handleToggleArticle = async (articleId: number, currentStatus: boolean) => {
+      const newStatus = !currentStatus; // Toggle status sebelum kirim ke server
+    
+      const article = articles.find((p) => p._id === articleId);
+      if (!article) {
+        console.error("Article not found!");
+        return;
+      }
+    
+      try {
+        const formData = new FormData();
+        
+        // Kirim semua data artikel yang sudah ada
+        formData.append("title", article.title);
+        formData.append("description", article.description);
+        formData.append("date", article.date);
+        formData.append("slug", article.slug || ""); // Pastikan selalu string
+        formData.append("imageSourceName", article.imageSourceName);
+        formData.append("imageSourceLink", article.imageSourceLink);
+        formData.append("author", article.author);
+        formData.append("editor", article.editor);
+        formData.append("sourceLink", article.sourceLink);
+        formData.append("doctorId", article.doctorId || ""); // Hindari null
+        if (article.serviceId) {
+          formData.append("serviceId", article.serviceId);
+        }
+    
+        // Kirim tags dan produk yang sudah ada
+        article.tags.forEach((tag) => formData.append("tags", tag));
+        article.products.forEach((productId) => formData.append("products", productId));
+    
+        // Kirim status baru
+        formData.append("status", newStatus ? "1" : "0");
+    
+        // Update UI terlebih dahulu untuk efek responsif
+        setArticles((prev) =>
+          prev.map((p) => (p._id === articleId ? { ...p, status: newStatus } : p))
+        );
+    
+        const response = await fetch(`/api/articles/${articleId}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          },
+          body: formData,
+        });
+    
+        if (!response.ok) {
+          throw new Error(`Failed to update article. Status: ${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error updating article:", error);
+    
+        // Rollback perubahan UI jika gagal
+        setArticles((prev) =>
+          prev.map((p) => (p._id === articleId ? { ...p, status: currentStatus } : p))
+        );
+      }
+    };        
 
 
       const handleDeleteArticles = async (id: string | number) => {
@@ -73,7 +146,16 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
           if (!response.ok) {
             throw new Error(response.statusText);
           }
-          setArticles((prevArticles) => prevArticles.filter((article) => article._id !== id));
+
+          const updatedArticles = articles.filter((article) => article._id !== id);
+          const newTotalPages = Math.ceil(updatedArticles.length / itemsPerPage);
+
+          // Jika di halaman terakhir dan semua item dihapus, pindah ke halaman sebelumnya
+          const newPage = currentPage > newTotalPages ? newTotalPages || 1 : currentPage;
+          setCurrentPage(newPage);
+
+          // **Panggil ulang fetchServices() untuk update otomatis**
+          fetchArticles(newPage);
           setSelectedArticles(null);
           setIsOpen(false);
         } catch (error) {
@@ -102,10 +184,10 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
                 Title
               </th>
               <th className="min-w-[120px] px-4 py-4 font-medium text-dark dark:text-white">
-                Date
-              </th>
-              <th className="min-w-[120px] px-4 py-4 font-medium text-dark dark:text-white">
                 Article Link
+              </th>
+              <th className="min-w-[120px] px-4 py-4 font-medium text-dark dark:text-white xl:pl-7.5">
+                Status
               </th>
               <th className="px-4 py-4 text-right font-medium text-dark dark:text-white xl:pr-7.5">
                 Actions
@@ -151,19 +233,7 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
                   </h5>
                 </td>
                 <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}
-                >
-                  <p className="text-dark dark:text-white">
-                    {new Intl.DateTimeFormat("id-ID", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    }).format(new Date(article.date))}
-                  </p>
-
-                </td>
-                <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 w-100 xl:pl-0 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 w-130 xl:pl-0 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}
                 >
                   <h5 className="text-dark dark:text-white  gap-2">
                     <button
@@ -174,6 +244,18 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
                     </button>
                   </h5>
 
+                </td>
+                <td
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pl-6 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}
+                >
+                  <button
+                    onClick={() => handleToggleArticle(article._id, article.status)}
+                    className={`flex w-max gap-2 justify-center rounded-[7px] p-[9px] px-5 font-medium text-white hover:bg-opacity-90 ${
+                      article.status ? 'bg-red-600' : 'bg-green-600'
+                    }`}
+                  >
+                    {article.status ? 'Hide' : 'Show'}
+                  </button>
                 </td>
                 <td
                   className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pr-7.5 ${index === articles.length - 1 ? "border-b-0" : "border-b"}`}
@@ -246,8 +328,8 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
             </div>
           </div>
         )}
-        {articles.length >= itemsPerPage && (
-        <div className="flex justify-center mt-4 space-x-2">
+        {totalPages > 1 && articles.length > 0 && (
+          <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
               disabled={currentPage === 1}
@@ -267,7 +349,7 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
             >
               Next
             </button>
-        </div>
+          </div>
         )}
       </div>
     </div>

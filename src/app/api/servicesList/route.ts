@@ -61,8 +61,8 @@ export async function POST(request: Request) {
     if (authError) return authError;
 
     const formData = await request.formData();
-    const name = formData.get("name") as string; 
-    const slug = formData.get("slug") as string;
+    let name = formData.get("name") as string; 
+    let slug = formData.get("slug") as string;
     const description = formData.get("description") as string;
     const sensitive_content = formData.get("sensitive_content") === "1";
     const imageFileBanner = formData.get("imageBanner") as File;
@@ -73,31 +73,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    const timestamp = Date.now();
-    const originalName = imageFileBanner.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, ""); // Hapus ekstensi
-    const fileName = `${timestamp}-${originalName}.webp`;
-    const imagePath = path.join(process.cwd(), "public", "uploads", "services-list",fileName);
+    await connectToDatabase();
 
-    // Konversi gambar ke WebP menggunakan Sharp
+    // ✅ Cek apakah title atau slug sudah digunakan
+    let count = 1;
+    let baseSlug = slug; // Simpan slug awal
+    while (await ServicesList.findOne({ slug })) {
+      count++;
+      slug = `${baseSlug}-${count}`;
+    }
+
+    let countTitle = 1;
+    let baseName = name; // Simpan nama awal
+    while (await ServicesList.findOne({ name })) {
+      countTitle++;
+      name = `${baseName} ${countTitle}`;
+    }
+
+    const timestamp = Date.now();
+    const originalName = imageFileBanner.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, "");
+    const fileName = `${timestamp}-${originalName}.webp`;
+    const imagePath = path.join(process.cwd(), "public", "uploads", "services-list", fileName);
+
+    // Konversi gambar ke WebP
     const imageByteData = await imageFileBanner.arrayBuffer();
     const buffer = Buffer.from(imageByteData);
-    await sharp(buffer)
-      .webp({ quality: 80 }) // Kompresi ke WebP dengan kualitas 80%
-      .toFile(imagePath);
+    await sharp(buffer).webp({ quality: 80 }).toFile(imagePath);
 
-    const originalNameCover = imageFileCover.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, ""); // Hapus ekstensi
+    const originalNameCover = imageFileCover.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, "");
     const fileNameCover = `${timestamp}-${originalNameCover}.webp`;
-    const imagePathCover = path.join(process.cwd(), "public", "uploads", "services-list",fileNameCover);
+    const imagePathCover = path.join(process.cwd(), "public", "uploads", "services-list", fileNameCover);
 
-    // Konversi gambar ke WebP menggunakan Sharp
+    // Konversi gambar ke WebP
     const imageByteDataCover = await imageFileCover.arrayBuffer();
     const bufferCover = Buffer.from(imageByteDataCover);
-    await sharp(bufferCover)
-      .webp({ quality: 80 }) // Kompresi ke WebP dengan kualitas 80%
-      .toFile(imagePathCover);
+    await sharp(bufferCover).webp({ quality: 80 }).toFile(imagePathCover);
 
     // Simpan ke MongoDB
-    await connectToDatabase();
     const service = await Services.findOne({ slug: slugServices });
     const newServicesList = new ServicesList({
       name,
@@ -105,8 +117,8 @@ export async function POST(request: Request) {
       description,
       sensitive_content,
       id_services: service._id,
-      imageBanner: `/uploads/services-list/${fileName}`, // Path relatif untuk akses publik
-      imageCover: `/uploads/services-list/${fileNameCover}`, // Path relatif untuk akses publik
+      imageBanner: `/uploads/services-list/${fileName}`,
+      imageCover: `/uploads/services-list/${fileNameCover}`,
     });
 
     await newServicesList.save();

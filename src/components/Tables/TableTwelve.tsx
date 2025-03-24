@@ -31,8 +31,6 @@ interface ServiceDetail {
 
 const TableTwelve = () => {
   const [services, setServices] = useState<Services[]>([]);
-  const [serviceDetails, setServiceDetails] = useState<{ [id: string]: ServiceDetail }>({});
-  const [loading, setLoading] = useState<boolean>(true);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedServices, setSelectedServices] = useState<Services | null>(null);
   const [loadingDelete, setLoadingDelete] = useState(false);
@@ -83,7 +81,15 @@ const TableTwelve = () => {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      setServices((prevServices) => prevServices.filter((service) => service.slug !== slug));
+      const updatedServices = services.filter((service) => service.slug !== slug);
+      const newTotalPages = Math.ceil(updatedServices.length / itemsPerPage);
+
+      // Jika di halaman terakhir dan semua item dihapus, pindah ke halaman sebelumnya
+      const newPage = currentPage > newTotalPages ? newTotalPages || 1 : currentPage;
+      setCurrentPage(newPage);
+
+      // **Panggil ulang fetchServices() untuk update otomatis**
+      fetchServices(newPage);
       setSelectedServices(null);
       setIsOpen(false);
     } catch (error) {
@@ -144,7 +150,7 @@ const TableTwelve = () => {
                     index === services.length - 1 ? "border-b-0" : "border-b"
                   }`}
                 >
-                  <div className="h-auto w-48">
+                  <div className="h-auto w-35">
                     <Image
                       src={service.imageCover} // gunakan detail jika ada, jika tidak fallback ke service.image
                       width={800}
@@ -276,16 +282,12 @@ const TableTwelve = () => {
             </div>
           </div>
         )}
-        {services.length >= itemsPerPage && (
-          <div className="flex justify-center mt-4 space-x-2">
+        {totalPages > 1 && services.length > 0 && (
+        <div className="flex justify-center mt-4 space-x-2">
             <button
-              className={`px-4 py-2 rounded ${
-                currentPage === 1
-                  ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed"
-                  : "bg-orange-400 text-white hover:bg-orange-600"
-              }`}
+              className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage(currentPage - 1)}
             >
               Prev
             </button>
@@ -295,20 +297,14 @@ const TableTwelve = () => {
             </span>
 
             <button
-              className={`px-4 py-2 rounded ${
-                currentPage === totalPages
-                  ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed"
-                  : "bg-orange-400 text-white hover:bg-orange-600"
-              }`}
+              className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
               disabled={currentPage === totalPages}
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
+              onClick={() => setCurrentPage(currentPage + 1)}
             >
               Next
             </button>
-          </div>
-        )}
+        </div>
+      )}
       </div>
     </div>
   );

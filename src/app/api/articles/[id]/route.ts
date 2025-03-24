@@ -45,6 +45,7 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
     const products = formData.getAll("products") as string[]; 
     const tags = formData.getAll("tags") as string[];
     const imageFile = formData.get("image") as File;
+    const status = formData.get("status") === "1";
 
   const existingArticle = await Article.findById(params.id);
   if (!existingArticle) {
@@ -86,7 +87,7 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
   // Perbarui data Achievement di database
   const updatedAchievement = await Article.findByIdAndUpdate(
     params.id,
-    { title, description, date, image: finalImageUrl, slug, imageSourceName, imageSourceLink, author, editor, sourceLink, serviceId, doctorId, products, tags },
+    { title, description, date, status, image: finalImageUrl, slug, imageSourceName, imageSourceLink, author, editor, sourceLink, serviceId, doctorId, products, tags },
     { new: true }
   );
 

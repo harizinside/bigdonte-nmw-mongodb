@@ -1,5 +1,8 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Services from "@/models/services";
+import ServicesList from "@/models/servicesList";
+import ServicesType from "@/models/servicesType";
+import Patient from "@/models/patients";
 import { NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
 import path from "path";
@@ -117,46 +120,57 @@ export async function PUT(req: any, { params }: any) {
 export async function DELETE(req: Request, { params }: any) {
   const authError = validateToken(req);
   if (authError) return authError;
- 
+
   await connectToDatabase();
 
-  // Cari Service berdasarkan ID
+  // Cari Service berdasarkan slug
   const services = await Services.findOne({ slug: params.slug });
   if (!services) {
     console.log("services tidak ditemukan di database.");
     return NextResponse.json({ message: "services not found" }, { status: 404 });
   }
 
-  // Jika ada gambar, hapus dari folder uploads
-  if (services.imageBanner) {
+  // Fungsi untuk menghapus gambar dari direktori
+  const deleteImage = async (imagePath: string) => {
+    if (!imagePath) return;
     try {
-      const imagePath = path.join(process.cwd(), "public", services.imageBanner); // Path lengkap ke file gambar
-      console.log("Menghapus gambar dari folder uploads:", imagePath);
-
-      // Periksa apakah file ada sebelum menghapus
-      await fs.access(imagePath);
-      await fs.unlink(imagePath); // Hapus file
+      const fullPath = path.join(process.cwd(), "public", imagePath);
+      console.log("Menghapus gambar:", fullPath);
+      await fs.access(fullPath);
+      await fs.unlink(fullPath);
     } catch (error) {
-      console.error("Gagal menghapus gambar dari folder uploads:", error);
+      console.error("Gagal menghapus gambar:", error);
     }
+  };
+
+  // Hapus gambar dari `services`
+  if (services.imageBanner) await deleteImage(services.imageBanner);
+  if (services.imageCover) await deleteImage(services.imageCover);
+
+  // Cari semua `servicesList` yang terkait
+  const servicesLists = await ServicesList.find({ id_services: services._id });
+  for (const item of servicesLists) {
+    if (item.imageBanner) await deleteImage(item.imageBanner);
+    if (item.imageCover) await deleteImage(item.imageCover);
   }
 
-  if (services.imageCover) {
-    try {
-      const imagePathCover = path.join(process.cwd(), "public", services.imageCover); // Path lengkap ke file gambar
-      console.log("Menghapus gambar dari folder uploads:", imagePathCover);
-
-      // Periksa apakah file ada sebelum menghapus
-      await fs.access(imagePathCover);
-      await fs.unlink(imagePathCover); // Hapus file
-    } catch (error) {
-      console.error("Gagal menghapus gambar dari folder uploads:", error);
-    }
+  // Cari semua `servicesType` yang terkait
+  const servicesTypes = await ServicesType.find({ id_services: services._id });
+  for (const item of servicesTypes) {
+    if (item.image) await deleteImage(item.image);
+  }
+  const patients = await Patient.find({ id_services: services._id });
+  for (const item of patients) {
+    if (item.image) await deleteImage(item.image);
+    if (item.imageSecond) await deleteImage(item.imageimageSecond);
   }
 
-  // Hapus services dari database
-  await Services.findOneAndDelete({ slug: params.slug })
+  // Hapus data terkait dari database
+  await ServicesList.deleteMany({ id_services: services._id });
+  await ServicesType.deleteMany({ id_services: services._id });
+  await Patient.deleteMany({ id_services: services._id });
+  await Services.findOneAndDelete({ slug: params.slug });
 
-  console.log("services berhasil dihapus.");
-  return NextResponse.json({ message: "services deleted successfully" }, { status: 200 });
+  console.log("services dan semua data serta gambar terkait berhasil dihapus.");
+  return NextResponse.json({ message: "services and related data deleted successfully" }, { status: 200 });
 }

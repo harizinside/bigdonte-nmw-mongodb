@@ -5,12 +5,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
-type Services = {
-  title: string;
-  id: number;
+type ServicesType = {
+  description: string;
+  _id: number;
   name: string;
   image: string;
+  slug:string;
 }
+
+type ServicesTypeResponse = {
+  servicesType: ServicesType[];
+  currentPage: number;
+  totalPages: number;
+};
 
 interface ServiceDetail {
   image: string;
@@ -20,67 +27,80 @@ interface ServiceDetail {
 }
 
 const TableFourteen = () => {
-  const { id, typeId } = useParams(); // Ambil ID dokter dari URL
+  const { slugServices, slugServicesList } = useParams(); // Ambil ID dokter dari URL
   const router = useRouter();
 
   const [services, setServices] = useState<any[]>([]);
   const [serviceDetails, setServiceDetails] = useState<{ [id: string]: ServiceDetail }>({});
   const [loading, setLoading] = useState<boolean>(true); 
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedServices, setSelectedServices] = useState<Services | null>(null);
+  const [selectedServices, setSelectedServices] = useState<ServicesType | null>(null);
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const itemsPerPage = 15;
+  const itemsPerPage = 15; 
 
-  useEffect(() => {
-    if (!typeId) return;
-  
-    const fetchCatalog = async () => {
-      try {
-        const res = await fetch(`/api/services/serviceThree/${typeId}`);
-        if (!res.ok) {
-          throw new Error(`Gagal mengambil data: ${res.statusText}`);
+  const fetchServices = async (page = 1) => {
+        try {
+          const response = await fetch(`/api/servicesType?servicesList=${slugServicesList}&page=${page}`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
+          });
+    
+          if (!response.ok) {
+            throw new Error("Gagal mengambil data services"); 
+          }
+      
+          const result: ServicesTypeResponse = await response.json();
+      
+          setServices(result.servicesType);
+          setCurrentPage(result.currentPage);
+          setTotalPages(result.totalPages);
+        } catch (error) {
+          console.error("Gagal mengambil data services:", error);
         }
-  
-        // Ambil data dalam format JSON
-        const responseData = await res.json();
-  
-        // Pastikan responseData memiliki properti data
-        if (responseData.data) {
-          setServices(responseData.data);
-        }
-      } catch (error) {
-        console.error("Error fetching catalog:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchCatalog();
-  }, [typeId]);
+      };  
+          
+      // Ambil halaman pertama saat load
+      useEffect(() => {
+        fetchServices(currentPage);
+      }, [currentPage]);
   
 
-  const handleDeleteServices = async (id: string | number) => {
-    try {
-      setLoadingDelete(true);
-      const response = await fetch(`/api/services/servicesThreeDelete/${id}`, {
-        method: 'DELETE',
-      });
-  
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      setServices((prevServices) => prevServices.filter((service) => service.id !== id));
-      setSelectedServices(null);
-      setIsOpen(false);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoadingDelete(false);
-    }
-  };
+      const handleDeleteServices = async (slug: string) => {
+        try {
+          setLoadingDelete(true);
+          const response = await fetch(`/api/servicesType/${slug}`, {
+            method: "DELETE",
+            headers: {
+              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+            },
+          });
+      
+          if (!response.ok) {
+            throw new Error(response.statusText);
+          }
+
+          const updatedServicesType = services.filter((service) => service.slug !== slug);
+          const newTotalPages = Math.ceil(updatedServicesType.length / itemsPerPage);
+
+          // Jika di halaman terakhir dan semua item dihapus, pindah ke halaman sebelumnya
+          const newPage = currentPage > newTotalPages ? newTotalPages || 1 : currentPage;
+          setCurrentPage(newPage);
+
+          // **Panggil ulang fetchServices() untuk update otomatis**
+          fetchServices(newPage);
+          setSelectedServices(null);
+          setIsOpen(false);
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoadingDelete(false);
+        }
+      }; 
 
   const stripHTML = (html: string): string => {
     return html.replace(/<[^>]*>/g, '');
@@ -89,9 +109,9 @@ const TableFourteen = () => {
   return (
     <div className="rounded-[10px] border border-stroke bg-white p-4 shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card sm:p-7.5">
       <div className="max-w-full overflow-x-auto">
-      {loading ? (
+      {/* {loading ? (
           <p className="text-center text-gray-500 dark:text-white mb-5 text-2xl font-semibold">Loading...</p>
-        ) : (
+        ) : ( */}
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-[#F7F9FC] text-left dark:bg-dark-2">
@@ -99,7 +119,10 @@ const TableFourteen = () => {
                 No
               </th>
               <th className="min-w-[150px] px-4 py-4 font-medium  text-dark dark:text-white">
-                Title
+                Image
+              </th>
+              <th className="min-w-[150px] px-4 py-4 font-medium  text-dark dark:text-white">
+                Name
               </th>
               <th className="min-w-[150px] px-4 py-4 font-medium text-dark dark:text-white">
                 Description
@@ -122,13 +145,29 @@ const TableFourteen = () => {
                 >
                   <div className="w-0">{(currentPage - 1) * itemsPerPage + index + 1}</div>
                 </td>
-                {/* Name */}
                 <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pl-0 ${
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pl-2 ${
                     index === services.length - 1 ? "border-b-0" : "border-b"
                   }`}
                 >
-                  <h5 className="text-dark dark:text-white">{service.title}</h5>
+                  <div className="h-auto w-35">
+                    <Image
+                      src={service.image} // gunakan detail jika ada, jika tidak fallback ke service.image
+                      width={800}
+                      height={800}
+                      alt={service.name}
+                      priority
+                      className="rounded-md w-full"
+                    />
+                  </div>
+                </td>
+                {/* Name */}
+                <td
+                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pl-4 ${
+                    index === services.length - 1 ? "border-b-0" : "border-b"
+                  }`}
+                >
+                  <h5 className="text-dark dark:text-white">{service.name}</h5>
                 </td>
                 {/* Detail Field 1 (misalnya deskripsi singkat) */}
                 <td
@@ -147,12 +186,12 @@ const TableFourteen = () => {
                   }`}
                 >
                   <div className="flex items-center justify-end space-x-3.5">
-                    <Link href={`/services/list/${id}/${typeId}/edit/${service.slug}`} className="p-0 m-0 flex items-center justify-center">
+                    <Link href={`/services/${slugServices}/${slugServicesList}/edit/${service.slug}`} className="p-0 m-0 flex items-center justify-center">
                       <button className="hover:text-orange-400">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M21.455 5.416a.75.75 0 0 1-.096.943l-9.193 9.192a.75.75 0 0 1-.34.195l-3.829 1a.75.75 0 0 1-.915-.915l1-3.828a.8.8 0 0 1 .161-.312L17.47 2.47a.75.75 0 0 1 1.06 0l2.829 2.828a1 1 0 0 1 .096.118m-1.687.412L18 4.061l-8.518 8.518l-.625 2.393l2.393-.625z" clipRule="evenodd"/><path fill="currentColor" d="M19.641 17.16a44.4 44.4 0 0 0 .261-7.04a.4.4 0 0 1 .117-.3l.984-.984a.198.198 0 0 1 .338.127a46 46 0 0 1-.21 8.372c-.236 2.022-1.86 3.607-3.873 3.832a47.8 47.8 0 0 1-10.516 0c-2.012-.225-3.637-1.81-3.873-3.832a46 46 0 0 1 0-10.67c.236-2.022 1.86-3.607 3.873-3.832a48 48 0 0 1 7.989-.213a.2.2 0 0 1 .128.34l-.993.992a.4.4 0 0 1-.297.117a46 46 0 0 0-6.66.255a2.89 2.89 0 0 0-2.55 2.516a44.4 44.4 0 0 0 0 10.32a2.89 2.89 0 0 0 2.55 2.516c3.355.375 6.827.375 10.183 0a2.89 2.89 0 0 0 2.55-2.516"/></svg>
                       </button>
                     </Link>
-                    <Link href={`/services/list/${id}/${typeId}/${service.id}`} className="p-0 m-0 flex items-center justify-center">
+                    <Link href={`/services/${slugServices}/${slugServicesList}/${service.slug}`} className="p-0 m-0 flex items-center justify-center">
                       <button className="hover:text-orange-400">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -210,7 +249,7 @@ const TableFourteen = () => {
 
           </tbody>
         </table>
-        )}
+        {/* )} */}
         {isOpen && selectedServices && (
           <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-35 z-999 flex justify-center items-center z-50">
             <div className="bg-white rounded-2xl p-6 py-9 w-1/3 shadow-lg">
@@ -220,17 +259,40 @@ const TableFourteen = () => {
                 </svg>
               </div>
               <p className="text-gray-600 my-5 mb-9 text-center text-2xl font-medium">
-                Are you sure you want to delete <strong>{selectedServices.title}</strong>?
+                Are you sure you want to delete <strong>{selectedServices.name}</strong>?
               </p>
               <div className="flex justify-center gap-3">
                 <button className="bg-gray-200 hover:bg-gray-300 text-lg text-gray-600 py-2 px-5 rounded-lg cursor-pointer" onClick={() => setSelectedServices(null)}>
                   Cancel
                 </button>
-                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteServices(selectedServices.id)}>
+                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteServices(selectedServices.slug)}>
                   {loadingDelete ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </div>
+          </div>
+        )}
+        {totalPages > 1 && services.length > 0 && (
+          <div className="flex justify-center mt-4 space-x-2">
+            <button
+              className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              Prev
+            </button>
+
+            <span className="px-4 py-2 rounded text-orange-400 font-medium">
+              {currentPage} / {totalPages}
+            </span>
+
+            <button
+              className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Next
+            </button>
           </div>
         )}
       </div>

@@ -7,13 +7,6 @@ import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Image from "next/image";
 import RichEditor from "@/components/rich-editor/page";
 import Link from "next/link";
- 
-type Product = {
-    productName: string;
-    productLink: string;
-    productDescription: string;
-    productImage: string;
-  };
   
   type Article = {
     _id:number;
@@ -25,6 +18,7 @@ type Product = {
     editor: string;
     sourceLink: string;
     description: string;
+    status: boolean;
     slug: string;
     tags: string[];
     date: string;
@@ -42,22 +36,6 @@ const EditArticle = () => {
     const [products, setProducts] = useState<any[]>([]); 
     const [services, setServices] = useState<any[]>([]);
     const [article, setArticle] = useState<Article | null>(null);
-    // const [article, setArticle] = useState<Article>({
-    //     title: "",
-    //     image: "",
-    //     image_source_name: "",
-    //     image_source: "",
-    //     author: "",
-    //     editor: "",
-    //     source_link: "",
-    //     category_id: "",
-    //     description: "",
-    //     tags: "",
-    //     date: "",
-    //     service: "",
-    //     doctor: "",
-    //     products: "", // inisial sebagai array kosong
-    //   });
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
     const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
@@ -70,105 +48,6 @@ const EditArticle = () => {
     const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
     const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
     const [isSlugEdited, setIsSlugEdited] = useState(false);
-      
-    // useEffect(() => {
-    //     // Hanya lakukan parsing jika article.products masih berupa string
-    //     if (article.products && typeof article.products === "string") {
-    //       try {
-    //         const parsed = JSON.parse(article.products);
-    //         if (Array.isArray(parsed)) {
-    //           const formattedProducts = parsed.map((prod: any) => ({
-    //             productName: prod.name ? prod.name.trim() : "",
-    //             productLink: prod.link ? prod.link.trim() : "",
-    //             productDescription: prod.description ? prod.description.trim() : "",
-    //             productImage: prod.image ? prod.image.trim() : "",
-    //           }));
-    //           // Hanya update state jika format baru berbeda dari state saat ini
-    //           setArticle((prev) => ({ ...prev, products: formattedProducts }));
-    //         }
-    //       } catch (error) {
-    //         console.error("Error parsing products:", error);
-    //       }
-    //     }
-    //     // Jika article.products sudah berupa array, jangan lakukan update lagi
-    //   }, [article.products]);
-       // Jalankan hanya saat `branch.operasional` berubah      
-      
-
-      //  const addProduct = () => {
-      //       setArticle((prev) => ({
-      //       ...prev,
-      //       products: typeof prev.products === "string"
-      //           ? [{ productName: "", productLink: "", productDescription: "", productImage: "" }]
-      //           : [...prev.products, { productName: "", productLink: "", productDescription: "", productImage: "" }],
-      //       }));
-      //   };
-      
-    
-        // const handleProductChange = (
-        //     index: number,
-        //     value: string,
-        //     field: "productName" | "productLink" | "productDescription" | "productImage"
-        //   ) => {
-        //     setArticle((prev) => {
-        //       if (typeof prev.products === "string") {
-        //         // Jika products masih berupa string, kita konversi ke array kosong terlebih dahulu.
-        //         return {
-        //           ...prev,
-        //           products: []
-        //         };
-        //       }
-        //       return {
-        //         ...prev,
-        //         products: prev.products.map((op, i) =>
-        //           i === index ? { ...op, [field]: value } : op
-        //         )
-        //       };
-        //     });
-        //   };
-    
-        //   const removeProduct = (index: number) => {
-        //     setArticle((prev) => {
-        //       if (typeof prev.products === "string") {
-        //         // Jika products masih berupa string, kita bisa mengubahnya menjadi array kosong atau melakukan penanganan lain
-        //         return { ...prev, products: [] };
-        //       }
-        //       return {
-        //         ...prev,
-        //         products: prev.products.length > 1
-        //           ? prev.products.filter((_, i) => i !== index)
-        //           : prev.products, // Mencegah penghapusan semua data
-        //       };
-        //     });
-        //   };          
-
-    // Fetch data dokter berdasarkan ID
-    // useEffect(() => {
-    //     if (!id) return;
-    
-    //     const fetchArticles = async () => {
-    //       try {
-    
-    //         const res = await fetch(`/api/articles/${id}`); 
-    //         if (!res.ok) throw new Error("Gagal mengambil data articles");
-    
-    //         const responseData = await res.json();
-    
-    //         if (responseData.data) {
-    //           setArticle(responseData.data);
-    //           setPreviewImage(responseData.data.image);
-    //         }
-            
-    //       } catch (error) {
-    //         console.error(error);
-            
-    //       } finally {
-    //         setLoading(false);
-    //       }
-    //     };
-    
-    //     fetchArticles();
-    //   }, [id]);
 
     useEffect(() => {
         if (!id) return;
@@ -241,14 +120,18 @@ const EditArticle = () => {
           formData.append("date", article.date);
           formData.append("slug", article.slug || ""); // Pastikan selalu string
           formData.append("imageSourceName", article.imageSourceName);
+          formData.append("status", article.status ? "1" : "0");
           formData.append("imageSourceLink", article.imageSourceLink);
           formData.append("description", article.description);
           formData.append("author", article.author);
           formData.append("editor", article.editor);
-          formData.append("sourceLink", article.sourceLink);
-          formData.append("doctorId", selectedDoctor);
-          formData.append("serviceId", selectedService);
-          formData.append("serviceId", selectedService);
+          formData.append("sourceLink", article.sourceLink); 
+          if (selectedDoctor) {
+            formData.append("doctorId", selectedDoctor);
+          }
+          if (selectedService) {
+            formData.append("serviceId", selectedService);
+          }
 
           article.tags.forEach(tag => formData.append("tags", tag));
 
@@ -282,7 +165,7 @@ const EditArticle = () => {
       useEffect(() => {
         const fetchDoctors = async () => {
           try {
-            const response = await fetch(`/api/doctors`, {
+            const response = await fetch(`/api/doctors?page=all`, {
               method: "GET",
               headers: {
                 "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
@@ -307,7 +190,7 @@ const EditArticle = () => {
       useEffect(() => {
         const fetchServices = async () => {
           try {
-            const response = await fetch(`/api/services`, {
+            const response = await fetch(`/api/services?page=all`, {
               method: "GET",
               headers: {
                 "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
@@ -331,7 +214,7 @@ const EditArticle = () => {
       useEffect(() => {
         const fetchProducts = async () => {
           try {
-            const response = await fetch(`/api/products`, {
+            const response = await fetch(`/api/products?page=all`, {
               method: "GET",
               headers: {
                 "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
@@ -390,7 +273,7 @@ const EditArticle = () => {
     <DefaultLayout>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="articles" pageName="Manage Articles" pageNameSecond="/ Create" pageNameThird="" pageNameFour="" pageNameFive=""/>
+          <Breadcrumb route="articles" pageName="Manage Articles" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
         </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -418,15 +301,52 @@ const EditArticle = () => {
                     )}
                     </>
                 </div>
-                <div className="mb-7">
-                    <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                        Upload Image
-                    </label>
-                    <input
-                    type="file"
-                    onChange={handleImageChange}
-                    className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
-                    />
+                <div className="mb-4.5 flex flex-col gap-4.5 xl:flex-row">
+                  <div className="mb-7 w-full xl:w-1/2">
+                      <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                          Upload Image
+                      </label>
+                      <input
+                      type="file"
+                      onChange={handleImageChange}
+                      className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
+                      />
+                  </div>
+                  <div className="w-full xl:w-1/2 mb-7">
+                      <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                        Status
+                      </label>
+                      <select
+                        value={article?.status ? "true" : "false"}
+                        onChange={(e) =>
+                          setArticle((prev) => ({
+                            ...(prev ?? {
+                              _id: 0,
+                              title: "",
+                              image: "",
+                              imageSourceName: "",
+                              imageSourceLink: "",
+                              author: "",
+                              editor: "",
+                              sourceLink: "",
+                              description: "",
+                              status: false,
+                              slug: "",
+                              tags: [],
+                              date: "",
+                              serviceId: "",
+                              doctorId: "",
+                              products: [],
+                            }),
+                            status: e.target.value === "true",
+                          }))
+                        }
+                        className="relative z-20 w-full appearance-none rounded-[7px] border border-stroke bg-transparent px-5.5 py-3 outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400"
+                      >
+                        <option value="true">Active</option>
+                        <option value="false">Disable</option>
+                      </select>
+                  </div>
                 </div>
                 <div className="mb-4.5 flex flex-col gap-4.5 xl:flex-row">
                     <div className="w-full xl:w-1/2">
@@ -674,7 +594,6 @@ const EditArticle = () => {
                         />
                     </div>
                 </div>
-                
               </div>
                 <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
                     <h3 className="font-semibold text-dark dark:text-white">
@@ -682,7 +601,7 @@ const EditArticle = () => {
                     </h3>
                 </div>
                 <div className="p-6 5">
-                  <div className="flex flex-row w-full mb-7 gap-4">
+                  <div className="flex flex-row flex-wrap w-full mb-7 gap-4">
                     {products.map((product) => (
                       <button
                         key={product._id}
@@ -696,6 +615,7 @@ const EditArticle = () => {
                       </button>
                     ))}
                   </div>
+                  
                   <input
                     type="text"
                     value={article?.slug || ""}

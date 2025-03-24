@@ -49,7 +49,7 @@ const TableSeven = () => {
     fetchSubscribers(currentPage);
   }, [currentPage]);
 
-  const handleDeleteAchievement = async (id: string | number) => {
+  const handleDeleteSubscribers = async (id: string | number) => {
     try {
       setLoadingDelete(true);
       const response = await fetch(`/api/subscribers/${id}`, {
@@ -63,7 +63,16 @@ const TableSeven = () => {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      setSubscribers((prevSubscribers) => prevSubscribers.filter((subscriber) => subscriber._id !== id));
+
+      const updatedSubscriber = subscribers.filter((subscriber) => subscriber._id !== id);
+      const newTotalPages = Math.ceil(updatedSubscriber.length / itemsPerPage);
+
+      // Jika di halaman terakhir dan semua item dihapus, pindah ke halaman sebelumnya
+      const newPage = currentPage > newTotalPages ? newTotalPages || 1 : currentPage;
+      setCurrentPage(newPage);
+
+      // **Panggil ulang fetchServices() untuk update otomatis**
+      fetchSubscribers(newPage);
       setSelectedSubscribers(null);
       setIsOpen(false);
     } catch (error) {
@@ -165,14 +174,14 @@ const TableSeven = () => {
                 <button className="bg-gray-200 hover:bg-gray-300 text-lg text-gray-600 py-2 px-5 rounded-lg cursor-pointer" onClick={() => setSelectedSubscribers(null)}>
                   Cancel
                 </button>
-                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteAchievement(selectedSubscribers._id)}>
+                <button className="bg-red-500 hover:bg-red-600 text-lg text-white py-2 px-5 rounded-lg cursor-pointer" onClick={() => handleDeleteSubscribers(selectedSubscribers._id)}>
                   {loadingDelete ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </div>
           </div>
         )}
-        {subscribers.length >= itemsPerPage && (
+        {totalPages > 1 && subscribers.length > 0 && (
           <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}

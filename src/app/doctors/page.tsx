@@ -14,7 +14,7 @@ const DoctorPage = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="doctors" pageName="Manage Doctors"  pageNameSecond="" pageNameThird="" pageNameFour="" pageNameFive=""/>
+            <Breadcrumb route="doctors" pageName="Manage Doctors" routeSecond="" pageNameSecond="" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
             <ButtonDefault
                     label="Add New Doctor"
                     link="/doctors/create"

@@ -74,7 +74,16 @@ const TableFour = () => {
         if (!response.ok) {
           throw new Error(response.statusText);
         }
-        setBranches((prevBranches) => prevBranches.filter((branches) => branches._id !== _id));
+        
+        const updatedBranches = branches.filter((branch) => branch._id !== _id);
+        const newTotalPages = Math.ceil(updatedBranches.length / itemsPerPage);
+
+        // Jika di halaman terakhir dan semua item dihapus, pindah ke halaman sebelumnya
+        const newPage = currentPage > newTotalPages ? newTotalPages || 1 : currentPage;
+        setCurrentPage(newPage);
+
+        // **Panggil ulang fetchServices() untuk update otomatis**
+        fetchBranches(newPage);
         setSelectedBranches(null);
         setIsOpen(false);
       } catch (error) {
@@ -225,8 +234,8 @@ const TableFour = () => {
             </div>
           </div>
         )}
-        {branches.length >= itemsPerPage && (
-        <div className="flex justify-center mt-4 space-x-2">
+        {totalPages > 1 && branches.length > 0 && (
+          <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
               disabled={currentPage === 1}
@@ -246,7 +255,7 @@ const TableFour = () => {
             >
               Next
             </button>
-        </div>
+          </div>
         )}
       </div> 
     </div>

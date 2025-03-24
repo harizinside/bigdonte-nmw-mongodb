@@ -6,39 +6,87 @@ import path from "path";
 import sharp from "sharp";
 
 // GET: Fetch all doctor
-export async function GET(req: { url: string | URL; }) {
+// export async function GET(req: { url: string | URL; }) {
+//   const authError = validateToken(req);
+//   if (authError) return authError;
+//   await connectToDatabase();
+  
+//   try {
+//     // Ambil query parameter `page`, default ke 1 jika tidak ada
+//     const { searchParams } = new URL(req.url);
+//     const page = parseInt(searchParams.get("page") || "1", 10);
+//     const limit = 15; // Jumlah data per halaman
+
+//     // Hitung total data
+//     const totalAchievements = await Achievement.countDocuments();
+    
+//     // Ambil data dengan pagination (skip & limit)
+//     const achievements = await Achievement.find({})
+//       .skip((page - 1) * limit) // Lewati data sesuai halaman
+//       .limit(limit) // Batasi ke 15 data per halaman
+//       .sort({ createdAt: -1 }); // Urutkan dari terbaru
+
+//     // Hitung total halaman
+//     const totalPages = Math.ceil(totalAchievements / limit);
+
+//     return NextResponse.json({
+//       achievements, 
+//       currentPage: page,
+//       totalPages,
+//       totalAchievements,
+//     }, { status: 200 });
+
+//   } catch (error) {
+//     console.error("❌ Error fetching achievements:", error);
+//     return NextResponse.json({ message: "Gagal mengambil data achievements." }, { status: 500 });
+//   }
+// }
+
+export async function GET(req: Request) {
   const authError = validateToken(req);
   if (authError) return authError;
+
   await connectToDatabase();
-  
+
   try {
-    // Ambil query parameter `page`, default ke 1 jika tidak ada
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = 15; // Jumlah data per halaman
+    const pageParam = searchParams.get("page");
+    const limit = 15;
 
-    // Hitung total data
+    if (!pageParam || pageParam === "all") {
+      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter
+      const achievements = await Achievement.find({}).sort({ createdAt: -1 });
+
+      return new NextResponse(JSON.stringify({
+        achievements,
+        totalAchievements: achievements.length,
+      }), { 
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Jika `page` ada, jalankan pagination seperti biasa
+    const page = parseInt(pageParam, 10);
     const totalAchievements = await Achievement.countDocuments();
-    
-    // Ambil data dengan pagination (skip & limit)
     const achievements = await Achievement.find({})
-      .skip((page - 1) * limit) // Lewati data sesuai halaman
-      .limit(limit) // Batasi ke 15 data per halaman
-      .sort({ createdAt: -1 }); // Urutkan dari terbaru
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-    // Hitung total halaman
-    const totalPages = Math.ceil(totalAchievements / limit);
-
-    return NextResponse.json({
-      achievements, 
+    return new NextResponse(JSON.stringify({
+      achievements,
       currentPage: page,
-      totalPages,
+      totalPages: Math.ceil(totalAchievements / limit),
       totalAchievements,
-    }, { status: 200 });
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
 
   } catch (error) {
     console.error("❌ Error fetching achievements:", error);
-    return NextResponse.json({ message: "Gagal mengambil data achievements." }, { status: 500 });
+    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data achievements." }), { status: 500 });
   }
 }
 

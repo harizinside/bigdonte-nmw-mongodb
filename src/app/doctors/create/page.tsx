@@ -157,7 +157,7 @@ const CreateDoctor = () => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="doctors" pageName="Manage Doctors"  pageNameSecond="/ Create" pageNameThird="" pageNameFour="" pageNameFive=""/>
+        <Breadcrumb route="doctors" pageName="Manage Doctors" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
       </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

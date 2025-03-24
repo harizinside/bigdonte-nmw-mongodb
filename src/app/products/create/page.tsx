@@ -79,7 +79,7 @@ const CreateProduct = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="products" pageName="Manage Product" pageNameSecond="/ Create" pageNameThird="" pageNameFour="" pageNameFive=""/>
+          <Breadcrumb route="products" pageName="Manage Product" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
         </div>
 
     <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -93,7 +93,7 @@ const CreateProduct = () => {
             </div>
             {/* <form action="#"> */}
               <div className="p-6.5">
-                <div className="w-30 h-auto mb-5 overflow-hidden object-cover object-center ">
+                {/* <div className="w-30 h-auto mb-5 overflow-hidden object-cover object-center ">
                     {(previewImage) && (
                         <Image
                         width="800"
@@ -104,7 +104,7 @@ const CreateProduct = () => {
                         className="w-full rounded-lg"
                         />
                     )}
-                </div>
+                </div> */}
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
                     <div className="w-full xl:w-1/3">
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">

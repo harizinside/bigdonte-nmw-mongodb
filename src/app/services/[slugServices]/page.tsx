@@ -7,16 +7,25 @@ import ButtonDefault from "@/components/Buttons/ButtonDefault";
 import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import TableEleven from "@/components/Tables/TableEleven";
-import TableTwelve from "@/components/Tables/TableTwelve";
+import TableTwelve from "@/components/Tables/TableTwelve"; 
 import TableThreeteen from "@/components/Tables/TableThreeteen";
 import { useParams } from "next/navigation";
 
 const ServicesSecond = () => { 
   const { slugServices } = useParams();
+
+  const formatSlugToTitle = (slug: string) => {
+    return slug
+      .split("-") // Pisahkan berdasarkan "-"
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Ubah huruf pertama jadi kapital
+      .join(" "); // Gabungkan kembali dengan spasi
+  };
+
+  const formattedTitle = formatSlugToTitle(Array.isArray(slugServices) ? slugServices[0] : slugServices);
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="services" pageName="Manage Services" pageNameSecond="/ Manage Services List" pageNameThird="" pageNameFour="" pageNameFive="" />
+            <Breadcrumb route="services" pageName="Manage Services" routeSecond={`services/${slugServices}`} pageNameSecond={`/ ${formattedTitle}`} routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
             <ButtonDefault
                     label="Add New Services List"
                     link={`/services/${slugServices}/create`}

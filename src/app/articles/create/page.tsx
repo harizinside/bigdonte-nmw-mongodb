@@ -7,18 +7,6 @@ import RichEditor from "@/components/rich-editor/page";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
-type Doctor = {
-  id: number;
-  image: string;
-  name: string;
-  position: string; 
-}
-
-type Service = {
-  id: number;
-  name: string;
-}
-
 const CreatArticle = () => {
   const [doctors, setDoctors] = useState<any[]>([]); 
   const [services, setServices] = useState<any[]>([]);
@@ -57,39 +45,6 @@ const CreatArticle = () => {
     );
   };
 
-  const handleImageProduct = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0]; // Ambil file pertama
-  
-    setProducts((prev) =>
-      prev.map((product, i) =>
-        i === index ? { ...product, productImage: file || "" } : product
-      )
-    );
-  };
-  
-
-  const addProduct = () => {
-    setProducts([...products, { productName: "", productLink: "", productDescription: "", productImage: "" }]);
-  };
-
-  const handleProductChange = (
-    index: number,
-    value: string | File,
-    type: "productName" | "productLink" | "productDescription" | "productImage"
-  ) => {
-    setProducts((prev) =>
-      prev.map((product, i) =>
-        i === index ? { ...product, [type]: value } : product
-      )
-    );
-  };  
-
-  const removeProduct = (index: number) => {
-    if (products.length > 1) {
-      setProducts(products.filter((_, i) => i !== index));
-    }
-  };
-
   const generatedSlug = useMemo(() => {
         if (!title) return "";
         return title
@@ -116,6 +71,7 @@ const CreatArticle = () => {
         formData.append("title", title);
         formData.append("date", date);
         formData.append("slug", slug || "default-slug");
+        formData.append("status", "1");
         formData.append("description", description);
         formData.append("author", authorName);
         formData.append("editor", editorName);
@@ -165,7 +121,7 @@ const CreatArticle = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await fetch(`/api/doctors`, {
+        const response = await fetch(`/api/doctors?page=all`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
@@ -189,7 +145,7 @@ const CreatArticle = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch(`/api/services`, {
+        const response = await fetch(`/api/services?page=all`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
@@ -213,7 +169,7 @@ const CreatArticle = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(`/api/products`, {
+        const response = await fetch(`/api/products?page=all`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
@@ -238,7 +194,7 @@ const CreatArticle = () => {
     <DefaultLayout>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="articles" pageName="Manage Articles" pageNameSecond="/ Create" pageNameFour="" pageNameThird="" pageNameFive=""/>
+          <Breadcrumb route="articles" pageName="Manage Articles" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameFour="" routeFour="" pageNameThird="" routeFive="" pageNameFive=""/>
         </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -246,7 +202,6 @@ const CreatArticle = () => {
           {/* <!-- Contact Form --> */}
           <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
             <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
-              <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)} readOnly />
               <h3 className="font-semibold text-dark dark:text-white">
                 Article Image
               </h3>
@@ -483,7 +438,7 @@ const CreatArticle = () => {
                 <div className="w-full xl:w-1/2">
                     <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                       Article Source Link
-                      <span className="text-red">*</span>
+                      <span className="text-red">*</span> 
                     </label>
                     <input
                       type="text"
@@ -491,7 +446,7 @@ const CreatArticle = () => {
                       value={SourceLink} onChange={(e) => setSourceLink(e.target.value)}
                       className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                     />
-                </div>
+                </div> 
               </div>
             </div>
             <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
@@ -500,7 +455,7 @@ const CreatArticle = () => {
                 </h3>
             </div>
             <div className="p-6 5">
-                <div className="flex flex-row w-full mb-7 gap-4">
+                <div className="flex flex-row flex-wrap w-full mb-7 gap-4">
                   {products.map((product) => (
                     <button
                       key={product._id}
@@ -527,6 +482,7 @@ const CreatArticle = () => {
                     </Link>
                 </div>
             </div>
+            <input type="text" value={slug} style={{visibility: 'hidden'}} onChange={(e) => setSlug(e.target.value)} readOnly />
           </div>
         </div>
 

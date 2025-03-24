@@ -119,12 +119,21 @@ const CreateServiceList = () => {
       router.push(`/services/${slugServices}`);
     }
 
+    const formatSlugToTitle = (slug: string) => {
+      return slug
+        .split("-") // Pisahkan berdasarkan "-"
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Ubah huruf pertama jadi kapital
+        .join(" "); // Gabungkan kembali dengan spasi
+    };
+  
+    const formattedTitle = formatSlugToTitle(Array.isArray(slugServices) ? slugServices[0] : slugServices);
+
   return (
     <DefaultLayout>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="services" pageName="Manage Services List" pageNameSecond="/ Create" pageNameThird="" pageNameFour="" pageNameFive=""/>
-        </div>
+        <Breadcrumb route="services" pageName="Manage Services" routeSecond={`services/${slugServices}`} pageNameSecond={`/ ${formattedTitle}`} routeThird="" pageNameThird="/ Create" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
+      </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
         <div className="flex flex-col gap-9"> 
@@ -133,7 +142,7 @@ const CreateServiceList = () => {
             {/* <form action="#"> */}
               <div className="p-6.5 ">
                 <div className="flex gap-4.5 xl:flex-row mb-7 ">
-                    <div className="w-full xl:w-1/2 ">
+                    <div className="w-full xl:w-1/3 ">
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Banner Image
                         </label>
@@ -144,7 +153,7 @@ const CreateServiceList = () => {
                         className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                         />
                     </div>
-                    <div className="w-full xl:w-1/2">
+                    <div className="w-full xl:w-1/3">
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Cover Image
                         </label>
@@ -155,9 +164,7 @@ const CreateServiceList = () => {
                         className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                         />
                     </div>
-                </div>
-                <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
-                  <div className="w-full xl:w-1/2">
+                    <div className="w-full xl:w-1/3">
                       <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                         Service Name
                         <span className="text-red">*</span>
@@ -205,7 +212,7 @@ const CreateServiceList = () => {
                   </div>
                 </div>
                 <input type="text" value={slug} style={{visibility: 'hidden'}} onChange={(e) => setSlug(e.target.value)} readOnly />
-                <div className="flex gap-3 mt-7">
+                <div className="flex gap-3 mt-1">
                     <button onClick={handleSubmit} disabled={loading} className="flex w-max justify-center gap-2 rounded-[7px] bg-green p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
                         {loading ? "Saving..." : "Save Service"}

@@ -76,7 +76,16 @@ const TableFive = () => {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      setCatalogs((prevCatalogs) => prevCatalogs.filter((catalog) => catalog._id !== _id));
+      
+      const updatedCatalogs = catalogs.filter((catalog) => catalog._id !== _id);
+      const newTotalPages = Math.ceil(updatedCatalogs.length / itemsPerPage);
+
+      // Jika di halaman terakhir dan semua item dihapus, pindah ke halaman sebelumnya
+      const newPage = currentPage > newTotalPages ? newTotalPages || 1 : currentPage;
+      setCurrentPage(newPage);
+
+      // **Panggil ulang fetchServices() untuk update otomatis**
+      fetchCatalogs(newPage);
       setSelectedCatalog(null);
       setIsOpen(false);
     } catch (error) {
@@ -224,8 +233,8 @@ const TableFive = () => {
           </div>
         </div>
       )}
-        {catalogs.length >= itemsPerPage && (
-        <div className="flex justify-center mt-4 space-x-2">
+        {totalPages > 1 && catalogs.length > 0 && (
+          <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
               disabled={currentPage === 1}
@@ -245,7 +254,7 @@ const TableFive = () => {
             >
               Next
             </button>
-        </div>
+          </div>
         )}
       </div>
     </div>

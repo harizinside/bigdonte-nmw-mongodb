@@ -4,6 +4,39 @@ import { NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
 
 // GET: Fetch all Subscriber documents
+// export async function GET(req: Request) {
+//   const authError = validateToken(req);
+//   if (authError) return authError;
+
+//   await connectToDatabase();
+
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const page = parseInt(searchParams.get("page") || "1", 10);
+//     const limit = 15;
+
+//     const totalSubscribers = await Subscriber.countDocuments();
+//     const subscribers = await Subscriber.find({})
+//       .skip((page - 1) * limit)
+//       .limit(limit)
+//       .sort({ createdAt: -1 });
+
+//     return new NextResponse(JSON.stringify({
+//       subscribers,
+//       currentPage: page,
+//       totalPages: Math.ceil(totalSubscribers / limit),
+//       totalSubscribers,
+//     }), {
+//       status: 200,
+//       headers: { "Content-Type": "application/json" },
+//     });
+
+//   } catch (error) {
+//     console.error("❌ Error fetching subscriber:", error);
+//     return new NextResponse(JSON.stringify({ message: "Gagal mengambil data subscriber." }), { status: 500 });
+//   }
+// }
+
 export async function GET(req: Request) {
   const authError = validateToken(req);
   if (authError) return authError;
@@ -12,9 +45,24 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageParam = searchParams.get("page");
     const limit = 15;
 
+    if (!pageParam || pageParam === "all") {
+      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter
+      const subscribers = await Subscriber.find({}).sort({ createdAt: -1 });
+
+      return new NextResponse(JSON.stringify({
+        subscribers,
+        totalSubscribers: subscribers.length,
+      }), { 
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Jika `page` ada, jalankan pagination seperti biasa
+    const page = parseInt(pageParam, 10);
     const totalSubscribers = await Subscriber.countDocuments();
     const subscribers = await Subscriber.find({})
       .skip((page - 1) * limit)
@@ -32,8 +80,8 @@ export async function GET(req: Request) {
     });
 
   } catch (error) {
-    console.error("❌ Error fetching subscriber:", error);
-    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data subscriber." }), { status: 500 });
+    console.error("❌ Error fetching subscribers:", error);
+    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data subscribers." }), { status: 500 });
   }
 }
 

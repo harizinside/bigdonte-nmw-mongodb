@@ -15,7 +15,7 @@ const ArticlesPage = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="articles" pageName="Manage Articles" pageNameSecond="" pageNameThird="" pageNameFour="" pageNameFive="" />
+            <Breadcrumb route="articles" pageName="Manage Articles" routeSecond="" pageNameSecond="" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
             <ButtonDefault
                     label="Add New Article"
                     link="/articles/create"
@@ -25,7 +25,7 @@ const ArticlesPage = () => {
             </ButtonDefault>
         </div>
 
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-10"> 
         <TableEleven showPagination={true}/> 
       </div>
     </DefaultLayout>

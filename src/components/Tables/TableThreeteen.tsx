@@ -55,7 +55,7 @@ const TableTwelve = () => {
         });
   
         if (!response.ok) {
-          throw new Error("Gagal mengambil data services"); 
+          throw new Error("Gagal mengambil data services");  
         }
     
         const result: ServicesListResponse = await response.json();
@@ -86,7 +86,15 @@ const TableTwelve = () => {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      setServices((prevServices) => prevServices.filter((service) => service.slug !== slug));
+      const updatedServices = services.filter((service) => service.slug !== slug);
+      const newTotalPages = Math.ceil(updatedServices.length / itemsPerPage);
+
+      // Jika di halaman terakhir dan semua item dihapus, pindah ke halaman sebelumnya
+      const newPage = currentPage > newTotalPages ? newTotalPages || 1 : currentPage;
+      setCurrentPage(newPage);
+
+      // **Panggil ulang fetchServices() untuk update otomatis**
+      fetchServices(newPage);
       setSelectedServices(null);
       setIsOpen(false);
     } catch (error) {
@@ -140,11 +148,11 @@ const TableTwelve = () => {
                 </td>
                 {/* Image */}
                 <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pl-7.5 ${
+                  className={`border-[#eee] px-2 py-4 dark:border-dark-3 xl:pl-7.5 ${
                     index === services.length - 1 ? "border-b-0" : "border-b"
                   }`}
                 >
-                  <div className="h-auto w-48">
+                  <div className="h-auto w-30">
                     <Image
                       src={service.imageCover} // gunakan detail jika ada, jika tidak fallback ke service.image
                       width={800}
@@ -157,7 +165,7 @@ const TableTwelve = () => {
                 </td>
                 {/* Name */}
                 <td
-                  className={`border-[#eee] px-4 py-4 dark:border-dark-3 xl:pl-0 ${
+                  className={`border-[#eee] px-2 py-4 dark:border-dark-3 xl:pl-0 ${
                     index === services.length - 1 ? "border-b-0" : "border-b"
                   }`}
                 >
@@ -185,7 +193,7 @@ const TableTwelve = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="M21.455 5.416a.75.75 0 0 1-.096.943l-9.193 9.192a.75.75 0 0 1-.34.195l-3.829 1a.75.75 0 0 1-.915-.915l1-3.828a.8.8 0 0 1 .161-.312L17.47 2.47a.75.75 0 0 1 1.06 0l2.829 2.828a1 1 0 0 1 .096.118m-1.687.412L18 4.061l-8.518 8.518l-.625 2.393l2.393-.625z" clipRule="evenodd"/><path fill="currentColor" d="M19.641 17.16a44.4 44.4 0 0 0 .261-7.04a.4.4 0 0 1 .117-.3l.984-.984a.198.198 0 0 1 .338.127a46 46 0 0 1-.21 8.372c-.236 2.022-1.86 3.607-3.873 3.832a47.8 47.8 0 0 1-10.516 0c-2.012-.225-3.637-1.81-3.873-3.832a46 46 0 0 1 0-10.67c.236-2.022 1.86-3.607 3.873-3.832a48 48 0 0 1 7.989-.213a.2.2 0 0 1 .128.34l-.993.992a.4.4 0 0 1-.297.117a46 46 0 0 0-6.66.255a2.89 2.89 0 0 0-2.55 2.516a44.4 44.4 0 0 0 0 10.32a2.89 2.89 0 0 0 2.55 2.516c3.355.375 6.827.375 10.183 0a2.89 2.89 0 0 0 2.55-2.516"/></svg>
                       </button>
                     </Link>
-                    <Link href={`/services/list/${service.slug}`} className="p-0 m-0 flex items-center justify-center">
+                    <Link href={`/services/${slugServices}/${service.slug}`} className="p-0 m-0 flex items-center justify-center">
                       <button className="hover:text-orange-400">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -266,16 +274,12 @@ const TableTwelve = () => {
             </div>
           </div>
         )}
-        {services.length >= itemsPerPage && (
-          <div className="flex justify-center mt-4 space-x-2">
+        {totalPages > 1 && services.length > 0 && (
+        <div className="flex justify-center mt-4 space-x-2">
             <button
-              className={`px-4 py-2 rounded ${
-                currentPage === 1
-                  ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed"
-                  : "bg-orange-400 text-white hover:bg-orange-600"
-              }`}
+              className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage(currentPage - 1)}
             >
               Prev
             </button>
@@ -285,20 +289,16 @@ const TableTwelve = () => {
             </span>
 
             <button
-              className={`px-4 py-2 rounded ${
-                currentPage === totalPages
-                  ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed"
-                  : "bg-orange-400 text-white hover:bg-orange-600"
-              }`}
+              className={`px-4 py-2 rounded ${currentPage === totalPages ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
               disabled={currentPage === totalPages}
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
+              onClick={() => setCurrentPage(currentPage + 1)}
             >
               Next
             </button>
-          </div>
-        )}
+        </div>
+      )}
+
+
       </div>
     </div>
   );

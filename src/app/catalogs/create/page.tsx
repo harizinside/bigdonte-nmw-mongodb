@@ -88,7 +88,7 @@ const CreateCatalog = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="catalogs" pageName="Manage Catalogs"  pageNameSecond="/ Create" pageNameThird="" pageNameFour="" pageNameFive=""/>
+          <Breadcrumb route="catalogs" pageName="Manage Catalogs" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
         </div>
 
     <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

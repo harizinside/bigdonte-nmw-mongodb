@@ -70,7 +70,7 @@ const CreatePopup = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="popup" pageName="Manage Popup"  pageNameSecond="/ Create" pageNameThird="" pageNameFour="" pageNameFive=""/>
+          <Breadcrumb route="popup" pageName="Manage Popup" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
         </div>
 
     <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

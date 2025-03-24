@@ -1,5 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import ServicesList from "@/models/servicesList";
+import ServicesType from "@/models/servicesType";
+import Patient from "@/models/patients";
 import { NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
 import path from "path";
@@ -153,7 +155,34 @@ export async function DELETE(req: Request, { params }: any) {
     }
   }
 
+  //   // Fungsi untuk menghapus gambar dari direktori
+  const deleteImage = async (imagePath: string) => {
+    if (!imagePath) return;
+    try {
+      const fullPath = path.join(process.cwd(), "public", imagePath);
+      console.log("Menghapus gambar:", fullPath);
+      await fs.access(fullPath);
+      await fs.unlink(fullPath);
+    } catch (error) {
+      console.error("Gagal menghapus gambar:", error);
+    }
+  };
+
+  //   // Cari semua `servicesType` yang terkait
+  const servicesTypes = await ServicesType.find({ id_servicesList: servicesList._id });
+  for (const item of servicesTypes) {
+    if (item.image) await deleteImage(item.image);
+  }
+
+  const patients = await Patient.find({ id_servicesList: servicesList._id });
+  for (const item of patients) {
+    if (item.image) await deleteImage(item.image);
+    if (item.imageSecond) await deleteImage(item.imageSecond);
+  }
+
   // Hapus services dari database
+  await ServicesType.deleteMany({ id_servicesList: servicesList._id });
+  await Patient.deleteMany({ id_servicesList: servicesList._id });
   await ServicesList.findOneAndDelete({ slug: params.slug })
 
   console.log("services list berhasil dihapus.");

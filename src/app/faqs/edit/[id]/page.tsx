@@ -93,7 +93,7 @@ const handlePush = () => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="faqs" pageName="Manage Faqss" pageNameSecond="/ Edit" pageNameThird="" pageNameFour="" pageNameFive="" />
+        <Breadcrumb route="faqs" pageName="Manage Faqss" routeSecond="" pageNameSecond="/ Edit" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
       </div>
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
         <div className="flex flex-col gap-9"> 

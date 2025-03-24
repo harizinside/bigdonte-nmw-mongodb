@@ -128,11 +128,20 @@ const EditService = () => {
     router.push("/services");
   }
 
+  const formatSlugToTitle = (slug: string) => {
+    return slug
+      .split("-") // Pisahkan berdasarkan "-"
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Ubah huruf pertama jadi kapital
+      .join(" "); // Gabungkan kembali dengan spasi
+  };
+
+  const formattedTitleList = formatSlugToTitle(Array.isArray(slug) ? slug[0] : slug);
+
   return (
     <DefaultLayout>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="services" pageName="Manage Services" pageNameSecond="/ Edit" pageNameThird="" pageNameFour="" pageNameFive=""/>
+      <Breadcrumb route="services" pageName="Manage Services" routeSecond="" pageNameSecond={`/ Edit`} routeThird="" pageNameThird={`/ ${formattedTitleList}`} routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
         </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

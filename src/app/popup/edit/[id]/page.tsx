@@ -22,7 +22,6 @@ const EditPopup = () => {
       const [loading, setLoading] = useState(true);
       const [updating, setUpdating] = useState(false);
       const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
-      const [document, setDocument] = useState<File | null>(null); // Perbaiki tipe state
       const [previewImage, setPreviewImage] = useState<string | null>(null);
       const [isOpen, setIsOpen] = useState(false);
       const [message, setMessage] = useState(""); 
@@ -87,7 +86,7 @@ const EditPopup = () => {
             setMessage("Error updating Popup: " + error);
             setIsOpen(true);
           } finally {
-            setUpdating(false);
+            setUpdating(false); 
           }
         };
       
@@ -99,7 +98,7 @@ const EditPopup = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="popup" pageName="Manage Popup"  pageNameSecond="/ Edit" pageNameFour="" pageNameThird="" pageNameFive=""/>
+          <Breadcrumb route="popup" pageName="Manage Popup" routeSecond="" pageNameSecond="/ Edit" routeThird="" pageNameFour="" routeFour="" pageNameThird="" routeFive="" pageNameFive=""/>
         </div>
 
     <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

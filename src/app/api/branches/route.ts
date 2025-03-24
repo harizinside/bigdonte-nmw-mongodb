@@ -5,38 +5,51 @@ import { validateToken } from "@/lib/auth";
 import path from "path";
 import sharp from "sharp";
 
-export async function GET(req: { url: string | URL; }) {
+export async function GET(req: Request) {
   const authError = validateToken(req);
   if (authError) return authError;
+
   await connectToDatabase();
+
   try {
-    // Ambil query parameter `page`, default ke 1 jika tidak ada
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = 15; // Jumlah data per halaman
+    const pageParam = searchParams.get("page");
+    const limit = 15;
 
-    // Hitung total data
+    if (!pageParam || pageParam === "all") {
+      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter
+      const branches = await Branchs.find({}).sort({ createdAt: -1 });
+
+      return new NextResponse(JSON.stringify({
+        branches,
+        totalBranches: branches.length,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Jika `page` ada, jalankan pagination seperti biasa
+    const page = parseInt(pageParam, 10);
     const totalBranches = await Branchs.countDocuments();
-    
-    // Ambil data dengan pagination (skip & limit)
     const branches = await Branchs.find({})
-      .skip((page - 1) * limit) // Lewati data sesuai halaman
-      .limit(limit) // Batasi ke 15 data per halaman
-      .sort({ createdAt: -1 }); // Urutkan dari terbaru
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-    // Hitung total halaman
-    const totalPages = Math.ceil(totalBranches / limit);
-
-    return NextResponse.json({
+    return new NextResponse(JSON.stringify({
       branches,
       currentPage: page,
-      totalPages,
+      totalPages: Math.ceil(totalBranches / limit),
       totalBranches,
-    }, { status: 200 });
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
 
   } catch (error) {
-    console.error("❌ Error fetching doctors:", error);
-    return NextResponse.json({ message: "Gagal mengambil data dokter." }, { status: 500 });
+    console.error("❌ Error fetching branches:", error);
+    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data branches." }), { status: 500 });
   }
 }
 

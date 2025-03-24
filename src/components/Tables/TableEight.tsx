@@ -66,7 +66,15 @@ const TableEight = () => {
           if (!response.ok) {
             throw new Error(response.statusText);
           }
-          setFaqs((prevFaqs) => prevFaqs.filter((faq) => faq._id !== id));
+          const updatedFaq = faqs.filter((faq) => faq._id !== id);
+          const newTotalPages = Math.ceil(updatedFaq.length / itemsPerPage);
+
+          // Jika di halaman terakhir dan semua item dihapus, pindah ke halaman sebelumnya
+          const newPage = currentPage > newTotalPages ? newTotalPages || 1 : currentPage;
+          setCurrentPage(newPage);
+
+          // **Panggil ulang fetchServices() untuk update otomatis**
+          fetchFaqs(newPage);
           setSelectedFaqs(null);
           setIsOpen(false);
         } catch (error) {
@@ -191,7 +199,7 @@ const TableEight = () => {
             </div>
           </div>
         )}
-        {faqs.length >= itemsPerPage && (
+        {totalPages > 1 && faqs.length > 0 && (
           <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}

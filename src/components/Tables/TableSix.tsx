@@ -30,9 +30,9 @@ const TableSix = () => {
 
   const itemsPerPage = 15; 
   
-    const fetchAchievements = async (currentPage = 1) => {
+    const fetchAchievements = async (page = 1) => {
       try {
-        const response = await fetch(`/api/achievements?page=${currentPage}`, {
+        const response = await fetch(`/api/achievements?page=${page}`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
@@ -75,7 +75,16 @@ const TableSix = () => {
         if (!response.ok) {
           throw new Error(response.statusText);
         }
-        setAchievements((prevAchievements) => prevAchievements.filter((doctor) => doctor._id !== _id));
+
+        const updatedAchievements = achievements.filter((achievement) => achievement._id !== _id);
+        const newTotalPages = Math.ceil(updatedAchievements.length / itemsPerPage);
+
+        // Jika di halaman terakhir dan semua item dihapus, pindah ke halaman sebelumnya
+        const newPage = currentPage > newTotalPages ? newTotalPages || 1 : currentPage;
+        setCurrentPage(newPage);
+
+        // **Panggil ulang fetchServices() untuk update otomatis**
+        fetchAchievements(newPage);
         setSelectedAchievement(null);
         setIsOpen(false);
       } catch (error) {
@@ -212,8 +221,8 @@ const TableSix = () => {
             </div>
           </div>
         )}
-        {achievements.length >= itemsPerPage && (
-        <div className="flex justify-center mt-4 space-x-2">
+        {totalPages > 1 && achievements.length > 0 && (
+          <div className="flex justify-center mt-4 space-x-2">
             <button
               className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-[#F7F9FC] dark:bg-dark-2 cursor-not-allowed" : "bg-orange-400 text-white hover:bg-orange-600"}`}
               disabled={currentPage === 1}
@@ -233,7 +242,7 @@ const TableSix = () => {
             >
               Next
             </button>
-        </div>
+          </div>
         )}
       </div>
     </div>

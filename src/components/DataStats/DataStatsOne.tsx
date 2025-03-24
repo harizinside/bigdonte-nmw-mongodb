@@ -8,30 +8,103 @@ const DataStatsOne: React.FC<dataStats> = () => {
   const [articleCount, setArticleCount] = useState(0);
   const [branchCount, setBranchCount] = useState(0);
   const [doctorCount, setDoctorCount] = useState(0);
+  const [serviceCount, setServiceCount] = useState(0);
+  const [catalogCount, setCatalogCount] = useState(0);
+  const [subscriberCount, setSubscriberCount] = useState(0);
+  const [achievementCount, setAchievementCount] = useState(0);
+  const [promoCount, setPromoCount] = useState(0);
+  const [loading, setLoading] = useState(false)
+
+  const fetchData = async () => { 
+    setLoading(true);
+    try {
+      // const response = await fetch(`/api/subscribers?page=${currentPage}`);
+      const response = await fetch(`/api/articles?page=all`,  {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+      });
+
+      const responseBranches = await fetch(`/api/branches?page=all`,  {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+      });
+
+      const responseDoctors = await fetch(`/api/doctors?page=all`,  {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+      });
+
+      const responseServices = await fetch(`/api/services?page=all`,  {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+      });
+
+      const responseCatalogs = await fetch(`/api/catalogs?page=all`,  {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+      });
+
+      const responseSubscribers = await fetch(`/api/subscribers?page=all`,  {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+      });
+
+      const responseAchievements = await fetch(`/api/achievements?page=all`,  {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+      });
+
+      const responsePromos = await fetch(`/api/promos?page=all`,  {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json(); 
+      const resultBranches = await responseBranches.json(); 
+      const resultDoctors = await responseDoctors.json(); 
+      const resultServices = await responseServices.json(); 
+      const resultCatalogs = await responseCatalogs.json(); 
+      const resultSubscribers = await responseSubscribers.json(); 
+      const resultAchievements = await responseAchievements.json(); 
+      const resultPromos = await responsePromos.json(); 
+      
+      setArticleCount(result.totalArticles);
+      setBranchCount(resultBranches.totalBranches);
+      setDoctorCount(resultDoctors.totalDoctors);
+      setServiceCount(resultServices.totalServices);
+      setCatalogCount(resultCatalogs.totalCatalogs);
+      setSubscriberCount(resultSubscribers.totalSubscribers);
+      setAchievementCount(resultAchievements.totalAchievements);
+      setPromoCount(resultPromos.totalPromos);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Fetch total articles
-    fetch("/api/articles")
-      .then((res) => res.json())
-      .then((data) => {
-        setArticleCount(data.pagination?.total); // Misalnya data berupa array
-      })
-      .catch((error) => console.error("Error fetching articles:", error));
-
-    // Fetch total branches
-    fetch("/api/branches")
-      .then((res) => res.json())
-      .then((data) => {
-        setBranchCount(data.pagination?.total);
-      })
-      .catch((error) => console.error("Error fetching branches:", error));
-
-    fetch("/api/doctors")
-      .then((res) => res.json())
-      .then((data) => {
-        setDoctorCount(data.pagination?.total);
-      })
-      .catch((error) => console.error("Error fetching branches:", error));
+    fetchData();
   }, []);
 
   const dataStatsList = [
@@ -43,7 +116,7 @@ const DataStatsOne: React.FC<dataStats> = () => {
       ),
       color: "#3FD97F",
       title: "Total Articles",
-      value: `${articleCount} Articles`,
+      value: loading ? "Loading..." : `${articleCount} Articles`,
     },
     {
       icon: (
@@ -53,7 +126,7 @@ const DataStatsOne: React.FC<dataStats> = () => {
       ),
       color: "#FF9C55",
       title: "Total Branches",
-      value: `${branchCount} Branches`,
+      value:  loading ? "Loading..." : `${branchCount} Branches`,
     },
     {
       icon: (
@@ -61,7 +134,7 @@ const DataStatsOne: React.FC<dataStats> = () => {
       ),
       color: "#8155FF",
       title: "Total Doctors",
-      value: `${doctorCount} Doctors`,
+      value: loading ? "Loading..." : `${doctorCount} Doctors`,
     },
     {
       icon: (
@@ -69,7 +142,7 @@ const DataStatsOne: React.FC<dataStats> = () => {
       ),
       color: "#18BFFF",
       title: "Total Services",
-      value: "6 Services",
+      value: loading ? "Loading..." : `${serviceCount} Services`,
     },
     {
       icon: (
@@ -77,7 +150,7 @@ const DataStatsOne: React.FC<dataStats> = () => {
       ),
       color: "#5B913B",
       title: "Total Catalog",
-      value: "3 Catalog",
+      value: loading ? "Loading..." : `${catalogCount} Catalog`,
     },
     {
       icon: (
@@ -114,7 +187,7 @@ const DataStatsOne: React.FC<dataStats> = () => {
       ),
       color: "#8E1616",
       title: "Total Subscribers",
-      value: "29 Subscribers",
+      value: loading ? "Loading..." : `${subscriberCount} Subscribers`,
     },
     {
       icon: (
@@ -122,7 +195,7 @@ const DataStatsOne: React.FC<dataStats> = () => {
       ),
       color: "#F1C376",
       title: "Total Achievement",
-      value: "7 Achievement",
+      value: loading ? "Loading..." : `${achievementCount} Achievement`,
     },
     {
       icon: (
@@ -130,7 +203,7 @@ const DataStatsOne: React.FC<dataStats> = () => {
       ),
       color: "#42032C",
       title: "Total Promo",
-      value: "3 Promo",
+      value: loading ? "Loading..." : `${promoCount} Promo`,
     },
   ];
 

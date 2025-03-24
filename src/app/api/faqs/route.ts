@@ -3,7 +3,6 @@ import Faq from "@/models/faqs";
 import { NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
 
-// GET: Fetch all faq documents
 export async function GET(req: Request) {
   const authError = validateToken(req);
   if (authError) return authError;
@@ -12,9 +11,24 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageParam = searchParams.get("page");
     const limit = 15;
 
+    if (!pageParam || pageParam === "all") {
+      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter
+      const faqs = await Faq.find({}).sort({ createdAt: -1 });
+
+      return new NextResponse(JSON.stringify({
+        faqs,
+        totalFaqs: faqs.length,
+      }), { 
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Jika `page` ada, jalankan pagination seperti biasa
+    const page = parseInt(pageParam, 10);
     const totalFaqs = await Faq.countDocuments();
     const faqs = await Faq.find({})
       .skip((page - 1) * limit)

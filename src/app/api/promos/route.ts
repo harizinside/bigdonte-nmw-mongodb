@@ -1,41 +1,3 @@
-// import { NextRequest, NextResponse } from "next/server";
-
-// export const dynamic = "force-dynamic";
-
-// export async function GET(req: Request) {
-//   try {
-//     const { searchParams } = new URL(req.url);
-//     const page = searchParams.get("page") || "1";
-
-//     const response = await fetch(`https://nmw.prahwa.net/api/promo?page=${page}`);
-
-//     if (!response.ok) {
-//       return NextResponse.json({ message: `Error: ${response.statusText}` }, { status: response.status });
-//     }
-
-//     const data = await response.json();
-
-//     // Perbaikan: Ubah URL gambar menjadi absolute URL
-//     data.data.forEach((promo: { image: string; }) => {
-//       promo.image = `https://nmw.prahwa.net/storage/${promo.image}`;
-//     });
-
-//     return NextResponse.json({
-//       data: data.data,
-//       pagination: {
-//         currentPage: data.meta?.current_page || 1,
-//         totalPages: data.meta?.last_page || 1,
-//         perPage: data.meta?.per_page || 10,
-//         total: data.meta?.total || 0,
-//         links: data.links || [],
-//       },
-//     }, { status: 200 });
-//   } catch (error) {
-//     console.error("Error fetching promo:", error);
-//     return NextResponse.json({ message: "Failed to fetch promo" }, { status: 500 });
-//   }
-// }
-
 import { connectToDatabase } from "@/lib/mongodb";
 import Promo from "@/models/promo";
 import { NextResponse } from "next/server";
@@ -43,40 +5,51 @@ import { validateToken } from "@/lib/auth";
 import path from "path";
 import sharp from "sharp";
 
-// GET: Fetch all doctor
-export async function GET(req: { url: string | URL; }) {
+export async function GET(req: Request) {
   const authError = validateToken(req);
   if (authError) return authError;
+
   await connectToDatabase();
-  
+
   try {
-    // Ambil query parameter `page`, default ke 1 jika tidak ada
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = 15; // Jumlah data per halaman
+    const pageParam = searchParams.get("page");
+    const limit = 15;
 
-    // Hitung total data
-    const totalPromo = await Promo.countDocuments();
-    
-    // Ambil data dengan pagination (skip & limit)
-    const promo = await Promo.find({})
-      .skip((page - 1) * limit) // Lewati data sesuai halaman
-      .limit(limit) // Batasi ke 15 data per halaman
-      .sort({ createdAt: -1 }); // Urutkan dari terbaru
+    if (!pageParam || pageParam === "all") {
+      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter
+      const promos = await Promo.find({}).sort({ createdAt: -1 });
 
-    // Hitung total halaman
-    const totalPages = Math.ceil(totalPromo / limit);
+      return new NextResponse(JSON.stringify({
+        promos,
+        totalPromos: promos.length,
+      }), { 
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    return NextResponse.json({
-      promo, 
+    // Jika `page` ada, jalankan pagination seperti biasa
+    const page = parseInt(pageParam, 10);
+    const totalPromos = await Promo.countDocuments();
+    const promos = await Promo.find({})
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    return new NextResponse(JSON.stringify({
+      promos,
       currentPage: page,
-      totalPages,
-      totalPromo,
-    }, { status: 200 });
+      totalPages: Math.ceil(totalPromos / limit),
+      totalPromos,
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
 
   } catch (error) {
-    console.error("❌ Error fetching promo:", error);
-    return NextResponse.json({ message: "Gagal mengambil data promo." }, { status: 500 });
+    console.error("❌ Error fetching promos:", error);
+    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data promos." }), { status: 500 });
   }
 }
 
