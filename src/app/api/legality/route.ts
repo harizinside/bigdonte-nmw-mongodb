@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Legality from "@/models/legality";
-import { NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 
 // GET: Fetch all legality documents
 export async function GET(req: any, { params }: any) {
@@ -18,10 +18,11 @@ export async function GET(req: any, { params }: any) {
 }
 
 // POST: Create a new legality document
-export async function POST(req: { json: () => PromiseLike<{ privacyPolicy: any; termsCondition: any;}> | { privacyPolicy: any; termsCondition: any;}; }) {
+export async function POST(req: NextRequest) {
   try {
     const authError = validateToken(req);
     if (authError) return authError;
+
     await connectToDatabase();
 
     let requestBody;
@@ -38,7 +39,7 @@ export async function POST(req: { json: () => PromiseLike<{ privacyPolicy: any; 
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    // Save to MongoDB
+    // Simpan ke MongoDB
     const newLegality = new Legality({
       privacyPolicy,
       termsCondition,
@@ -53,10 +54,11 @@ export async function POST(req: { json: () => PromiseLike<{ privacyPolicy: any; 
   }
 }
 
-export async function PUT(req: { json: () => PromiseLike<{ privacyPolicy: any; termsCondition: any;}> | { privacyPolicy: any; termsCondition: any;}; },) {
+export async function PUT(req: NextRequest) {
   try {
     const authError = validateToken(req);
     if (authError) return authError;
+
     await connectToDatabase();
 
     let requestBody;
@@ -75,7 +77,7 @@ export async function PUT(req: { json: () => PromiseLike<{ privacyPolicy: any; t
 
     const legalityId = "67d811d72cc8e3c40f63456d";
 
-    // Update the existing document by ID
+    // Update dokumen yang ada berdasarkan ID
     const updatedLegality = await Legality.findByIdAndUpdate(
       legalityId,
       { privacyPolicy, termsCondition },

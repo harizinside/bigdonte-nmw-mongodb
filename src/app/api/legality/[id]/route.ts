@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Legality from "@/models/legality";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
 
 export async function GET(req: any, { params }: any) {
@@ -16,10 +16,11 @@ export async function GET(req: any, { params }: any) {
   return NextResponse.json(legality, { status: 200 });
 }
 
-export async function PUT(req: { json: () => PromiseLike<{ privacyPolicy: any; termsCondition: any;}> | { privacyPolicy: any; termsCondition: any;}; }, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authError = validateToken(req);
     if (authError) return authError;
+
     await connectToDatabase();
 
     let requestBody;
@@ -36,7 +37,7 @@ export async function PUT(req: { json: () => PromiseLike<{ privacyPolicy: any; t
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    const legalityId = "67d811d72cc8e3c40f63456d";
+    const legalityId = params.id; // Menggunakan ID dari params
 
     // Update the existing document by ID
     const updatedLegality = await Legality.findByIdAndUpdate(

@@ -1,33 +1,23 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 import validator from "validator";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method Not Allowed" });
-  }
-
-  const { path, type } = req.query;
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const path = searchParams.get("path");
+  const type = searchParams.get("type");
 
   if (!path || !type) {
-    return res.status(400).json({ error: "Path and type are required" });
-  }
-
-  if (Array.isArray(path)) {
-    return res.status(400).json({ error: "Path must be a single string" });
+    return NextResponse.json({ error: "Path and type are required" }, { status: 400 });
   }
 
   if (!validator.isURL(path)) {
-    return res.status(400).json({ error: "Path must be a valid URL" });
-  }
-
-  if (Array.isArray(type)) {
-    return res.status(400).json({ error: "Type must be a single string" });
+    return NextResponse.json({ error: "Path must be a valid URL" }, { status: 400 });
   }
 
   if (!validator.isAlpha(type)) {
-    return res.status(400).json({ error: "Type must be a valid string" });
+    return NextResponse.json({ error: "Type must be a valid string" }, { status: 400 });
   }
 
-  let cloudinaryUrl = `https://res.cloudinary.com/duwyojrax/${type}/upload/${path}`;
-  res.redirect(301, cloudinaryUrl);
+  const cloudinaryUrl = `https://res.cloudinary.com/duwyojrax/${type}/upload/${path}`;
+  return NextResponse.redirect(cloudinaryUrl, 301);
 }

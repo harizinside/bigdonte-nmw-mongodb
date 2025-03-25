@@ -1,15 +1,15 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Position from "@/models/position";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
 
-// GET: Fetch all position documents
-export async function GET(req: { url: string | URL; }) {
-  const authError = validateToken(req);
-  if (authError) return authError;
-  await connectToDatabase();
-  
+export async function GET(req: NextRequest) {
   try {
+    const authError = validateToken(req);
+    if (authError) return authError;
+
+    await connectToDatabase();
+
     const positionDocs = await Position.find({});
     return NextResponse.json(positionDocs, { status: 200 });
   } catch (error) {

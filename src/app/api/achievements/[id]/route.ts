@@ -1,17 +1,12 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Achievement from "@/models/achievements";
 import { NextResponse } from "next/server";
-import cloudinary from "@/lib/cloudinary"; 
 import { validateToken } from "@/lib/auth";
 import path from "path";
 import fs from "fs/promises";
 import sharp from "sharp";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const dynamic = "force-dynamic";
 
 // GET: Get achievement by ID
 export async function GET(req: any, { params }: any) {

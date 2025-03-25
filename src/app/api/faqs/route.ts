@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Faq from "@/models/faqs";
-import { NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   const authError = validateToken(req);
@@ -52,10 +52,11 @@ export async function GET(req: Request) {
 }
 
 // POST: Create a new faq document
-export async function POST(req: { json: () => PromiseLike<{ question: any; answer: any;}> | { question: any; answer: any;}; }) {
+export async function POST(req: NextRequest) {
   try {
     const authError = validateToken(req);
     if (authError) return authError;
+    
     await connectToDatabase();
 
     let requestBody;
@@ -73,11 +74,7 @@ export async function POST(req: { json: () => PromiseLike<{ question: any; answe
     }
 
     // Save to MongoDB
-    const newFaq = new Faq({
-      question,
-      answer,
-    });
-
+    const newFaq = new Faq({ question, answer });
     await newFaq.save();
     
     return NextResponse.json(newFaq, { status: 201 });

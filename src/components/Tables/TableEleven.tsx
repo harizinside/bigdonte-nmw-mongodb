@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback  } from "react";
 
 type Article = {
   _id:number;
@@ -38,12 +38,8 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
     const [loadingDelete, setLoadingDelete] = useState(false);
   
     const itemsPerPage = 15; 
-
-    useEffect(() => {
-      fetchArticles(currentPage);
-    }, [currentPage, limit]);
   
-    const fetchArticles = async (currentPage: number) => {
+    const fetchArticles = useCallback(async (currentPage: number) => {
       try {
         const response = await fetch(`/api/articles?page=${currentPage}`, {
           method: "GET",
@@ -52,15 +48,15 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
             "Content-Type": "application/json",
           },
         });
-  
+    
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-  
+    
         const result = await response.json(); 
         const data = limit ? result.articles.slice(0, limit) : result.articles;
         
-        setArticles(data); // Ambil hanya bagian 'data'
+        setArticles(data);
         setCurrentPage(result.currentPage);
         setTotalPages(result.totalPages);
       } catch (error) {
@@ -68,7 +64,11 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
       } finally {
         setLoading(false);
       }
-    };
+    }, [limit]); // ✅ Dependensi hanya 'limit'
+    
+    useEffect(() => {
+      fetchArticles(currentPage);
+    }, [currentPage, fetchArticles]);
 
 
     const handleToggleArticle = async (articleId: number, currentStatus: boolean) => {

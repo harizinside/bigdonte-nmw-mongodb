@@ -20,7 +20,6 @@ export async function POST(request: Request) {
     }
 
     const data = await externalResponse.json();
-    // Misal: { "token": "28qUKXp9KffwXqXUBtp5YRcjtynzBsoTiRbmh02eMYR5ozFgnSSiY5tNHJCV" }
 
     // Buat response dan set cookie token (misal, httpOnly agar tidak mudah diakses JavaScript)
     const response = NextResponse.json(data);

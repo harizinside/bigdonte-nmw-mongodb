@@ -1,7 +1,6 @@
 'use client'
 import { FC, ReactNode } from "react"
 import ImageProvider from "./context/imageProvider"
-import AuthProvider from "./context/AuthContext"
 
 interface Props {
   children: ReactNode

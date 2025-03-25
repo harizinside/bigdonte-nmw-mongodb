@@ -1,17 +1,18 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Social from "@/models/socialMedia";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
 import path from "path";
 import sharp from "sharp";
 import mongoose from "mongoose";
 
 // GET: Fetch all doctors
-export async function GET(req: { url: string | URL; }) {
+export async function GET(req: NextRequest) {
   const authError = validateToken(req);
   if (authError) return authError;
+
   await connectToDatabase();
-  
+
   try {
     const socialDocs = await Social.find({});
     return NextResponse.json(socialDocs, { status: 200 });

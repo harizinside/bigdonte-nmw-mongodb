@@ -7,11 +7,7 @@ import path from "path";
 import sharp from "sharp";
 import fs from "fs/promises";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const dynamic = "force-dynamic";
 
 // GET: Get branches by ID
 export async function GET(req: any, { params }: any) {

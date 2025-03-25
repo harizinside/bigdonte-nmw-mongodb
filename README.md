@@ -1,7 +1,13 @@
-Belum : 
-1. Artikel = Edit artikel, API Get --> status 200 tapi error muncul css, Data get tidak muncul semua
-2. Pop Up = Edit Pop Up, Status Pop Up --> status hanya ada true, API edit
-3. Settings = POST --> error muncul css
-4. Service = Template --> belum ada API untuk pilih template pada service sub 1
-5. List Service = sensitive content --> sensitive content tidak terupdate
-6. Type Service = example POST tidak ada
+CLOUD_NAME="dlhaohgff"
+CLOUD_API_KEY="978647427919373"
+CLOUD_API_SECRET="LS2ZAR7_Wudcch1_Svrd8ta8CzY"
+MONGODB_URI=mongodb+srv://nmwWeb:nmwWeb2025_@cluster0.wbyaf.mongodb.net/nmw_clinic
+API_SECRET_KEY=82dc9bbdc30f8b8ca29d9f974597589b881ee5db743fc6c5484bd68ee34550b8
+NEXT_PUBLIC_API_SECRET_KEY=82dc9bbdc30f8b8ca29d9f974597589b881ee5db743fc6c5484bd68ee34550b8
+NEXT_PUBLIC_API_WEB_URL=http://localhost:3000
+JWT_SECRET=84e60885b2aff024718634e7962f417efdceb1939c1d4b8c8e388e71a0d7f207
+
+
+Akun email :
+nmwclinicweb@gmail.com
+nmwWeb@2025_

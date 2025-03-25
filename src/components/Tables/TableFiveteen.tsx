@@ -1,6 +1,6 @@
 'use client'
 
-import { SetStateAction, useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -41,7 +41,7 @@ const TableFourteen = () => {
 
   const itemsPerPage = 15;
 
-  const fetchPatients = async (page = 1) => {
+      const fetchPatients = useCallback(async (page: number) => {
         try {
           const response = await fetch(`/api/patients?servicesType=${slugServicesPatient}&page=${page}`, {
             method: "GET",
@@ -62,12 +62,12 @@ const TableFourteen = () => {
         } catch (error) {
           console.error("Gagal mengambil data patients:", error);
         }
-      };  
+      }, [slugServicesPatient]);
           
       // Ambil halaman pertama saat load
       useEffect(() => {
         fetchPatients(currentPage);
-      }, [currentPage]);
+      }, [fetchPatients,currentPage]);
   
 
       const handleDeletePatients = async (slug: string) => {

@@ -1,6 +1,8 @@
 'use client'
 
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 type Subscriber = {
   _id: number;
@@ -9,6 +11,7 @@ type Subscriber = {
 
 const TableSeven = () => {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [allSubscribers, setAllSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -39,15 +42,65 @@ const TableSeven = () => {
       setCurrentPage(result.currentPage);
       setTotalPages(result.totalPages);
     } catch (error) {
-      console.error("Error fetching achievements:", error);
+      console.error("Error fetching subscribers:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchAllSubscribers = async () => { 
+    try {
+      // const response = await fetch(`/api/subscribers?page=${currentPage}`);
+      const response = await fetch(`/api/subscribers?page=all`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json(); 
+      
+      setAllSubscribers(result.subscribers);
+    } catch (error) {
+      console.error("Error fetching subscribers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportToExcel = () => {
+    if (!allSubscribers || allSubscribers.length === 0) {
+      alert("Tidak ada data untuk diekspor.");
+      return;
+    }
+  
+    // Buat worksheet dari data
+    const ws = XLSX.utils.json_to_sheet(allSubscribers);
+  
+    // Buat workbook dan tambahkan worksheet ke dalamnya
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Subscribers");
+  
+    // Generate file XLSX
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  
+    // Simpan file
+    const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8" });
+    saveAs(data, "subscribers.xlsx");
+  };
+
   useEffect(() => {
     fetchSubscribers(currentPage);
   }, [currentPage]);
+
+  useEffect(() => {
+    fetchAllSubscribers();
+  }, []);
 
   const handleDeleteSubscribers = async (id: string | number) => {
     try {
@@ -84,6 +137,12 @@ const TableSeven = () => {
 
   return (
     <div className="rounded-[10px] border border-stroke bg-white p-4 shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card sm:p-7.5">
+      <button
+        onClick={exportToExcel}
+        className="bg-green-500 text-white px-4 py-2 mb-5 rounded-lg hover:bg-green-600"
+      >
+        Export to XLSX
+      </button>
       <div className="max-w-full overflow-x-auto">
         {loading ? (
           <p className="text-center text-gray-500 dark:text-white mb-5 text-2xl font-semibold">Loading...</p>

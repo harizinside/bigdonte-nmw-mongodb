@@ -1,6 +1,6 @@
 'use client'
 
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -41,7 +41,7 @@ const TableFourteen = () => {
 
   const itemsPerPage = 15; 
 
-  const fetchServices = async (page = 1) => {
+      const fetchServices = useCallback(async (page: number) => {
         try {
           const response = await fetch(`/api/servicesType?servicesList=${slugServicesList}&page=${page}`, {
             method: "GET",
@@ -62,12 +62,12 @@ const TableFourteen = () => {
         } catch (error) {
           console.error("Gagal mengambil data services:", error);
         }
-      };  
+      }, [slugServicesList]);
           
       // Ambil halaman pertama saat load
       useEffect(() => {
         fetchServices(currentPage);
-      }, [currentPage]);
+      }, [fetchServices,currentPage]);
   
 
       const handleDeleteServices = async (slug: string) => {

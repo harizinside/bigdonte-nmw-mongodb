@@ -7,11 +7,7 @@ import path from "path";
 import fs from "fs/promises";
 import sharp from "sharp";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const dynamic = "force-dynamic";
 
 // GET: Get achievement by ID
 export async function GET(req: any, { params }: any) {
