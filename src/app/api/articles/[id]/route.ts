@@ -12,11 +12,32 @@ export const dynamic = "force-dynamic";
 // GET: Get achievement by ID
 export async function GET(req: any, { params }: any) {
   const authError = validateToken(req);
-    if (authError) return authError;
+  if (authError) return authError;
+
   await connectToDatabase();
-  const achievement = await Article.findById(params.id);
-  if (!achievement) return NextResponse.json({ message: "achievement not found" }, { status: 404 });
-  return NextResponse.json(achievement, { status: 200 });
+
+  try {
+    const { id } = params;
+
+    let article;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+        // Jika ID berbentuk ObjectId, cari berdasarkan _id
+        article = await Article.findById(id);
+    } else {
+        // Jika ID bukan ObjectId, cari berdasarkan slug
+        article = await Article.findOne({ slug: id });
+    }
+
+    if (!article) {
+      return NextResponse.json({ message: "Article not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(article, { status: 200 });
+
+  } catch (error) {
+    console.error("❌ Error fetching article:", error);
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+  }
 }
 
 // PUT: Update achievement
