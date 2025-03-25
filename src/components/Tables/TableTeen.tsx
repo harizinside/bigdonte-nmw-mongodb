@@ -16,7 +16,7 @@ type Promo = {
 }
 
 type PromoResponse = {
-  promo: Promo[];
+  promos: Promo[];
   currentPage: number;
   totalPages: number;
 };
@@ -48,7 +48,7 @@ const TableTeen = () => {
   
         const result: PromoResponse = await response.json();
         
-        setPromos(result.promo); // Ambil hanya bagian 'data'
+        setPromos(result.promos); // Ambil hanya bagian 'data'
         setCurrentPage(result.currentPage);
         setTotalPages(result.totalPages);
       } catch (error) {
