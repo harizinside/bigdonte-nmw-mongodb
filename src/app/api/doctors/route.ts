@@ -17,11 +17,18 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const pageParam = searchParams.get("page");
+    const idPosition = searchParams.get("id_position"); // Ambil id_position dari query
     const limit = 15;
 
+    // Buat filter query berdasarkan id_position (jika ada)
+    const filter: any = {};
+    if (idPosition) {
+      filter.id_position = idPosition;
+    }
+
     if (!pageParam || pageParam === "all") {
-      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter
-      const doctors = await Doctor.find({}).sort({ createdAt: -1 });
+      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter berdasarkan filter
+      const doctors = await Doctor.find(filter).sort({ createdAt: -1 });
 
       return new NextResponse(JSON.stringify({
         doctors,
@@ -34,8 +41,8 @@ export async function GET(req: Request) {
 
     // Jika `page` ada, jalankan pagination seperti biasa
     const page = parseInt(pageParam, 10);
-    const totalDoctors = await Doctor.countDocuments();
-    const doctors = await Doctor.find({})
+    const totalDoctors = await Doctor.countDocuments(filter);
+    const doctors = await Doctor.find(filter)
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -51,9 +58,7 @@ export async function GET(req: Request) {
     });
 
   } catch (error) {
-    console.error("❌ Error fetching doctors:", error);
-    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data dokter." }), { status: 500 });
-  }
+    console.error("❌ Error fetching doctors")}
 }
 
 export async function POST(request: Request) {
