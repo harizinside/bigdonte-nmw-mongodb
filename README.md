@@ -11,3 +11,7 @@ JWT_SECRET=84e60885b2aff024718634e7962f417efdceb1939c1d4b8c8e388e71a0d7f207
 Akun email :
 nmwclinicweb@gmail.com
 nmwWeb@2025_
+
+Dashboard Access : 
+nmwclinicweb@gmail.com
+nmwClinic@2025_
