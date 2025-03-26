@@ -10,6 +10,93 @@ import sharp from "sharp";
 import mongoose from "mongoose";
 
 // GET: Fetch all doctors
+// export async function GET(req: Request) {
+//   const authError = validateToken(req);
+//   if (authError) return authError;
+
+//   await connectToDatabase();
+
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const pageParam = searchParams.get("page");
+//     const limit = 15;
+//     const servicesSlug = searchParams.get("services");
+//     const servicesListSlug = searchParams.get("servicesList");
+//     const servicesTypeSlug = searchParams.get("servicesType");
+
+//     let query: any = {};
+
+//     // **Filter berdasarkan slug services**
+//     if (servicesSlug) {
+//       const service = await Services.findOne({ slug: servicesSlug });
+//       if (!service) {
+//         return NextResponse.json({ message: "Service not found" }, { status: 404 });
+//       }
+//       query.id_services = service._id;
+//     }
+
+//     // **Filter berdasarkan slug servicesList**
+//     if (servicesListSlug) {
+//       const serviceList = await ServicesList.findOne({ slug: servicesListSlug });
+//       if (!serviceList) {
+//         return NextResponse.json({ message: "Service List not found" }, { status: 404 });
+//       }
+//       query.id_servicesList = serviceList._id;
+//     }
+
+//     // **Filter berdasarkan slug servicesType**
+//     if (servicesTypeSlug) {
+//       const serviceType = await ServicesType.findOne({ slug: servicesTypeSlug });
+//       if (!serviceType) {
+//         return NextResponse.json({ message: "Service Type not found" }, { status: 404 });
+//       }
+//       query.id_servicesType = serviceType._id;
+//     }
+
+//     // **Ambil semua data jika tidak ada `page` atau `page=all`**
+//     if (!pageParam || pageParam === "all") {
+//       const patients = await Patient.find(query)
+//         .sort({ createdAt: -1 })
+//         .populate("id_services")
+//         .populate("id_servicesList")
+//         .populate("id_servicesType");
+
+//       return NextResponse.json(
+//         {
+//           patients,
+//           totalPatient: patients.length,
+//         },
+//         { status: 200 }
+//       );
+//     }
+
+//     // **Ambil data dengan pagination**
+//     const page = parseInt(pageParam, 10) || 1;
+//     const totalPatient = await Patient.countDocuments(query);
+//     const patients = await Patient.find(query)
+//       .skip((page - 1) * limit)
+//       .limit(limit)
+//       .sort({ createdAt: -1 })
+//       .populate("id_services")
+//       .populate("id_servicesList")
+//       .populate("id_servicesType");
+
+//     return NextResponse.json(
+//       {
+//         patients,
+//         currentPage: page,
+//         totalPages: Math.ceil(totalPatient / limit),
+//         totalPatient,
+//       },
+//       { status: 200 }
+//     );
+
+//   } catch (error) {
+//     console.error("❌ Error fetching data:", error);
+//     return NextResponse.json({ message: "Gagal mengambil data." }, { status: 500 });
+//   }
+// }
+
 export async function GET(req: Request) {
   const authError = validateToken(req);
   if (authError) return authError;
@@ -18,61 +105,42 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const pageParam = searchParams.get("page");
+    const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = 15;
     const servicesSlug = searchParams.get("services");
     const servicesListSlug = searchParams.get("servicesList");
     const servicesTypeSlug = searchParams.get("servicesType");
 
-    let query: any = {};
+    let query: Record<string, any> = {}; // 👈 Ini memperbolehkan properti dinamis
 
-    // **Filter berdasarkan slug services**
     if (servicesSlug) {
       const service = await Services.findOne({ slug: servicesSlug });
       if (!service) {
         return NextResponse.json({ message: "Service not found" }, { status: 404 });
       }
-      query.id_services = service._id;
+      query.id_services = service._id;// ✅ Tidak error karena `query` bisa punya properti dinamis
     }
 
-    // **Filter berdasarkan slug servicesList**
     if (servicesListSlug) {
       const serviceList = await ServicesList.findOne({ slug: servicesListSlug });
       if (!serviceList) {
         return NextResponse.json({ message: "Service List not found" }, { status: 404 });
       }
-      query.id_servicesList = serviceList._id;
+      query.id_servicesList = serviceList._id; // ✅ Aman
     }
 
-    // **Filter berdasarkan slug servicesType**
     if (servicesTypeSlug) {
       const serviceType = await ServicesType.findOne({ slug: servicesTypeSlug });
       if (!serviceType) {
         return NextResponse.json({ message: "Service Type not found" }, { status: 404 });
       }
-      query.id_servicesType = serviceType._id;
+      query.id_servicesType = serviceType._id; // ✅ Aman
     }
 
-    // **Ambil semua data jika tidak ada `page` atau `page=all`**
-    if (!pageParam || pageParam === "all") {
-      const patients = await Patient.find(query)
-        .sort({ createdAt: -1 })
-        .populate("id_services")
-        .populate("id_servicesList")
-        .populate("id_servicesType");
+    // Hitung total data berdasarkan query
+    const totalPatients = await Patient.countDocuments(query);
 
-      return NextResponse.json(
-        {
-          patients,
-          totalPatient: patients.length,
-        },
-        { status: 200 }
-      );
-    }
-
-    // **Ambil data dengan pagination**
-    const page = parseInt(pageParam, 10) || 1;
-    const totalPatient = await Patient.countDocuments(query);
+    // Ambil data dengan pagination
     const patients = await Patient.find(query)
       .skip((page - 1) * limit)
       .limit(limit)
@@ -81,19 +149,19 @@ export async function GET(req: Request) {
       .populate("id_servicesList")
       .populate("id_servicesType");
 
-    return NextResponse.json(
-      {
-        patients,
-        currentPage: page,
-        totalPages: Math.ceil(totalPatient / limit),
-        totalPatient,
-      },
-      { status: 200 }
-    );
+    return new NextResponse(JSON.stringify({
+      patients,
+      currentPage: page,
+      totalPages: Math.ceil(totalPatients / limit),
+      totalPatients,
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
 
   } catch (error) {
-    console.error("❌ Error fetching data:", error);
-    return NextResponse.json({ message: "Gagal mengambil data." }, { status: 500 });
+    console.error("❌ Error fetching patients:", error);
+    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data patients." }), { status: 500 });
   }
 }
 
