@@ -16,7 +16,8 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageParam = searchParams.get("page");
+    const page = pageParam !== null ? parseInt(pageParam, 10) : null;
     const limit = 15;
     const servicesSlug = searchParams.get("services"); // Ambil slug dari query parameter
 
@@ -32,18 +33,34 @@ export async function GET(req: Request) {
       query = { id_services: service._id };
     }
 
-    const totalServicesList = await ServicesList.countDocuments(query);
+    // Jika parameter `page` diberikan, gunakan pagination
+    if (page) {
+      const totalServicesList = await ServicesList.countDocuments(query);
+      const servicesList = await ServicesList.find(query)
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .populate("id_services");
+
+      return new NextResponse(JSON.stringify({
+        servicesList,
+        currentPage: page,
+        totalPages: Math.ceil(totalServicesList / limit),
+        totalServicesList,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Jika tidak ada parameter `page`, ambil semua data tanpa pagination
     const servicesList = await ServicesList.find(query)
-      .skip((page - 1) * limit)
-      .limit(limit)
       .sort({ createdAt: -1 })
-      .populate("id_services"); // Opsional: Jika ingin mengambil detail services
+      .populate("id_services");
 
     return new NextResponse(JSON.stringify({
       servicesList,
-      currentPage: page,
-      totalPages: Math.ceil(totalServicesList / limit),
-      totalServicesList,
+      totalServicesList: servicesList.length,
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -54,6 +71,7 @@ export async function GET(req: Request) {
     return new NextResponse(JSON.stringify({ message: "Gagal mengambil data services list." }), { status: 500 });
   }
 }
+
 
 export async function POST(request: Request) {
   try {
