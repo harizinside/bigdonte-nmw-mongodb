@@ -9,7 +9,7 @@ import sharp from "sharp";
 import mongoose from "mongoose";
 
 // GET: Fetch all doctors
-export async function GET(req) {
+export async function GET(req: Request) {
   const authError = validateToken(req);
   if (authError) return authError;
 
@@ -22,24 +22,22 @@ export async function GET(req) {
     const servicesSlug = searchParams.get("services");
     const servicesListSlug = searchParams.get("servicesList");
 
-    let query = {};
+    let query: Record<string, any> = {}; // 👈 Ini memperbolehkan properti dinamis
 
-    // Jika slug services diberikan
     if (servicesSlug) {
       const service = await Services.findOne({ slug: servicesSlug });
       if (!service) {
         return NextResponse.json({ message: "Service not found" }, { status: 404 });
       }
-      query.id_services = service._id; // Filter berdasarkan service
+      query.id_services = service._id; // ✅ Tidak error karena `query` bisa punya properti dinamis
     }
 
-    // Jika slug servicesList diberikan
     if (servicesListSlug) {
       const serviceList = await ServicesList.findOne({ slug: servicesListSlug });
       if (!serviceList) {
         return NextResponse.json({ message: "Service List not found" }, { status: 404 });
       }
-      query.id_servicesList = serviceList._id; // Filter berdasarkan service list
+      query.id_servicesList = serviceList._id; // ✅ Aman
     }
 
     // Hitung total data berdasarkan query
