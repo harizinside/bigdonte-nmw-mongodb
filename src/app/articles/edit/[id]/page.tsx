@@ -49,7 +49,7 @@ const EditArticle = () => {
     const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
     const [isSlugEdited, setIsSlugEdited] = useState(false);
 
-    useEffect(() => {
+      useEffect(() => {
         if (!id) return;
     
         const fetchArticle = async () => {

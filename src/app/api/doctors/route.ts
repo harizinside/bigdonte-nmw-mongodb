@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const pageParam = searchParams.get("page");
-    const idPosition = searchParams.get("id_position"); // Ambil id_position dari query
+    const idPosition = searchParams.get("id_position"); 
     const limit = 15;
 
     // Buat filter query berdasarkan id_position (jika ada)

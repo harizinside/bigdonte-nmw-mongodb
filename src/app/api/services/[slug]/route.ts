@@ -8,20 +8,51 @@ import { validateToken } from "@/lib/auth";
 import path from "path";
 import fs from "fs/promises";
 import sharp from "sharp";
+import mongoose from "mongoose";
+// export async function GET(req: any, { params }: any) {
+//   const authError = validateToken(req);
+//   if (authError) return authError; 
 
-export async function GET(req: any, { params }: any) {
+//   await connectToDatabase();
+
+
+//   const services = await Services.findOne({ slug: params.slug });
+
+//   if (!services) {
+//     return NextResponse.json({ message: "services not found" }, { status: 404 });
+//   }
+
+//   return NextResponse.json(services, { status: 200 });
+// }
+
+export async function GET(req: Request, { params }: { params: { slug: string } }) {
   const authError = validateToken(req);
-  if (authError) return authError; 
+  if (authError) return authError;
 
   await connectToDatabase();
 
-  const services = await Services.findOne({ slug: params.slug });
+  try {
+    const { slug } = params;
+    let services;
 
-  if (!services) {
-    return NextResponse.json({ message: "services not found" }, { status: 404 });
+    if (mongoose.Types.ObjectId.isValid(slug)) {
+      // Jika slug adalah ObjectId yang valid, cari berdasarkan _id
+      services = await Services.findById(slug);
+    } else {
+      // Jika bukan ObjectId, cari berdasarkan slug
+      services = await Services.findOne({ slug });
+    }
+
+    if (!services) {
+      return NextResponse.json({ message: "Services not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(services, { status: 200 });
+
+  } catch (error) {
+    console.error("❌ Error fetching services:", error);
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
-
-  return NextResponse.json(services, { status: 200 });
 }
 
 export async function PUT(req: any, { params }: any) { 
