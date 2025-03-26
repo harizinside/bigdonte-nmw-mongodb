@@ -29,9 +29,16 @@ export async function GET(req: Request) {
       if (!service) {
         return NextResponse.json({ message: "Service not found" }, { status: 404 });
       }
+
+      // Debugging: Cek apakah service ditemukan
+      console.log("✅ Service found:", service);
+
       // Gunakan _id service sebagai id_services dalam ServicesList
-      query = { id_services: service._id };
+      query = { id_services: service._id.toString() };
     }
+
+    // Debugging: Cek query yang akan dieksekusi
+    console.log("🔍 Query for ServicesList:", query);
 
     // Jika parameter `page` diberikan, gunakan pagination
     if (page) {
