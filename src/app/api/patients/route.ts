@@ -26,72 +26,74 @@ export async function GET(req: Request) {
 
     let query = {};
 
+    // **Filter berdasarkan slug services**
     if (servicesSlug) {
-      // Cari service berdasarkan slug
       const service = await Services.findOne({ slug: servicesSlug });
       if (!service) {
         return NextResponse.json({ message: "Service not found" }, { status: 404 });
       }
-      // Gunakan _id service sebagai id_services dalam ServicesList
       query = { id_services: service._id };
     }
 
+    // **Filter berdasarkan slug servicesList**
     if (servicesListSlug) {
-      // Cari service berdasarkan slug
       const serviceList = await ServicesList.findOne({ slug: servicesListSlug });
       if (!serviceList) {
         return NextResponse.json({ message: "Service List not found" }, { status: 404 });
       }
-      // Gunakan _id service sebagai id_services dalam ServicesList
       query = { id_servicesList: serviceList._id };
     }
 
+    // **Filter berdasarkan slug servicesType**
     if (servicesTypeSlug) {
-      // Cari service berdasarkan slug
       const serviceType = await ServicesType.findOne({ slug: servicesTypeSlug });
       if (!serviceType) {
         return NextResponse.json({ message: "Service Type not found" }, { status: 404 });
       }
-      // Gunakan _id service sebagai id_services dalam ServicesList
       query = { id_servicesType: serviceType._id };
     }
 
+    // **Ambil semua pasien jika tidak ada `page` atau `page=all`**
     if (!pageParam || pageParam === "all") {
-      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter
-      const patients = await Services.find({}).sort({ createdAt: -1 });
+      const patients = await Patient.find(query)
+        .sort({ createdAt: -1 })
+        .populate("id_services")
+        .populate("id_servicesList")
+        .populate("id_servicesType");
 
-      return new NextResponse(JSON.stringify({
-        patients,
-        totalPatient: patients.length,
-      }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return NextResponse.json(
+        {
+          patients,
+          totalPatient: patients.length,
+        },
+        { status: 200 }
+      );
     }
 
-    const page = parseInt(pageParam, 10);
-    const totalPatient = await Patient.countDocuments();
-    const patients = await Patient.find({})
+    // **Ambil pasien dengan pagination**
+    const page = parseInt(pageParam, 10) || 1;
+    const totalPatient = await Patient.countDocuments(query);
+    const patients = await Patient.find(query)
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ createdAt: -1 })
       .populate("id_services")
       .populate("id_servicesList")
-      .populate("id_servicesType")
+      .populate("id_servicesType");
 
-    return new NextResponse(JSON.stringify({
-      patients,
-      currentPage: page,
-      totalPages: Math.ceil(totalPatient / limit),
-      totalPatient,
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json(
+      {
+        patients,
+        currentPage: page,
+        totalPages: Math.ceil(totalPatient / limit),
+        totalPatient,
+      },
+      { status: 200 }
+    );
 
   } catch (error) {
-    console.error("❌ Error fetching services type:", error);
-    return new NextResponse(JSON.stringify({ message: "Gagal mengambil data services type." }), { status: 500 });
+    console.error("❌ Error fetching data:", error);
+    return NextResponse.json({ message: "Gagal mengambil data." }, { status: 500 });
   }
 }
 
