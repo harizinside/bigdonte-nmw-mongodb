@@ -9,7 +9,7 @@ import sharp from "sharp";
 import mongoose from "mongoose";
 
 // GET: Fetch all doctors
-export async function GET(req: Request) {
+export async function GET(req) {
   const authError = validateToken(req);
   if (authError) return authError;
 
@@ -24,33 +24,34 @@ export async function GET(req: Request) {
 
     let query = {};
 
+    // Jika slug services diberikan
     if (servicesSlug) {
-      // Cari service berdasarkan slug
       const service = await Services.findOne({ slug: servicesSlug });
       if (!service) {
         return NextResponse.json({ message: "Service not found" }, { status: 404 });
       }
-      // Gunakan _id service sebagai id_services dalam ServicesList
-      query = { id_services: service._id };
+      query.id_services = service._id; // Filter berdasarkan service
     }
 
+    // Jika slug servicesList diberikan
     if (servicesListSlug) {
-      // Cari service berdasarkan slug
       const serviceList = await ServicesList.findOne({ slug: servicesListSlug });
       if (!serviceList) {
         return NextResponse.json({ message: "Service List not found" }, { status: 404 });
       }
-      // Gunakan _id service sebagai id_services dalam ServicesList
-      query = { id_servicesList: serviceList._id };
+      query.id_servicesList = serviceList._id; // Filter berdasarkan service list
     }
 
+    // Hitung total data berdasarkan query
     const totalServicesType = await ServicesType.countDocuments(query);
+
+    // Ambil data dengan pagination
     const servicesType = await ServicesType.find(query)
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ createdAt: -1 })
       .populate("id_services")
-      .populate("id_servicesList")
+      .populate("id_servicesList");
 
     return new NextResponse(JSON.stringify({
       servicesType,
