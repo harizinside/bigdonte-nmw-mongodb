@@ -14,11 +14,30 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
+    const isTagsRequest = searchParams.has("tags");
+
+    if (isTagsRequest) {
+      // Ambil hanya field `tags` dari semua artikel
+      const allArticles: { tags: string[] }[] = await Article.find({}, "tags");
+
+      // Ekstrak semua tags & hapus duplikasi
+      const allTags: string[] = Array.from(
+        new Set(allArticles.flatMap((article: { tags: string[] }) => article.tags))
+      );
+
+      return new NextResponse(JSON.stringify({
+        tags: allTags,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Jika `tags` tidak ada dalam query, tetap ambil data artikel seperti biasa
     const pageParam = searchParams.get("page");
     const limit = 15;
 
     if (!pageParam || pageParam === "all") {
-      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter
       const articles = await Article.find({}).sort({ createdAt: -1 });
 
       return new NextResponse(JSON.stringify({
@@ -30,7 +49,7 @@ export async function GET(req: Request) {
       });
     }
 
-    // Jika `page` ada, jalankan pagination seperti biasa
+    // Jika `page` ada, jalankan pagination
     const page = parseInt(pageParam, 10);
     const totalArticles = await Article.countDocuments();
     const articles = await Article.find({})
@@ -53,6 +72,8 @@ export async function GET(req: Request) {
     return new NextResponse(JSON.stringify({ message: "Gagal mengambil data articles." }), { status: 500 });
   }
 }
+
+
 
 export async function POST(request: Request) {
   try {
