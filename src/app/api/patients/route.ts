@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     const servicesListSlug = searchParams.get("servicesList");
     const servicesTypeSlug = searchParams.get("servicesType");
 
-    let query = {};
+    let query: any = {};
 
     // **Filter berdasarkan slug services**
     if (servicesSlug) {
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
       if (!service) {
         return NextResponse.json({ message: "Service not found" }, { status: 404 });
       }
-      query = { id_services: service._id };
+      query.id_services = service._id;
     }
 
     // **Filter berdasarkan slug servicesList**
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
       if (!serviceList) {
         return NextResponse.json({ message: "Service List not found" }, { status: 404 });
       }
-      query = { id_servicesList: serviceList._id };
+      query.id_servicesList = serviceList._id;
     }
 
     // **Filter berdasarkan slug servicesType**
@@ -50,10 +50,10 @@ export async function GET(req: Request) {
       if (!serviceType) {
         return NextResponse.json({ message: "Service Type not found" }, { status: 404 });
       }
-      query = { id_servicesType: serviceType._id };
+      query.id_servicesType = serviceType._id;
     }
 
-    // **Ambil semua pasien jika tidak ada `page` atau `page=all`**
+    // **Ambil semua data jika tidak ada `page` atau `page=all`**
     if (!pageParam || pageParam === "all") {
       const patients = await Patient.find(query)
         .sort({ createdAt: -1 })
@@ -70,7 +70,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // **Ambil pasien dengan pagination**
+    // **Ambil data dengan pagination**
     const page = parseInt(pageParam, 10) || 1;
     const totalPatient = await Patient.countDocuments(query);
     const patients = await Patient.find(query)
@@ -96,6 +96,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ message: "Gagal mengambil data." }, { status: 500 });
   }
 }
+
 
 export async function POST(request: Request) {
   try {
