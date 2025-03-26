@@ -9,14 +9,31 @@ import sharp from "sharp";
 import mongoose from "mongoose";
 
 // GET: Get promo by ID
-export async function GET(req: any, { params }: any) {
+export async function GET(req: Request, { params }: { params: { id: string } }) {
   const authError = validateToken(req);
   if (authError) return authError;
 
   await connectToDatabase();
-  const promo = await Promo.findById(params.id);
-  if (!promo) return NextResponse.json({ message: "promo not found" }, { status: 404 });
-  return NextResponse.json(promo, { status: 200 });
+
+  try {
+    let query: any = { slug: params.id }; // Default cari berdasarkan slug
+
+    // Jika ID valid sebagai ObjectId, cari berdasarkan _id juga
+    if (mongoose.Types.ObjectId.isValid(params.id)) {
+      query = { $or: [{ _id: new mongoose.Types.ObjectId(params.id) }, { slug: params.id }] };
+    }
+
+    const promo = await Promo.findOne(query);
+
+    if (!promo) {
+      return NextResponse.json({ message: "Promo not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(promo, { status: 200 });
+  } catch (error) {
+    console.error("❌ Error fetching promo:", error);
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+  }
 }
 
 export async function PUT(req: any, { params }: { params: { id: string } }) {
