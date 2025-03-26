@@ -17,31 +17,43 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const pageParam = searchParams.get("page");
+    const ids = searchParams.get("id")?.split(",") || [];
+
+    // Jika ada `id`, ambil berdasarkan ID
+    if (ids.length > 0) {
+      const products = await Product.find({ _id: { $in: ids } });
+
+      return new NextResponse(JSON.stringify({ products }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const limit = 15;
 
+    // Jika `page` tidak ada atau bernilai "all", ambil semua data produk
     if (!pageParam || pageParam === "all") {
-      // Jika `page` tidak ada atau bernilai "all", ambil semua data dokter
-      const products = await Product.find({}).sort({ createdAt: -1 });
+      const allProducts = await Product.find({}).sort({ createdAt: -1 });
 
       return new NextResponse(JSON.stringify({
-        products,
-        totalDoctors: products.length,
+        products: allProducts,
+        totalProducts: allProducts.length,
       }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    // Jika `page` ada, jalankan pagination seperti biasa
+    // Jika `page` ada, jalankan pagination
     const page = parseInt(pageParam, 10);
     const totalProducts = await Product.countDocuments();
-    const products = await Product.find({})
+    const paginatedProducts = await Product.find({})
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ createdAt: -1 });
 
     return new NextResponse(JSON.stringify({
-      products,
+      products: paginatedProducts,
       currentPage: page,
       totalPages: Math.ceil(totalProducts / limit),
       totalProducts,
