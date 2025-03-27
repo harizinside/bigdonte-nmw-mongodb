@@ -83,21 +83,15 @@ export async function POST(request: Request) {
     const timestamp = Date.now();
     const originalName = imageFile.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, ""); // Hapus ekstensi
     const fileName = `${timestamp}-${originalName}.webp`
-    const fs = require('fs');
     const imagePath = path.join(process.cwd(), "public", "uploads", "doctors",fileName);
 
     // Konversi gambar ke WebP menggunakan Sharp
     const imageByteData = await imageFile.arrayBuffer();
     const buffer = Buffer.from(imageByteData);
     await sharp(buffer)
-    .webp({ quality: 80 }) // Kompresi ke WebP dengan kualitas 80%
-    .toBuffer((err, buffer) => {
-      if (err) {
-        console.error(err);
-      } else {
-        fs.writeFileSync(imagePath, buffer, { flag: 'w+' });
-      }
-    });
+      .webp({ quality: 80 }) // Kompresi ke WebP dengan kualitas 80%
+      .toFile(imagePath);
+
     // Simpan ke MongoDB
     await connectToDatabase();
     const newDoctor = new Doctor({
