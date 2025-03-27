@@ -15,7 +15,5 @@
         }
       }
     ],
-    "public": {
-      "readOnly": false
-    }
+    "public": false
   }
