@@ -82,9 +82,8 @@ export async function POST(request: Request) {
 
     const timestamp = Date.now();
     const originalName = imageFile.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, ""); // Hapus ekstensi
-    const fileName = `${timestamp}-${originalName}.webp`;
-    const imagePath = path.join(process.cwd(), "images",fileName);
-    // const imagePath = path.join(process.cwd(), "public", "uploads", "doctors",fileName);
+    const fileName = `${timestamp}-${originalName}.webp`
+    const imagePath = path.join(process.cwd(), "public", "uploads", "doctors",fileName);
 
     // Konversi gambar ke WebP menggunakan Sharp
     const imageByteData = await imageFile.arrayBuffer();
