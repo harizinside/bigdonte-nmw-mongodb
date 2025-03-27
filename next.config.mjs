@@ -1,5 +1,8 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
+  public: {
+    readOnly: false,
+  },
   images: {
     domains: ["localhost", 'nmw.prahwa.net', 'res.cloudinary.com'],
     remotePatterns: [
