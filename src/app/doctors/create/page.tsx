@@ -76,7 +76,7 @@ const CreateDoctor = () => {
     });
   
     try {
-      const response = await axios.post("/api/doctors", formData, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_WEB_URL}/api/doctors`, formData, {
         headers: {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
           "Content-Type": "multipart/form-data",
