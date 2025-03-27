@@ -22,5 +22,8 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/lib/cloudinary.js", "src/lib/mongodb.js", "src/lib/auth.js"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "public": {
+    "readOnly": false
+  }
 }
