@@ -205,7 +205,7 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
               };
 
               return (
-              <tr key={index}>
+              <tr key={article._id}>
                 <td
                   className={`border-[#eee] px-4 text-center py-4 dark:border-dark-3 w-0 xl:pl-9 ${
                     index === articles.length - 1 ? "border-b-0" : "border-b"
