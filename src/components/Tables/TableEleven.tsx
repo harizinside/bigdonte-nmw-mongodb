@@ -74,41 +74,9 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
     const handleToggleArticle = async (articleId: number, currentStatus: boolean) => {
       const newStatus = !currentStatus; // Toggle status sebelum kirim ke server
     
-      const article = articles.find((p) => p._id === articleId);
-      if (!article) {
-        console.error("Article not found!");
-        return;
-      }
-    
       try {
         const formData = new FormData();
-        
-        // Kirim semua data artikel yang sudah ada
-        formData.append("title", article.title);
-        formData.append("description", article.description);
-        formData.append("date", article.date);
-        formData.append("slug", article.slug || ""); // Pastikan selalu string
-        formData.append("imageSourceName", article.imageSourceName);
-        formData.append("imageSourceLink", article.imageSourceLink);
-        formData.append("author", article.author);
-        formData.append("editor", article.editor);
-        formData.append("sourceLink", article.sourceLink);
-        formData.append("doctorId", article.doctorId || ""); // Hindari null
-        if (article.serviceId) {
-          formData.append("serviceId", article.serviceId);
-        }
-    
-        // Kirim tags dan produk yang sudah ada
-        article.tags.forEach((tag) => formData.append("tags", tag));
-        article.products.forEach((productId) => formData.append("products", productId));
-    
-        // Kirim status baru
         formData.append("status", newStatus ? "1" : "0");
-    
-        // Update UI terlebih dahulu untuk efek responsif
-        setArticles((prev) =>
-          prev.map((p) => (p._id === articleId ? { ...p, status: newStatus } : p))
-        );
     
         const response = await fetch(`/api/articles/${articleId}`, {
           method: "PUT",
@@ -121,6 +89,13 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
         if (!response.ok) {
           throw new Error(`Failed to update article. Status: ${response.status}`);
         }
+    
+        // Update status artikel dalam array articles
+        setArticles((prev) =>
+          prev.map((article) =>
+            article._id === articleId ? { ...article, status: newStatus } : article
+          )
+        );
       } catch (error) {
         console.error("Error updating article:", error);
     
@@ -129,7 +104,7 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
           prev.map((p) => (p._id === articleId ? { ...p, status: currentStatus } : p))
         );
       }
-    };        
+    };
 
 
       const handleDeleteArticles = async (id: string | number) => {
