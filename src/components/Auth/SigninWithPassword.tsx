@@ -46,7 +46,7 @@ export default function SigninWithPassword() {
           throw new Error(data.message || "Login gagal, silakan coba lagi.");
         }
     
-        router.push("/"); 
+        router.push("/dashboard"); 
       } catch (error) {
         setError("Login Gagal, Cek kembali");
       } finally {

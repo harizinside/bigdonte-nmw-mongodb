@@ -1,0 +1,31 @@
+.breadcrumb{
+    width: 100%;
+    padding: 2vw 3vw;
+    padding-bottom: 0;
+}
+.breadcrumb h5{
+    font-family: poppins;
+    letter-spacing: .05vw;
+    font-weight: 300;
+    font-size: .85vw;
+    color: rgb(134, 134, 134);
+}
+.breadcrumb a{
+    text-decoration: none;
+    color: inherit;
+}
+.breadcrumb span{
+    font-weight: 600;
+    color: #FF851A;
+    text-decoration: none;
+}
+@media (max-width:768px) {
+    .breadcrumb{
+        padding: 4vw 4vw;
+    }
+    .breadcrumb h5{
+        letter-spacing: .08vw;
+        font-size: 3.3vw;
+        line-height: 1.6;
+    }
+}

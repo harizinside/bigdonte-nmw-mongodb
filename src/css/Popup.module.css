@@ -1,0 +1,84 @@
+/* Popup container */
+.modal{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: none;
+  }
+  .modal.active{
+    display: block;
+  }
+  .modal_overlay{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: #1f1f1fa6;
+    backdrop-filter: blur(1px);
+    z-index: 1;
+    animation: overlay .5s ease-in;
+  }
+  @keyframes overlay {
+    0%{
+      opacity: 0;
+    }
+    100%{
+      opacity: 1;
+    }
+  }
+  .modal_content{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    
+  }
+  .modal_content img{
+    max-width: 100%;
+    display: block;
+    margin: auto;
+    max-height: auto;
+    transition: .6s all;
+  }
+  .modal.active .modal_content img{
+    transform: scale(1);
+  }
+  .close{
+    color: white;
+    position: absolute;
+    right: -1.5vw;
+    top: 0;
+    cursor: pointer;
+  }
+  .close svg{
+    font-size: 1.2vw;
+    transition: .5s all ease-in;
+  }
+  .close:hover svg{
+    transform: rotate(360deg);
+  }
+
+  @media (max-width:768px) {
+    .modal_content{
+      width: 100%;
+    }
+    .modal_content a{
+      display: block;
+      width: 100%;
+    }
+    .modal_content img{
+      max-width: 80%;
+    }
+    .close{
+      right: 4vw;
+      top: -5vw;
+    }
+    .close svg{
+      font-size: 4vw;
+    }
+  }

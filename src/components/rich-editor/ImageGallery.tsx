@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
 import GalleryImage from "../GalleryImage/page";
-import { removeImage, uploadFile } from "@/app/actions/file";
+import { removeImage, uploadFile } from "@/app/dashboard/actions/file";
 import { useImages } from "@/app/context/imageProvider";
 
 interface Props {

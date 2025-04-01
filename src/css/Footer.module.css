@@ -1,0 +1,195 @@
+.footer{
+    width: 100%;
+    background-image: url('../../public/images/bg_footer.webp');
+    /* background-image: url(../public/images/bg_footer.webp); */
+    background-position: top;
+    background-size: cover;
+    padding: 0 13.45vw;
+    padding-top: 4vw;
+    padding-bottom: 3vw;
+    display: grid;
+    grid-template-columns: 43% 29% 14% 14%;
+}
+.footer_logo img{
+    filter: brightness(0) invert(1);
+    width: 11.8vw;
+    margin-bottom: 4.3vw;
+}
+.contact_footer{
+    margin-top: 11.1vw;
+}
+.footer_form{
+    padding-right: 9vw;
+}
+.footer_form h5{
+    font-size: 1.3vw;
+    font-weight: 500;
+    color: white;
+    font-family: var(--montserrat);
+    margin-bottom: .5vw;
+    line-height: 1.1;
+}
+.footer_form p{
+    font-family: var(--montserrat);
+    font-size: .82vw;
+    color: white;
+    letter-spacing: .04vw;
+    line-height: 1.4;
+    font-weight: 200;
+}
+.form_layout{
+    display: grid;
+    grid-template-columns: 60% 40%;
+    margin-top: 1.1vw;
+}
+.form_layout input{
+    background-color: transparent;
+    outline: none;
+    border: .1vw solid white;
+    color: white;
+    font-style: italic;
+    font-size: .82vw;
+    font-family: var(--poppins);
+    letter-spacing: .04vw;
+    font-weight: 400;
+    padding: .4vw 1.12vw;
+    border-radius: .3vw 0 0 .3vw;
+}
+.form_layout input::placeholder{
+    color: white;
+    font-weight: 200;
+}
+.form_layout button{
+    background-color: white;
+    outline: none;
+    border: none;
+    font-size: .82vw;
+    font-family: var(--poppins);
+    letter-spacing: .04vw;
+    color: #E36900;
+    margin-left:-.4vw;
+    cursor: pointer;
+    border-radius: .3vw;
+}
+.contact_footer h4{
+    font-size: 1.3vw;
+    font-weight: 500;
+    color: white;
+    font-family: var(--montserrat);
+    margin-bottom: 1.7vw;
+    line-height: 1.1;
+}
+.contact_footer_layout{
+    display: flex;
+    flex-direction: column;
+    gap: 1.65vw;
+}
+.contact_footer_box{
+    padding-right: 3vw;
+}
+.contact_footer_box h5{
+    font-size: .81vw;
+    font-family: var(--montserrat);
+    color: white;
+    font-weight: 600;
+    letter-spacing: .04vw;
+    margin-bottom: .2vw;
+}
+.contact_footer_box a{
+    text-decoration: none;
+}
+.contact_footer_box p{
+    font-size: .81vw;
+    color: white;
+    letter-spacing: .04vw;
+    font-family: var(--montserrat);
+    font-weight: 300;
+    line-height: 1.5;
+}
+.contact_footer ul li{
+    list-style: none;
+}
+.contact_footer ul li a{
+    color: white;
+    font-size: .81vw;
+    color: white;
+    letter-spacing: .04vw;
+    font-family: var(--montserrat);
+    font-weight: 600;
+    line-height: 1.5;
+    text-decoration: none;
+}
+
+.eror{
+    font-family: var(--montserrat);
+    letter-spacing: .05vw;
+    font-size: .85vw;
+    margin-top: 1vw;
+}
+
+@media (max-width:768px) {
+    .eror{
+        letter-spacing: .07vw;
+        font-size: 2.8vw;
+        margin-top: 3vw;
+    }
+    .footer{
+        padding: 0 4vw;
+        padding-top: 26vw;
+        padding-bottom: 5vw;
+        grid-template-columns: 100%;
+        background-position: top;
+    }
+    .contact_footer{
+        margin-top: 6vw;
+    }
+    .footer_form{
+        padding-right: 2vw;
+    }
+    .footer_logo img{
+        width: 30vw;
+        margin-bottom: 4.3vw;
+    }
+    .footer_form h5{
+        font-size: 3.3vw;
+        margin-bottom: 2.5vw;
+    }
+    .footer_form p{
+        font-size: 2.8vw;
+    }
+    .form_layout{
+        width: 100%;
+        grid-template-columns: 60% 40%;
+        margin-top: 3vw;
+    }
+    .form_layout input{
+        font-size: 2.8vw;
+        padding: 1.6vw 3vw;
+        border-radius: 1vw 0 0 1vw;
+    }
+    .form_layout button{
+        font-size: 2.8vw;
+        margin-left:-.4vw;
+        border-radius: 1vw;
+    }
+
+    .contact_footer h4{
+        font-size: 4vw;
+        margin-bottom: 2.8vw;
+        line-height: 1.1;
+    }
+    .contact_footer_layout{
+        gap: 2.3vw;
+    }
+    .contact_footer_box h5{
+        font-size: 2.8vw;
+        margin-bottom: 1.3vw;
+    }
+    .contact_footer_box p{
+        font-size: 2.8vw;
+    }
+
+    .contact_footer ul li a{
+        font-size: 2.8vw;
+    }
+}

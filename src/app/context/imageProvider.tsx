@@ -1,6 +1,6 @@
 'use client'
 import { createContext, FC, ReactNode, useContext, useEffect, useState } from 'react'
-import { readAllImages } from '../actions/file'
+import { readAllImages } from '@/app/dashboard/actions/file'
 
 interface Props {
     children: ReactNode

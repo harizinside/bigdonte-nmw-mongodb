@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+:root{
+  --poppins:"Poppins", sans-serif;
+  --fairplay: "Playfair Display", serif;
+  --montserrat : "Montserrat", sans-serif;
+}
+
+.mySwiper .swiper-button-next{
+  display: none;
+}
+.mySwiper .swiper-button-prev, .mySwiper .swiper-rtl .swiper-button-next{
+  left: 13.4vw;
+}
+.mySwiper .swiper-button-next, .mySwiper .swiper-rtl .swiper-button-prev{
+  right: 13.4vw;
+  left: auto;
+}
+
+.table_of_content{
+  border: .1vw solid #FF851A;
+  padding: 1.3vw;
+  padding-bottom: .6vw;
+  border-radius: .7vw;
+  margin-bottom: 1.5vw;
+  width: 70%;
+}
+.table_of_content ul li{
+  list-style: decimal;
+}
+.table_of_content ul li a{
+  font-size: .9vw;
+  color:#4C4C4C;
+}
+
+.mySwiper .swiper-button-prev:hover{
+  transform: scale(1.1);
+}
+.mySwiperSecond .swiper-button-prev:hover{
+  transform: scale(1.1);
+}
+
+.mySwiper .swiper-button-next:after, .mySwiper .swiper-rtl .swiper-button-prev:after {
+  content: '' !important;
+  display: none !important;
+}
+.mySwiper .swiper-button-prev:after, .mySwiper .swiper-button-next:after {
+  font-size: var(--swiper-navigation-size) !important;
+  text-transform: none !important;
+  letter-spacing: 0;
+  font-variant: initial;
+  line-height: 1;
+  display: none !important;
+  background-color: green;
+}
+.swiper-button-next, .swiper-rtl .swiper-button-prev{
+  right: 13.7vw !important;
+}
+
+/* NProgress custom styles */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: #fff !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  z-index: 1031;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #fff, 0 0 5px #fff !important;
+}
+
+#nprogress .spinner {
+  display: none;
+}
+
+#nprogress .spinner-icon {
+  border-top-color: transparent;
+  border-left-color: transparent;
+}
+
+.myBanner{
+  width: 100%;
+}
+.myBanner .swiper-pagination-bullet{
+  width: 2vw;
+  height: .4vw;
+  display: inline-block;
+  border-radius: .7vw;
+  background: #FF851A;
+  opacity: var(--swiper-pagination-bullet-inactive-opacity, 0.2);
+}
+.myBanner .swiper-pagination-bullet-active{
+  background: #FF851A;
+  opacity: 1;
+}
+
+.myProduct{
+  width: 100%;
+}
+.myProduct .swiper-wrapper{
+  padding-bottom: 3vw;
+}
+.myProduct .swiper-pagination-bullet{
+  width: 1.5vw;
+  height: .35vw;
+  display: inline-block;
+  border-radius: .7vw;
+  background: #FF851A;
+  opacity: var(--swiper-pagination-bullet-inactive-opacity, 0.2);
+}
+.myProduct .swiper-pagination-bullet-active{
+  background: #FF851A;
+  opacity: 1;
+}
+
+.skeleton-logo {
+  width: 6.9vw;
+  height: 2vw;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: .7vw; /* Optional, to match the logo shape */
+}
+.skeleton-logo-100 {
+  width: 100%;
+  height: 3vw;
+}
+.skeleton-logo-fit{
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.skeleton-logo-banner{
+  width: 100%;
+  height: 39.77vw;
+  position: relative;
+}
+.skeleton-logo-service{
+  width: 100%;
+  height: 20vw;
+  position: relative;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+
+@media (max-width:768px) {
+  .skeleton-logo {
+    width: 8vw;
+    height: 3.8vw;
+  }
+  .skeleton-logo-100 {
+    width: 100%;
+    height: 4.7vw;
+  }
+  .skeleton-logo-banner{
+    width: 100%;
+    height: 39.5vw;
+    position: relative;
+  }
+  .skeleton-logo-service{
+    width: 100%;
+    height: 68vw;
+    position: relative;
+  }
+  .myProduct .swiper-pagination-bullet{
+    width: 6vw;
+    height: .8vw;
+    border-radius: .9vw;
+  }
+  .myBanner .swiper-pagination-bullet{
+    width: 6vw;
+    height: 1.3vw;
+    border-radius: .9vw;
+  }
+
+  
+}

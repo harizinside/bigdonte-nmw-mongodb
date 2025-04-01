@@ -1,0 +1,274 @@
+.container{
+    width: 100%;
+    padding: 2.7vw 13.45vw;
+    padding-bottom: 8vw;
+}
+.heading_hide {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+  }
+.heading_section{
+    text-align: center;
+}
+.heading_section_start{
+    text-align: start;
+}
+.heading_section h2{
+    font-family: var(--fairplay);
+    color: #5A5A5A;
+    font-size: 2.93vw;
+}
+.heading_section h2 span{
+    color: #FF851A;
+}
+.cabang_layout{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 3.7vw;
+    grid-gap: 1.87vw;
+}
+.cabang_box_image{
+    width: 100%;
+    height: 14vw;
+    overflow: hidden;
+    border-radius: 1.3vw;
+    margin-bottom: 1.2vw;
+    position: relative;
+}
+.cabang_box_image img{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+.cabang_box_content{
+    text-align: start;
+    display: flex;
+    flex-direction: column;
+    gap: .4vw;
+}
+.cabang_box_content h3{
+    font-family: var(--montserrat);
+    letter-spacing: .03vw;
+    font-size: .9vw;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #4C4C4C;
+}
+.cabang_box_text{
+    display: flex;
+    flex-direction: column;
+    gap: 1vw;
+    padding-right: 3vw;
+}
+.cabang_box_detail{
+    display: flex;
+    flex-direction: column;
+    gap: .26vw;
+}
+.cabang_box_detail h3{
+    font-family: var(--montserrat);
+    font-size: .8vw;
+    letter-spacing: .03vw;
+    color: #4C4C4C;
+    font-weight: 600;
+}
+.cabang_box_text p{
+    font-family: var(--montserrat);
+    font-size: .71vw;
+    letter-spacing: .02vw;
+    line-height: 1.5;
+    color: #4C4C4C;
+}
+.cabang_box_button{
+    display: flex;
+    gap: .8vw;
+    justify-content: center;
+}
+.cabang_box_button a{
+    text-decoration: none;
+}
+.cabang_box_button a:first-child button{
+    width: 100%;
+    padding: 0 1vw;
+    padding-right: .87vw;
+    height: 2.8vw;
+    border-radius: 100vw;
+    background-color: #FF851A;
+    outline: none;
+    border: none;
+    font-size: .8vw;
+    letter-spacing: .03vw;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--poppins);
+    gap: .5vw;
+    cursor: pointer;
+    border: .1vw solid transparent;
+    transition: .24s all;
+}
+.cabang_box_button a:first-child button svg{
+    font-size: 1.4vw;
+}
+.cabang_box_button a:first-child button:hover{
+    background-color: transparent;
+    border: .1vw solid #FF851A;
+    color: #FF851A;
+}
+.cabang_box_button a:last-child button{
+    width: 2.8vw;
+    height: 2.8vw;
+    border-radius: 100vw;
+    background-color: #FF851A;
+    outline: none;
+    border: none;
+    font-size: 1.3vw;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: .1vw solid transparent;
+    transition: .24s all;
+}
+.cabang_box_button a:last-child button:hover{
+    background-color: transparent;
+    border: .1vw solid #FF851A;
+    color: #FF851A;
+}
+
+.cabang_box_image {
+    cursor: pointer;
+  }
+  
+  .modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+  }
+  .overlay_modal{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: #65656544;
+    backdrop-filter: blur(2.9000015258789px)
+  }
+  .modal_content {
+    position: relative;
+    width: 80%;
+    height: 80vh;
+    border-radius: 1vw;
+    overflow: hidden;
+  }
+  
+  .close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 30px;
+    color: #fff;
+    cursor: pointer;
+    z-index: 10;
+  }
+  
+  .popup_image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    object-position: center;
+  }
+
+@media (max-width:768px) {
+    .container{
+        padding: 6vw 4vw;
+    }
+    .heading_section h2{
+        font-size: 8vw;
+    }
+    .cabang_layout{
+        grid-template-columns: repeat(1, 1fr);
+        margin-top: 6vw;
+        grid-gap: 6vw;
+    }
+    .modal_content {
+        position: relative;
+        width: 90%;
+        height: 44vh;
+        border-radius: 3vw;
+        overflow: hidden;
+      }
+    .cabang_box_image{
+        height: 55vw;
+        border-radius: 2.4vw;
+        margin-bottom: 3.5vw;
+    }
+    .cabang_box_content{
+        padding: 0;
+        border-radius: 0;
+        gap: 1vw;
+    }
+    .cabang_box_content h3{
+        letter-spacing: .07vw;
+        font-size: 3.6vw;
+    }
+    .cabang_box_text{
+        gap: 2.6vw;
+    }
+    .cabang_box_detail{
+        gap: 1.5vw;
+    }
+    .cabang_box_detail h3{
+        font-size: 4vw;
+        letter-spacing: .06vw;
+    }
+    .cabang_box_content p{
+        font-size: 3.5vw;
+        letter-spacing: .04vw;
+    }
+    .cabang_box_button{
+        display: flex;
+        gap: 1vw;
+        justify-content: center;
+        margin-top: 2vw;
+    }
+    .cabang_box_button a{
+        text-decoration: none;
+    }
+    .cabang_box_button a:first-child button{
+        width: 100%;
+        padding: 0 2.2vw;
+        padding-right: 2.2vw;
+        height: 7vw;
+        font-size: 2.4vw !important;
+        letter-spacing: .05vw;
+        gap: .9vw;
+    }
+    .cabang_box_button a:last-child button{
+        width: 7vw;
+        height: 7vw;
+        font-size: 3vw;
+    }
+    .cabang_box_button a:first-child button svg{
+        font-size: 3vw;
+    }
+}
