@@ -430,8 +430,8 @@ export default function Navbar() {
                                         </ul>
                                     </div>
                                 </li>
-                                <li className={isActive('/artikel')} onClick={clickMenu}><Link href="/article">Artikel</Link></li>
-                                <li className={isActive('/cabang')} onClick={clickMenu}><Link href="/branches">Cabang</Link></li>
+                                <li className={isActive('/artikel')} onClick={clickMenu}><Link href="/artikel">Artikel</Link></li>
+                                <li className={isActive('/cabang')} onClick={clickMenu}><Link href="/cabang">Cabang</Link></li>
                                 <li className={isActive('/katalog')} onClick={clickMenu}><Link href="/katalog">Katalog</Link></li>
                             </ul>
                             <div className={styles.login_mobile}>

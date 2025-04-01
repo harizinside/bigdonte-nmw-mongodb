@@ -1,0 +1,305 @@
+.container{
+    width: 100%;
+    padding: 2.7vw 13.45vw;
+    padding-bottom: 9.4vw;
+}
+.heading_hide {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+.heading_section{
+    text-align: center;
+}
+.heading_section_start{
+    text-align: start;
+}
+.heading_section h2{
+    font-family: var(--fairplay);
+    color: #5A5A5A;
+    font-size: 2.93vw;
+}
+.heading_section h2 span{
+    color: #FF851A;
+}
+.box_galeri_layout{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 3.8vw;
+    grid-gap: 1.7vw;
+}
+.box_galeri_image{
+    width: 100%;
+    height: 14.2vw;
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.3vw;
+    margin-bottom: 1.2vw;
+}
+.box_galeri_image img{
+    position: absolute;
+    left: 0;
+    top: 0;
+    object-fit: cover;
+    object-position: center;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+.box_galeri_heading h3{
+    font-family: var(--montserrat);
+    font-size: .97vw;
+    font-weight: 600;
+    color: #4C4C4C;
+    letter-spacing: .03vw;
+    margin-bottom: .2vw;
+}
+.box_galeri_text{
+    display: flex;
+    flex-direction: column;
+    gap: .23vw;
+    margin-top: .48vw;
+}
+.box_galeri_text p{
+    font-family: var(--montserrat);
+    font-size: .71vw;
+    letter-spacing: .02vw;
+    color: #4C4C4C;
+    line-height: 1.4;
+}
+.box_galeri_button{
+    text-align: start;
+    margin-top: 2vw;
+}
+.box_galeri_button button{
+    background-color: transparent;
+    outline: none;
+    border-radius: 100vw;
+    border: .1vw solid #FF851A;
+    font-family: var(--poppins);
+    font-size: .83vw;
+    letter-spacing: .03vw;
+    color: #FF851A;
+    padding: .42vw 3.88vw;
+    cursor: pointer;
+    transition: .2s all;
+}
+.box_galeri_button button:hover{
+    background-color: #FF851A;
+    color: white;
+}
+
+.section_4{
+    width: 100%;
+    padding: 4vw 13.43vw;
+    padding-bottom: 11.6vw;
+  }
+  .heading_section_4{
+    padding-left: 39.2vw;
+  }
+  .section_4_box{
+    width: 100%;
+    padding: 3vw 3.4vw;
+    padding-left: 39.2vw;
+    padding-right: 2vw;
+    padding-bottom: 3.4vw;
+    border-radius: 2.2vw;
+    position: relative;
+    font-weight: 400;
+    margin-top: 2.6vw;
+    background-color: #F3F3F3;
+  }
+  .section_4_box p{
+    font-size: .8vw;
+    letter-spacing: .04vw;
+    line-height: 1.5;
+    color: #4C4C4C;
+    font-family: var(--montserrat);
+    margin-bottom: 1.3vw;
+  }
+  .section_4_box button{
+    background-color: transparent;
+    outline: none;
+    border: .1vw solid #FF851A;
+    color: #FF851A;
+    font-family: var(--poppins);
+    font-size: .8vw;
+    letter-spacing: .05vw;
+    border-radius: 100vw;
+    padding: .43vw 1.06vw;
+    margin-top: .9vw;
+    cursor: pointer;
+    transition: .4s all;
+  }
+  .section_4_box button:hover{
+    background-color: #FF851A;
+    color:white;
+  }
+  .our_dokter{
+    width: 34.7vw;
+    left: .8vw;
+    bottom: 0;
+    position: absolute;
+    z-index: 2;
+  }
+  .bg_our_dokter{
+    position: absolute;
+    bottom: 0;
+    left: 14.6vw;
+    z-index: 1;
+    width: 9.4vw;
+  }
+
+  @keyframes upSmall {
+    0%{
+      transform: scale(1) rotate(0);
+    }
+    100%{
+      transform: scale(1.1) rotate(-30deg);
+    }
+  }
+  
+  .section_icon_5{
+    position: absolute;
+    left: -.4vw;
+    top: 3.3vw;
+    width: 2.3vw;
+    z-index: 10;
+    animation: upEnd .8s alternate infinite ease-in;
+  }
+  @keyframes upEnd {
+    0%{
+      transform: scale(1) rotate(2deg);
+    }
+    100%{
+      transform: scale(1.1) rotate(-9deg);
+    }
+  }
+  .section_icon_6{
+    position: absolute;
+    left: 35vw;
+    bottom: 6vw;
+    width: 1vw;
+    animation: upSmall 1.2s alternate infinite ease-in;
+  }
+
+  .heading_section_start{
+    text-align: start;
+  }
+  .heading_section p{
+    font-family: var(--montserrat);
+    font-weight: 700;
+    font-size: 1.14vw;
+    color: #4C4C4C;
+  }
+  @media (max-width:768px) {
+    .container{
+      padding: 7vw 4vw;
+      padding-bottom: 9.4vw;
+    }
+    .heading_section h2{
+      font-size: 8.5vw;
+    }
+    .box_galeri_layout{
+        grid-template-columns: repeat(1, 1fr);
+        margin-top: 6vw;
+        grid-gap: 6vw;
+    }
+    .box_galeri_image{
+        height: 55vw;
+        border-radius: 3vw;
+        margin-bottom: 2.8vw;
+    }
+    .box_galeri_heading h3{
+        font-size: 4.4vw;
+        letter-spacing: .06vw;
+        margin-bottom: 1.2vw;
+    }
+    .box_galeri_text{
+        display: flex;
+        flex-direction: column;
+        gap: .8vw;
+        margin-top: 1.4vw;
+    }
+    .box_galeri_text p{
+        font-size: 3.1vw;
+        letter-spacing: .05vw;
+    }
+    .box_galeri_button{
+        text-align: start;
+        margin-top: 4vw;
+    }
+    .box_galeri_button button{
+        font-size: 3.1vw;
+        letter-spacing: .06vw;
+        padding: .8vw 3vw;
+    }
+    .box_galeri_button button:hover{
+        background-color: #FF851A;
+        color: white;
+    }
+    
+    .section_4{
+      width: 100%;
+      padding: 7vw 4vw;
+    }
+    .heading_section_4{
+      padding-left: 3.4vw;
+    }
+    .heading_section_4 p{
+      font-size: 3vw;
+    }
+    .section_4_box{
+      display: flex;
+      flex-direction: column;
+      height: max-content;
+      padding-left: 0;
+      margin-top: 2.4vw;
+      background-color: transparent;
+    }
+    .section_4_box p{
+      font-size: 3.1vw;
+      margin-top: 4vw;
+      padding:0 4vw;
+      margin-bottom: 1.3vw;
+    }
+    .our_dokter{
+      width:100%;
+      left: .8vw;
+      bottom: 0;
+      position: relative;
+      z-index: 2;
+      background-color: #F3F3F3;
+      border-radius: 3vw 3vw 0 0;
+    }
+    .bg_our_dokter{
+      display: none;
+    }
+    .section_4_box button{
+      font-size: 3vw;
+      padding: .8vw 3vw;
+      padding-top: .96vw;
+      margin-top: 2.8vw;
+      margin-left: 3vw;
+    }
+  
+    .section_icon_5{
+      position: absolute;
+      left: -.5vw;
+      top: 4.8vw;
+      width: 6.3vw;
+      z-index: 10;
+      animation: upEnd .8s alternate infinite ease-in;
+    }
+    .section_icon_6{
+      position: absolute;
+      left: 83vw;
+      bottom: 84vw;
+      z-index: 10;
+      width: 3.7vw;
+      animation: upSmall 1.2s alternate infinite ease-in;
+    }
+
+  }

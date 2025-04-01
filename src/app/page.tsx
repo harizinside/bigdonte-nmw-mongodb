@@ -42,7 +42,7 @@ interface Service {
   name: string;
   slug: string;
   description: string;
-  imageCover?: string;
+  imageCover: string;
 }
 
 interface Promo {
@@ -371,7 +371,7 @@ export default function Home() {
                         <Image
                           width={500}
                           height={500}
-                          src={`${baseUrl}/${service.imageCover || "Loading..."}`}
+                          src={service.imageCover}
                           alt={service.name}
                           priority
                         />
@@ -410,7 +410,7 @@ export default function Home() {
                         <Image
                           width={500}
                           height={500}
-                          src={`${baseUrl}/${service.imageCover || "Loading..."}`}
+                          src={service.imageCover}
                           alt={service.name}
                           priority
                         />
