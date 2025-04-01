@@ -1,0 +1,414 @@
+.container{
+    width: 100%;
+    padding: 3vw 13.45vw;
+}
+.heading_section{
+    text-align: center;
+}
+.heading_section_start{
+    text-align: start;
+}
+.heading_section h2{
+    font-family: var(--fairplay);
+    color: #5A5A5A;
+    font-size: 2.93vw;
+}
+.heading_section h2 span{
+    color: #FF851A;
+}
+.heading_hide {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+  }
+.dokter_heading{
+    display: grid;
+    grid-template-columns: 100%;
+    align-items: flex-end;
+    margin-top: 2vw;
+}
+
+.tabs_container{
+    width: 100%;
+    
+}
+.overflow_x{
+    overflow-x: scroll;
+}
+
+
+.overflow_x::-webkit-scrollbar {
+    width: 3px;
+    height: .3vw;
+    border-radius: 1vw;
+  }
+  
+  /* Track */
+  .overflow_x::-webkit-scrollbar-track {
+    
+    background: #cfcfcf;
+    border-radius: 1vw;
+  }
+   
+  /* Handle */
+  .overflow_x::-webkit-scrollbar-thumb {
+    background: #FF851A; 
+    border-radius: 1vw;
+  }
+  
+  /* Handle on hover */
+  .overflow_x::-webkit-scrollbar-thumb:hover {
+    background: #FF851A; 
+  }
+.tabs {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.1vw;
+    margin-bottom: .8vw;
+}
+
+.tab {
+    padding: .47vw 2.3vw;
+    font-size: .8vw;
+    cursor: pointer;
+    background-color: transparent;
+    outline: none;
+    border: .1vw solid #FF851A;
+    border-radius: 100vw;
+    transition: background-color 0.3s;
+    width: max-content;
+    font-family: var(--poppins);
+    letter-spacing: .04vw;
+    color: #FF851A;
+    font-weight: 600;
+}
+
+.tab:hover {
+    background-color: #FF851A;
+    color: white; 
+}
+
+.activeTab {
+    padding: .47vw 2.3vw;
+    font-size: .8vw;
+    cursor: pointer;
+    background-color: #FF851A;
+    border: none;
+    border-radius: 100vw;
+    width: max-content;
+    font-family: var(--poppins);
+    letter-spacing: .04vw;
+    color: #fff;
+    border: .1vw solid transparent;
+    font-weight: 600;
+}
+.cabang_layout{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 2.3vw;
+    grid-gap: 1.87vw;
+}
+.cabang_box_image{
+    width: 100%;
+    height: 14.7vw;
+    overflow: hidden;
+    border-radius: 1.3vw;
+    margin-bottom: 1.2vw;
+    position: relative;
+    border:.12vw solid #FF851A;
+}
+.cabang_box_image img{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+.cabang_box_content{
+    padding: 1.1vw;
+    border: .1vw solid #E6E6E6;
+    border-radius: 1.3vw;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1vw;
+}
+.cabang_box_content h3{
+    font-family: var(--montserrat);
+    letter-spacing: .04vw;
+    font-size: .82vw;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #4C4C4C;
+}
+.cabang_box_content h3 span{
+    color: #FF851A;
+}
+.cabang_box_content span{
+    font-family: var(--montserrat);
+    font-size: .7vw;
+    letter-spacing: .024vw;
+    color: #4C4C4C;
+    margin-top: -.67vw;
+}
+.cabang_box_button{
+    display: flex;
+    gap: .8vw;
+    justify-content: center;
+}
+.cabang_box_button a{
+    text-decoration: none;
+}
+
+.article_pagination{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: .83vw;
+    padding-bottom: 5.7vw;
+    margin-top: 5vw;
+  }
+  .article_pagination button{
+    background-color: transparent;
+    outline: none;
+    border: none;
+    font-size: .92vw;
+    letter-spacing: .04vw;
+    font-family: var(--poppins);
+    color: #4C4C4C;
+    cursor: pointer;
+  }
+  .article_pagination a{
+    background-color: transparent;
+    outline: none;
+    border: none;
+    font-size: .92vw;
+    letter-spacing: .04vw;
+    font-family: var(--montserrat);
+    color: #4C4C4C;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .article_pagination span{
+    font-family: var(--poppins);
+    font-size: .85vw;
+    letter-spacing: .04vw;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .article_pagination button font{
+    color: #FF851A !important;
+    font-size: 1.1vw;
+    font-weight: 700 !important;
+  }
+  .article_pagination a svg{
+    color: #939393;
+    font-size: 1.1vw;
+    margin-top: .3vw;
+  }
+  .active_pagination{
+    color: #FF851A !important;
+    font-weight: 700;
+  }
+
+  .loadMoreButton{
+    padding: .47vw 2.3vw;
+    font-size: .8vw;
+    cursor: pointer;
+    background-color: transparent;
+    outline: none;
+    border: .1vw solid #FF851A;
+    border-radius: 100vw;
+    transition: background-color 0.3s;
+    width: max-content;
+    font-family: var(--poppins);
+    letter-spacing: .04vw;
+    color: #FF851A;
+    font-weight: 600;
+    display: block;
+    margin: auto;
+    margin-top: 4vw;
+  }
+  .loadMoreButton:hover{
+    background-color: #FF851A;
+    color: white;
+  }
+
+  .fade_enter {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .fade_enter_active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  .loading_container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-family: var(--poppins);
+    letter-spacing: .04vw;
+    color: #ff851a73;
+    margin-top: 3vw;
+    text-transform: uppercase;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #7a7a7a73;
+    border-top-color: #ff851a73;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+
+  @media (max-width:768px) {
+    .container{
+        padding: 7vw 4vw;
+    }
+    .heading_section h2{
+        font-size: 8.5vw;
+    }
+    .dokter_heading{
+        display: grid;
+        grid-template-columns: 100%;
+        grid-gap: 3vw;
+        align-items: flex-end;
+    }
+    .tabs {
+        width: 100%;
+        /* display: grid;
+        grid-template-columns: repeat(4, 1fr); */
+        overflow-x: scroll;
+        grid-gap: 2.5vw;
+        margin-bottom: 2vw;
+        margin-top: 3vw;
+    }
+    .tab {
+        padding: 1.4vw 4vw;
+        font-size: 3.5vw;
+        letter-spacing: .07vw;
+        width: max-content;
+    }
+    .loadMoreButton {
+        padding: 1.4vw 4vw;
+        font-size: 3.5vw;
+        letter-spacing: .07vw;
+        width: max-content;
+        margin-top: 12vw;
+    }
+    .activeTab {
+        padding: 1.4vw 4vw;
+        font-size: 3.5vw;
+        letter-spacing: .07vw;
+        width: max-content;
+    }
+    .tabContent{
+        margin-top: 5vw;
+    }
+    .cabang_layout{
+        grid-template-columns: repeat(1, 1fr);
+        margin-top: 4.5vw;
+        grid-gap: 5vw;
+    }
+    .cabang_box_image{
+        height: 87vw;
+        border-radius: 3vw;
+        margin-bottom: 2.5vw;
+        border:.3vw solid #FF851A;
+    }
+    .cabang_box_content{
+        padding: 3.5vw;
+        border-radius: 3vw;
+        gap: 3vw;
+    }
+    .cabang_box_content h3{
+        letter-spacing: .07vw;
+        font-size: 4vw;
+    }
+    .cabang_box_text{
+        gap: 2.6vw;
+    }
+    .cabang_box_detail{
+        gap: 1.5vw;
+    }
+    .cabang_box_detail h3{
+        font-size: 3vw;
+        letter-spacing: .06vw;
+    }
+    .cabang_box_content span{
+        font-size: 4vw;
+        letter-spacing: .04vw;
+    }
+    .cabang_box_button{
+        display: flex;
+        gap: 1vw;
+        justify-content: center;
+        margin-top: 2vw;
+    }
+
+    .article_pagination{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 3vw;
+        padding-bottom: 2vw;
+        margin-top: 10vw;
+      }
+      .article_pagination a{
+        font-size: 4.5vw;
+      }
+      .active_pagination{
+        font-size: 4.7vw !important;
+      }
+      .article_pagination a svg{
+        font-size: 3.9vw;
+        margin-top: .3vw;
+      }
+      .article_pagination button{
+        background-color: transparent;
+        outline: none;
+        border: none;
+        font-size: 3.4vw;
+        letter-spacing: .06vw;
+        font-family: var(--poppins);
+        color: #4C4C4C;
+        cursor: pointer;
+      }
+      .article_pagination span{
+        font-family: var(--poppins);
+        font-size: 3.4vw;
+        letter-spacing: .06vw;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .article_pagination button font{
+        color: #FF851A !important;
+        font-size: 3.4vw;
+        font-weight: 700 !important;
+      }
+      .article_pagination a svg{
+        color: #939393;
+        font-size: 1.1vw;
+        margin-top: .3vw;
+      }
+  }

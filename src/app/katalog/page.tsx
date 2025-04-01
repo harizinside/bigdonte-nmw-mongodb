@@ -1,5 +1,3 @@
-// app/katalog/metadata.ts (Server Component)
-
 import { Metadata } from "next";
 import KatalogClient from "./KatalogClient";
 
