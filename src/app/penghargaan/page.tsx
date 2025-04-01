@@ -6,6 +6,7 @@ import not from "@/css/Not.module.css";
 import banner from "@/css/Banner.module.css";
 import breadcrumb from "@/css/Breadcrumb.module.css";
 import Head from "next/head";
+import { Metadata } from "next";
 
 interface Achievement {
   _id: string;
@@ -14,6 +15,46 @@ interface Achievement {
   description: string;
   image: string;
 }
+
+export const metadata: Metadata = {
+    title: "Penghargaan | NMW Aesthetic Clinic",
+    description:
+      "Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional",
+    keywords: [
+      "pencapaian NMW Clinic",
+      "penghargaan klinik kecantikan",
+      "prestasi NMW Aesthetic Clinic",
+      "penghargaan layanan medis",
+      "inovasi medis",
+      "pengakuan industri kecantikan",
+      "penghargaan layanan terbaik",
+    ],
+    openGraph: {
+      title: "Penghargaan NMW Aesthetic Clinic",
+      description:
+        "Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional",
+      type: "website",
+      url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/penghargaan`,
+      images: [
+        {
+          url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/images/banner_award.webp`,
+          width: 800,
+          height: 600,
+          alt: "Penghargaan NMW Aesthetic Clinic",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Penghargaan NMW Aesthetic Clinic",
+      description:
+        "Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional",
+      images: [`${process.env.NEXT_PUBLIC_API_WEB_URL}/images/banner_award.webp`],
+    },
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}/penghargaan`,
+    },
+  };
 
 // Fungsi server untuk fetch data
 async function fetchAchievements(): Promise<Achievement[]> {
@@ -58,30 +99,12 @@ export default async function PenghargaanPage() {
 
   return (
     <div>
-      <Head>
-        <title>Penghargaan | NMW Aesthetic Clinic</title>
-        <meta name="description" content="Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional" />
-        <meta name="keywords" content="pencapaian NMW Clinic, penghargaan klinik kecantikan, prestasi NMW Aesthetic Clinic, penghargaan layanan medis, pencapaian klinik estetika, inovasi medis, pengakuan industri kecantikan, sertifikasi kecantikan, penghargaan layanan terbaik, prestasi klinik kecantikan, penghargaan perawatan kulit, pencapaian layanan kesehatan, penghargaan dokter kecantikan, pengakuan klinik medis, pencapaian global NMW Clinic" />
-
-        <meta property="og:title" content="Penghargaan NMW Aesthetic Clinic"  />
-        <meta property="og:description" content="Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${baseUrl}/penghargaan`} />
-        <meta property="og:image" content={`/images/banner_award.webp`} />
-
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Penghargaan NMW Aesthetic Clinic" />
-        <meta name="twitter:description" content="Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional" />
-        <meta name="twitter:image" content={`/images/banner_award.webp`} />
-
-        <link rel="canonical" href={`${baseUrl}/penghargaan`} />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schemaData),
-          }}
-        />
-      </Head>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schemaData),
+        }}
+      />
       <div className={banner.banner}>
         <Image
           priority
