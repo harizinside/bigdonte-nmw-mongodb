@@ -9,7 +9,8 @@ import Head from "next/head";
 
 interface Achievement {
   _id: string;
-  heading: string;
+  title: string;
+  date: string;
   description: string;
   image: string;
 }
@@ -58,11 +59,22 @@ export default async function PenghargaanPage() {
   return (
     <div>
       <Head>
-        <title>Penghargaan | NMW Aesthetic Clinic</title>
-        <meta
-          name="description"
-          content="Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic"
-        />
+      <title>Penghargaan | NMW Aesthetic Clinic</title>
+        <meta name="description" content="Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional" />
+        <meta name="keywords" content="pencapaian NMW Clinic, penghargaan klinik kecantikan, prestasi NMW Aesthetic Clinic, penghargaan layanan medis, pencapaian klinik estetika, inovasi medis, pengakuan industri kecantikan, sertifikasi kecantikan, penghargaan layanan terbaik, prestasi klinik kecantikan, penghargaan perawatan kulit, pencapaian layanan kesehatan, penghargaan dokter kecantikan, pengakuan klinik medis, pencapaian global NMW Clinic" />
+
+        <meta property="og:title" content="Penghargaan NMW Aesthetic Clinic"  />
+        <meta property="og:description" content="Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${baseUrl}/penghargaan`} />
+        <meta property="og:image" content={`${baseUrl}/images/banner_award.webp`} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Penghargaan NMW Aesthetic Clinic" />
+        <meta name="twitter:description" content="Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional" />
+        <meta name="twitter:image" content={`${baseUrl}/images/banner_award.webp`} />
+
+        <link rel="canonical" href={`${baseUrl}/penghargaan`} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -124,12 +136,13 @@ export default async function PenghargaanPage() {
                     priority
                     width={500}
                     height={500}
-                    src={`${baseUrl}/${achievement.image}`}
-                    alt={`${achievement.heading}`}
+                    src={`${baseUrl}/${achievement?.image}`}
+                    alt={`${achievement?.title}`}
                   />
                 </div>
                 <div className={styles.cabang_box_content}>
-                  <h3>{achievement.heading}</h3>
+                  <span>{achievement?.date}</span>
+                  <h3>{achievement?.title}</h3>
                   <p>{achievement.description}</p>
                 </div>
               </div>
