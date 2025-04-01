@@ -104,7 +104,7 @@ const TableEleven: React.FC<TableProps> = ({ limit = null, showPagination = true
           prev.map((p) => (p._id === articleId ? { ...p, status: currentStatus } : p))
         );
       }
-    };
+    };  
 
 
       const handleDeleteArticles = async (id: string | number) => {
