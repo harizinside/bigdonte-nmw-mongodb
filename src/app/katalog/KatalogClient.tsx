@@ -21,7 +21,7 @@ interface CatalogItem {
 const KatalogClient = () => {
   const [catalogs, setCatalogs] = useState<CatalogItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
 
 useEffect(() => {
     const fetchCatalogs = async () => {
