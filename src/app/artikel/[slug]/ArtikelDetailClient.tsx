@@ -173,7 +173,7 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
   }, [services]);
 
   const plainText = article?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
-  const truncatedText = plainText.length > 158 ? plainText.slice(0, 158) + "..." : plainText;
+  const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
 
   const tags = Array.isArray(article?.tags) ? article.tags : [];
 
@@ -211,7 +211,7 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
       e.preventDefault();
   
       const section = document.getElementById(sectionId);
-      const offset = 210; // Definisikan offset di awal fungsi
+      const offset = 230; // Definisikan offset di awal fungsi
   
       if (section) {
         window.scrollTo({
@@ -230,7 +230,7 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
           } else {
             console.error(`Target still not found: ${sectionId}`);
           }
-        }, 210);
+        }, 230);
       }
     },
     []

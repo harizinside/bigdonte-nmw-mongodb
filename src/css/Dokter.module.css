@@ -130,7 +130,7 @@
     object-position: center;
 }
 .cabang_box_content{
-    padding: 1.1vw;
+    padding: 1.1vw .6vw;
     border: .1vw solid #E6E6E6;
     border-radius: 1.3vw;
     text-align: center;
@@ -148,10 +148,11 @@
 }
 .cabang_box_content h3 span{
     color: #FF851A;
+    font-size: .82vw;
 }
 .cabang_box_content span{
     font-family: var(--montserrat);
-    font-size: .7vw;
+    font-size: .82vw !important;
     letter-spacing: .024vw;
     color: #4C4C4C;
     margin-top: -.67vw;
