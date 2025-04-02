@@ -31,13 +31,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   
     return {
       title: `${promo.title} | NMW Aesthetic Clinic`,
-      description: "Dapatkan promo terbaik dari NMW Aesthetic Clinic!",
+      description: "Dapatkan promo terbaik dari NMW Aesthetic Clinic untuk perawatan kecantikan dan kesehatan kulit Anda. Nikmati penawaran spesial untuk layanan medis, perawatan wajah, dan perawatan tubuh dengan harga terbaik. Jangan lewatkan promo eksklusif yang dirancang khusus untuk memenuhi kebutuhan kecantikan Anda!",
       keywords: ['promo kecantikan', 'diskon layanan medis', 'promo perawatan kulit'],
   
-      // ✅ Open Graph Meta
       openGraph: {
         title: promo.title,
-        description: "Dapatkan promo terbaik dari NMW Aesthetic Clinic!",
+        description: "Dapatkan promo terbaik dari NMW Aesthetic Clinic untuk perawatan kecantikan dan kesehatan kulit Anda. Nikmati penawaran spesial untuk layanan medis, perawatan wajah, dan perawatan tubuh dengan harga terbaik. Jangan lewatkan promo eksklusif yang dirancang khusus untuk memenuhi kebutuhan kecantikan Anda!",
         type: "website",
         url: `${baseUrl}/promo/${promo.slug}`,
         images: [
@@ -50,16 +49,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
         ],
       },
   
-      // ✅ Twitter Meta
       twitter: {
         card: "summary_large_image",
         site: "@nmwclinic",
         title: promo.title,
-        description: "Dapatkan promo terbaik dari NMW Aesthetic Clinic!",
+        description: "Dapatkan promo terbaik dari NMW Aesthetic Clinic untuk perawatan kecantikan dan kesehatan kulit Anda. Nikmati penawaran spesial untuk layanan medis, perawatan wajah, dan perawatan tubuh dengan harga terbaik. Jangan lewatkan promo eksklusif yang dirancang khusus untuk memenuhi kebutuhan kecantikan Anda!",
         images: `${baseUrl}/${promo.image}`,
       },
   
-      // ✅ Canonical URL
       alternates: {
         canonical: `${baseUrl}/promo/${promo.slug}`,
       },
