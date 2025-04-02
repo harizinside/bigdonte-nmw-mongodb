@@ -165,7 +165,7 @@ const ArtikelClient: React.FC<Props> = () => {
                 return (
                     <div className={styles.tabcontent_box} key={article._id}>
                     <div className={styles.tabcontent_box_img}>
-                        <Link href={`/article/${article.slug}`}>
+                        <Link href={`/artikel/${article.slug}`}>
                         <Image
                             priority
                             width={500}
@@ -175,13 +175,13 @@ const ArtikelClient: React.FC<Props> = () => {
                         />
                         </Link>
                         {firstTag && (
-                        <Link href={`/article/tag/${firstTag.trim()}`}>
+                        <Link href={`/artikel/tag/${firstTag.trim()}`}>
                             <button className={styles.tag_article_img}>#{firstTag.trim()}</button>
                         </Link>
                         )}
                     </div>
                     <div className={styles.tabcontent_box_text}>
-                        <Link href={`/article/${article.slug}`}>
+                        <Link href={`/artikel/${article.slug}`}>
                         <h3>{article.title}</h3>
                         </Link>
                         <span>{article.author}, {formatDate(article.date)}</span>
@@ -189,7 +189,7 @@ const ArtikelClient: React.FC<Props> = () => {
                         className={styles.description}
                         dangerouslySetInnerHTML={{ __html: article.description }}
                         />
-                        <Link href={`/article/${article.slug}`}>
+                        <Link href={`/artikel/${article.slug}`}>
                         <button>Baca Selengkapnya</button>
                         </Link>
                     </div>
@@ -249,11 +249,11 @@ const ArtikelClient: React.FC<Props> = () => {
                   <div className={styles.article_box} key={article._id}>
                     <div className={styles.article_image}>
                       {firstTag && (
-                        <Link href={`/article/tag/${firstTag.trim()}`}>
+                        <Link href={`/artikel/tag/${firstTag.trim()}`}>
                           <button className={styles.tag_article_img}>#{firstTag.trim()}</button>
                         </Link>
                       )}
-                      <Link href={`/article/${article.slug}`}>
+                      <Link href={`/artikel/${article.slug}`}>
                         <Image
                           priority
                           width={500}
@@ -264,13 +264,13 @@ const ArtikelClient: React.FC<Props> = () => {
                       </Link>
                     </div>
                     <div className={styles.article_content}>
-                      <Link href={`/article/${article.slug}`}>
+                      <Link href={`/artikel/${article.slug}`}>
                         <div className={styles.article_heading}>
                           <h3>{article.title}</h3>
                         </div>
                       </Link>
                       <span>{article.author}, {formatDate(article.date)}</span>
-                      <Link href={`/article/${article.slug}`}>
+                      <Link href={`/artikel/${article.slug}`}>
                         <button className={styles.btn_more}>Baca Selengkapnya</button>
                       </Link>
                     </div>

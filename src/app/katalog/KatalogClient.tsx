@@ -7,7 +7,6 @@ import styles from "@/css/Catalog.module.css";
 import banner from "@/css/Banner.module.css";
 import breadcrumb from "@/css/Breadcrumb.module.css";
 import loadingStyles from "@/css/Loading.module.css";
-import Head from "next/head";
 
 // ✅ Type Definition for Catalog Item
 interface CatalogItem {
