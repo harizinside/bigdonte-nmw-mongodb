@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
         url: `${baseUrl}/promo/${promo.slug}`,
         images: [
           {
-            url: promo.image,
+            url: `${baseUrl}/${promo.image}`,
             width: 1200,
             height: 630,
             alt: promo.title,
@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
         site: "@nmwclinic",
         title: promo.title,
         description: "Dapatkan promo terbaik dari NMW Aesthetic Clinic!",
-        images: promo.image,
+        images: `${baseUrl}/${promo.image}`,
       },
   
       // ✅ Canonical URL
