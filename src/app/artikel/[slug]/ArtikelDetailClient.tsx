@@ -172,7 +172,8 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
     }
   }, [services]);
 
-  const plainText = article?.description.replace(/<\/?[^>]+(>|$)/g, "");
+  const plainText = article?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
+  const truncatedText = plainText.length > 158 ? plainText.slice(0, 158) + "..." : plainText;
 
   const tags = Array.isArray(article?.tags) ? article.tags : [];
 
@@ -210,7 +211,7 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
       e.preventDefault();
   
       const section = document.getElementById(sectionId);
-      const offset = 40; // Definisikan offset di awal fungsi
+      const offset = 210; // Definisikan offset di awal fungsi
   
       if (section) {
         window.scrollTo({
@@ -229,7 +230,7 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
           } else {
             console.error(`Target still not found: ${sectionId}`);
           }
-        }, 100);
+        }, 210);
       }
     },
     []
@@ -238,10 +239,11 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
   if (error) return <p>Error: {error}</p>;
 
   if (!article) {
-    if (loading) return null; // Jangan tampilkan apa pun saat masih loading
-
     return (
-      <div className={styles.emptyPage}>
+      <div className={loadingStyles.box}>
+        <div className={loadingStyles.content}>
+          <Image width={500} height={500} priority src="/images/logo.svg" alt="Loading" />
+        </div>
       </div>
     );
   }
@@ -250,14 +252,14 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
     "@context": "https://schema.org",
     "@type": "Article",
     headline: `${article.title ? `${article.title}` : `Artikel NMW Aesthetic Clinic`} - NMW Aesthetic Clinic`,
-    description: `${plainText}`,
+    description: `${truncatedText}`,
     url: `${baseUrl}/artikel/${article.slug}`,
     publisher: {
       "@type": "Organization",
       name: "NMW Aesthetic Clinic",
       logo: {
         "@type": "ImageObject",
-        url: `${article.image ? `${baseUrl}/${article.image}` : `${baseUrl}/images/kebijakan-privasi.png`}`
+        url: `${article.image ? `${baseUrl}${article.image}` : `${baseUrl}/images/kebijakan-privasi.png`}`
       }
     },
     mainEntityOfPage: {
@@ -312,7 +314,7 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <div className={banner.banner}>
-        <Image priority width={900} height={900} src={`${baseUrl}/${article.image}`} alt={article.title} />
+        <Image priority width={900} height={900} src={article.image} alt={article.title} />
         {article.image_source ? (
           <div className={banner.image_source}>
             <Link href={article.image_source} target="_blank">{article.image_source_name}</Link>
@@ -385,7 +387,7 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
                         </Link>
                       )}
                       <Link href={`/artikel/${article.slug}`}>
-                        <Image priority width={500} height={500} src={`${baseUrl}${article.image}`} alt={article.title} />
+                        <Image priority width={500} height={500} src={article.image} alt={article.title} />
                       </Link>
                     </div>
                     <div className={styles.article_content}>
@@ -533,14 +535,14 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
         </div>
       </div>
 
-      {loading && (
+      {/* {loading && (
           <div className={loadingStyles.box}>
             <div className={loadingStyles.content}>
               <img src="/images/logo.svg" loading="lazy" />
               <span>LOADING</span>
             </div>
           </div>
-        )}
+        )} */}
     </div>
   );
 };

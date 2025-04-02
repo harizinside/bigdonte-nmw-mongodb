@@ -112,10 +112,18 @@
   line-height: 1.6;
   margin-bottom: .4vw;
 }
-.content_text strong, .content_text b{
+.content_text b{
   font-family: var(--montserrat);
     font-size: .81vw;
     color: #4C4C4C;
+    letter-spacing: .036vw;
+    line-height: 1.6;
+}
+.content_text strong{
+  font-family: var(--montserrat);
+    font-size: .93vw;
+    color: #4C4C4C;
+    font-weight: 700;
     letter-spacing: .036vw;
     line-height: 1.6;
 }

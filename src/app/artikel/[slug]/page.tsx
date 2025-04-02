@@ -145,7 +145,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
 
   const plainText = article?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
-  const truncatedText = plainText.length > 161 ? plainText.slice(0, 161) + "..." : plainText;
+  const truncatedText = plainText.length > 158 ? plainText.slice(0, 158) + "..." : plainText;
 
   const keywords = article.tags ? article.tags.map((tag: string) => tag.trim()) : [];
 
