@@ -1,0 +1,50 @@
+.container{
+    width: 100%;
+    padding: 2.7vw 13.45vw;
+    padding-bottom: 8vw;
+}
+.heading_section{
+    text-align: center;
+}
+.heading_hide {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+  }
+.heading_section_start{
+    text-align: start;
+}
+.heading_section h2{
+    font-family: var(--fairplay);
+    color: #5A5A5A;
+    font-size: 2.93vw;
+}
+.heading_section h2 span{
+    color: #FF851A;
+}
+.kebijakan_layout{
+    margin-top: 2.7vw;
+    font-size: .83vw;
+    font-family: var(--poppins);
+    letter-spacing: .03vw;
+    color: #5A5A5A;
+}
+.kebijakan_layout a{
+    color: #FF851A;
+}
+
+@media (max-width:768px) {
+    .container{
+        padding: 6vw 4vw;
+    }
+    .heading_section h2{
+        font-size: 6.5vw;
+    }
+    .kebijakan_layout{
+        margin-top: 5vw;
+        font-size: 2.8vw;
+        letter-spacing: .06vw;
+    }
+}

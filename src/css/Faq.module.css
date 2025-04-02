@@ -1,0 +1,120 @@
+.faqPage {
+    width: 100%;
+    padding: 4vw 13.45vw;
+    padding-bottom: 8vw;
+  }
+
+  .heading_hide {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+  }
+
+  .heading_section{
+    text-align: center;
+    }
+    .heading_section_start{
+        text-align: start;
+    }
+    .heading_section h2{
+        font-family: var(--fairplay);
+        color: #5A5A5A;
+        font-size: 2.93vw;
+    }
+    .heading_section h2 span{
+        color: #FF851A;
+    }
+  
+  .faqList {
+    border-top: .1vw solid #FF851A;
+    margin-top: 3.5vw;
+  }
+  
+  .faqItem {
+    border-bottom: .1vw solid #FF851A;
+    padding: 0 0;
+  }
+  
+  .question {
+    background: none;
+    border: none;
+    color: #5A5A5A;
+    font-family: var(--montserrat);
+    font-size: .9vw;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 600;
+    width: 100%;
+    padding: 1.5vw 1vw;
+    display: flex;
+    justify-content: space-between;
+    transition: .3s all;
+    letter-spacing: .03vw;
+  }
+  
+  .question:hover {
+    color: #FF851A;
+  }
+
+  .question svg{
+    font-size: 1.1vw;
+    transition: .4s all;
+  }
+  
+  .answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s all;
+    font-size: .85vw;
+    font-family: var(--poppins);
+    letter-spacing: .05vw;
+    color: #5A5A5A;
+    padding: 0 1vw;
+  }
+  
+  .answer.show {
+    max-height: 200px;
+    margin-top: 1vw;
+    margin-bottom: 1vw;
+  }
+  
+  .active .question {
+    color: #FF851A;
+    padding-bottom: 0vw;
+  }
+  
+  .active .question svg{
+    transform: rotate(180deg);
+  }
+  @media (max-width:768px) {
+    .faqPage {
+        padding: 9vw 4vw;
+        padding-bottom: 8vw;
+    }
+    .heading_section h1{
+        font-size: 6.5vw;
+    }
+    .faqList {
+        margin-top: 7.5vw;
+      }
+      .question {
+        font-size: 3vw;
+        line-height: 1.5;
+        padding: 4vw 3vw;
+        letter-spacing: .09vw;
+      }
+      .question svg{
+        font-size: 3.3vw;
+      }
+      .answer {
+        font-size: 2.5vw;
+        letter-spacing: .09vw;
+        padding: 0 3vw;
+      }
+      .answer.show {
+        margin-top: 2vw;
+        margin-bottom: 3.8vw;
+      }
+  }

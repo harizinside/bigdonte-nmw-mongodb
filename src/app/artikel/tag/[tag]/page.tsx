@@ -13,7 +13,7 @@ interface TagPageProps {
   }: {
     params: { tag: string };
   }): Promise<Metadata> {
-    const { tag } = params;
+    const tag = decodeURIComponent(params.tag);
   
     if (!tag) {
       notFound(); // Menangani jika tag tidak ditemukan
@@ -69,6 +69,6 @@ interface TagPageProps {
   
 
 export default function TagPage({ params }: TagPageProps) {
-    const { tag } = params; // Ambil parameter tag dari URL path
+    const tag = decodeURIComponent(params.tag);
     return <TagClient tag={tag} />;
   }

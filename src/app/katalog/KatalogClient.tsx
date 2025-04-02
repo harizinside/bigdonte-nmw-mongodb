@@ -22,7 +22,7 @@ const KatalogClient = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
 
-useEffect(() => {
+  useEffect(() => {
     const fetchCatalogs = async () => {
       try {
         const response = await fetch(`/api/catalogs?page=all`, {
