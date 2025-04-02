@@ -53,7 +53,7 @@ export default function CabangClient() {
           console.error("Invalid response data format:", data);
         }
       } catch (error) {
-        console.error("Error fetching banners:", error);
+        console.error("Error fetching branches:", error);
         if (cachedData) {
           setBranchs([...JSON.parse(cachedData)].reverse());
         }
@@ -176,8 +176,7 @@ export default function CabangClient() {
       {loading && (
         <div className={loadingStyles.box}>
           <div className={loadingStyles.content}>
-            <img src="/images/logo.svg" loading="lazy" alt="Loading" />
-            <span>LOADING</span>
+            <Image src="/images/logo.svg" alt="Loading" width={500} height={500} priority />
           </div>
         </div>
       )}

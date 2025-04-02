@@ -5,7 +5,6 @@ import styles from "@/css/Award.module.css";
 import not from "@/css/Not.module.css";
 import banner from "@/css/Banner.module.css";
 import breadcrumb from "@/css/Breadcrumb.module.css";
-import Head from "next/head";
 import { Metadata } from "next";
 
 interface Achievement {

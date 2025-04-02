@@ -151,12 +151,11 @@ useEffect(() => {
           <div className={loadingStyles.content}>
             <Image
               priority
-              width={100}
-              height={100}
+              width={500}
+              height={500}
               src="/images/logo.svg"
               alt="Loading"
             />
-            <span>LOADING</span>
           </div>
         </div>
       )}

@@ -493,7 +493,7 @@ export default function Home() {
                     <Image
                       width={500}
                       height={500}
-                      src={`${baseUrl}/${article.image || "Loading..."}`}
+                      src={article.image}
                       alt={article.title}
                       priority
                     />

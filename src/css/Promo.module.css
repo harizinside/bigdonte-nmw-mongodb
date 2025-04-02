@@ -1,0 +1,152 @@
+.section_1{
+    width: 100%;
+    padding: 5vw 13.45vw;
+}
+.section_1_heading{
+    display: grid;
+    grid-template-columns: 65% 35%;
+    align-items: flex-end;
+}
+.section_1_heading h1{
+    font-size: 3vw;
+    font-family: var(--fairplay);
+    line-height: 1.2;
+    color: #5A5A5A;
+}
+.section_1_heading h1 span{
+    color: #FF851A;
+}
+.date{
+    text-align: end;
+    display: flex;
+    align-items: center;
+    justify-content:flex-end;
+    margin-bottom: .6vw;
+    gap: .6vw;
+}
+.date svg{
+    color: #FF851A;
+    font-size: .9vw;
+}
+.date p{
+    font-size: .86vw;
+    letter-spacing: .03vw;
+    color: #4C4C4C;
+    font-weight: 500;
+    font-family: var(--montserrat);
+}
+.section_1_content{
+    margin-top: 3vw;
+}
+.section_1_content_heading{
+    margin-bottom: 1vw;
+}
+.section_1_content_heading h3{
+    font-size: 1.4vw;
+    font-family: var(--montserrat);
+    letter-spacing: .04vw;
+    color: #4C4C4C;
+    font-weight: 600;
+}
+.section_1_content p{
+    font-size: .83vw;
+    letter-spacing: .03vw;
+    font-family: var(--montserrat);
+    color: #4C4C4C;
+    line-height: 1.5;
+}
+.service_description{
+    font-size: .83vw;
+    letter-spacing: .03vw;
+    font-family: var(--montserrat);
+    color: #4C4C4C;
+    line-height: 1.5;
+}
+.service_description h1, .service_description h2, .service_description h3, .service_description h4, .service_description h5, .service_description h6, .service_description strong{
+    font-size: .9vw;
+    letter-spacing: .03vw;
+    font-family: var(--montserrat);
+    color: #5A5A5A;
+    line-height: 1.5;
+    margin-bottom: .4vw;
+} 
+.service_description ul, .service_description ol{
+    margin-bottom: 1vw;
+}
+.service_description ul li, .service_description ol li{
+    font-size: .83vw;
+    letter-spacing: .03vw;
+    font-family: var(--montserrat);
+    color: #4C4C4C;
+    line-height: 1.5;
+    margin-left: .96vw;
+}
+.service_description a{
+    font-size: .83vw;
+    letter-spacing: .03vw;
+    font-family: var(--montserrat);
+    color: #FF851A;
+    line-height: 1.5;
+}
+
+@media (max-width:768px) {
+    .section_1{
+        width: 100%;
+        padding: 6vw 4vw;
+    }
+    .section_1_heading{
+        display: grid;
+        grid-template-columns: 100%;
+        align-items: flex-start;
+        grid-gap: 4vw;
+    }
+    .section_1_heading h1{
+        font-size: 6vw;
+        line-height: 1.2;
+    }
+    .date{
+        text-align: start;
+        justify-content: start;
+        margin-bottom: 1vw;
+        gap: 1.3vw;
+    }
+    .date svg{
+        font-size: 3.2vw;
+    }
+    .date p{
+        font-size: 3vw;
+        letter-spacing: .06vw;
+    }
+    .section_1_content{
+        margin-top: 4vw;
+    }
+    .section_1_content_heading{
+        margin-bottom: 4vw;
+    }
+    .section_1_content_heading h3{
+        font-size: 3.8vw;
+        letter-spacing: .04vw;
+    }
+    .section_1_content p{
+        font-size: 3vw;
+        letter-spacing: .06vw;
+    }
+    .service_description{
+        font-size: 3vw;
+        letter-spacing: .06vw;
+    }
+    .service_description h1, .service_description h2, .service_description h3, .service_description h4, .service_description h5, .service_description h6, .service_description strong{
+        font-size: 3vw;
+        letter-spacing: .06vw;
+        margin-bottom: 1vw;
+    } 
+    .service_description ul, .service_description ol{
+        margin-bottom: 2.1vw;
+    }
+    .service_description ul li, .service_description ol li{
+        font-size: 3vw;
+        letter-spacing: .06vw;
+        margin-left: 4vw;
+        margin-bottom: .8vw;
+    }
+}
