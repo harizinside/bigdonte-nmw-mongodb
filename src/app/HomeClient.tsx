@@ -116,11 +116,7 @@ export default function HomeClient() {
         if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
 
         const data: Setting = await response.json();
-        if (data && data.updatedAt) {
           setSettings(data);
-          localStorage.setItem("settingCache", JSON.stringify(data));
-          localStorage.setItem("settingCacheExpired", (now + 86400000).toString());
-        }
       } catch (error) {
         console.error("Error fetching settings:", error);
       } finally {
