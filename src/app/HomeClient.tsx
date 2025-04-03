@@ -68,28 +68,56 @@ export default function HomeClient() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`/api/settings`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        setSettings(result);
-      } catch (error) {
-        console.error("Error fetching articles:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
+          const fetchData = async () => {
+              const cachedSetting = localStorage.getItem('settingCache');
+              const cachedSettingExpired = localStorage.getItem('settingCacheExpired');
+              const now = new Date().getTime();
+  
+              if (cachedSetting && cachedSettingExpired && now < parseInt(cachedSettingExpired)) {
+                  setSettings(JSON.parse(cachedSetting));
+                  setIsLoading(false);
+                  try {
+                      const response = await fetch(`/api/settings`, {
+                          method: "GET",
+                          headers: {
+                            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+                            "Content-Type": "application/json",
+                          },
+                        });
+                      const data = await response.json();
+                      const cachedData = JSON.parse(cachedSetting);
+                      if (JSON.stringify(data) !== JSON.stringify(cachedData)) {
+                          setSettings(data);
+                          localStorage.setItem('settingCache', JSON.stringify(data));
+                          localStorage.setItem('settingCacheExpired', (now + 86400000).toString());
+                      }
+                  } catch (error) {
+                      console.error('Error checking API for updates:', error);
+                  }
+                  return;
+              }
+  
+              try {
+                  // const response = await fetch(`${baseUrl}/settings`);
+                  const response = await fetch(`/api/settings`, {
+                      method: "GET",
+                      headers: {
+                        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+                        "Content-Type": "application/json",
+                      },
+                    });
+                  const data = await response.json();
+                  setSettings(data);
+                  localStorage.setItem('settingCache', JSON.stringify(data));
+                  localStorage.setItem('settingCacheExpired', (now + 86400000).toString());
+              } catch (error) {
+                  console.error('Error fetching settings:', error);
+              } finally {
+                  setIsLoading(false);
+              }
+          };
+          fetchData();
+      }, [baseUrl]);
 
   useEffect(() => {
     const fetchArticles = async () => {
