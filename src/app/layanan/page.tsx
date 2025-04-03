@@ -117,7 +117,7 @@ export default async function LayananPage() {
     "@type": "WebPage",
     name: `NMW Aesthetic Clinic`,
     description: `Temukan layanan terbaik dari NMW Aesthetic Clinic, mulai dari perawatan kulit, bedah plastik, konsultasi kesehatan, hingga perawatan anti-aging. Kunjungi klinik kecantikan terpercaya untuk solusi kecantikan yang optimal.`,
-    url: `${baseUrl}/layanan}`,
+    url: `${baseUrl}/layanan`,
     publisher: {
       "@type": "Organization",
       name: "NMW Aesthetic Clinic",
