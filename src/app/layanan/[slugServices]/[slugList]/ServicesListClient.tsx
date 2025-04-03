@@ -17,6 +17,7 @@ interface ServicesListClientProps {
     imageCover: string;
     imageBanner: string;
     slug: string;
+    sensitive_content: boolean;
   };
   servicesType: any[];
   settings: {
@@ -37,13 +38,20 @@ export default function ServicesListClient({
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
   const [showPopup, setShowPopup] = useState(false);
 
-  const closeModal = () => {
-    setShowPopup(false);
+  useEffect(() => {
+    if (servicesList.sensitive_content) {
+        setShowPopup(true); // Aktifkan popup jika konten sensitif
+    }
+  }, [servicesList.sensitive_content]);
+
+  const closeModal = () => setShowPopup(false);
+  const handleBack = () => {
+        window.history.back(); // Kembali ke halaman sebelumnya
+        setTimeout(() => {
+            setShowPopup(false);
+        }, 500); // Delay 500ms agar tidak mengganggu navigasi
     };
 
-    const handleBack = () => {
-        router.back();
-    };
 
   useEffect(() => {
     setHtmlContent(servicesList?.description || "Deskripsi tidak tersedia.");

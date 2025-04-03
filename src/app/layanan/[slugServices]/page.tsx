@@ -59,7 +59,7 @@ async function fetchWithAuth(url: string) {
     return {
       services: servicesRes,
       patient: patientRes.patients || [],
-      servicesList: servicesListRes.servicesList || [],
+      servicesList: servicesListRes.servicesList.reverse() || [],
       settings: settingsRes || { logo: "" },
       baseUrl,
     };
