@@ -69,42 +69,6 @@ export default function HomeClient() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (typeof window === "undefined") return;
-
-      const cachedSetting = localStorage.getItem("settingCache");
-      const cachedSettingExpired = localStorage.getItem("settingCacheExpired");
-      const now = Date.now();
-
-      // **Check if cache is still valid**
-      if (cachedSetting && cachedSettingExpired && now < parseInt(cachedSettingExpired)) {
-        const cachedData: Setting = JSON.parse(cachedSetting);
-        setSettings(cachedData);
-        setIsLoading(false);
-
-        // **Check if data in API is newer**
-        try {
-          const response = await fetch(`/api/settings`, {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-              "Content-Type": "application/json",
-            },
-          });
-          if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
-
-          const data: Setting = await response.json();
-          if (data && data.updatedAt && cachedData.updatedAt !== data.updatedAt) {
-            setSettings(data);
-            localStorage.setItem("settingCache", JSON.stringify(data));
-            localStorage.setItem("settingCacheExpired", (now + 86400000).toString());
-          }
-        } catch (error) {
-          console.error("Error checking API for updates:", error);
-        }
-        return;
-      }
-
-      // **Fetch new data if cache is not available or expired**
       try {
         const response = await fetch(`/api/settings`, {
           method: "GET",
@@ -113,14 +77,14 @@ export default function HomeClient() {
             "Content-Type": "application/json",
           },
         });
-        if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-        const data: Setting = await response.json();
-          setSettings(data);
+        const result = await response.json();
+        setSettings(result);
       } catch (error) {
-        console.error("Error fetching settings:", error);
-      } finally {
-        setIsLoading(false);
+        console.error("Error fetching articles:", error);
       }
     };
 
