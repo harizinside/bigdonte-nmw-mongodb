@@ -68,11 +68,14 @@ async function fetchWithAuth(url: string) {
   export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slugServices } = params;
     const { services, patient, servicesList, settings, baseUrl } = await fetchData(slugServices);
+
+    const plainText = services?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
+    const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
   
     return {
       title: `${services.name} | NMW Aesthetic Clinic`,
       description:
-        `${services.description}`,
+        `${truncatedText}`,
       keywords: [
         "NMW Aesthetic Clinic",
         "perawatan kulit",
@@ -91,7 +94,7 @@ async function fetchWithAuth(url: string) {
       openGraph: {
         title: `${services.name} | NMW Aesthetic Clinic`,
         description:
-          `${services.description}`,
+          `${truncatedText}`,
         type: "website",
         url: `${baseUrl}/layanan/${services.slug}`,
         images: [
@@ -107,7 +110,7 @@ async function fetchWithAuth(url: string) {
         card: "summary_large_image",
         title: `${services.name} | NMW Aesthetic Clinic`,
         description:
-          `${services.description}`,
+          `${truncatedText}`,
         images: [`${baseUrl}${services.imageCover}`],
       },
       alternates: {
@@ -121,12 +124,15 @@ export default async function Layanan({ params }: Props) {
   const { slugServices } = params;
   const { services, patient, servicesList, settings, baseUrl } = await fetchData(slugServices);
 
+  const plainText = services?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
+  const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
+
   // **Schema Data untuk SEO**
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: `${services?.name} - NMW Aesthetic Clinic`,
-    description: `${services?.description}`,
+    description: `${truncatedText}`,
     url: `${baseUrl}/layanan/${services?.slug}`,
     publisher: {
       "@type": "Organization",
