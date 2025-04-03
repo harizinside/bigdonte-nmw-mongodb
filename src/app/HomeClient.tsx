@@ -19,41 +19,6 @@ import Image from "next/image";
 
 import type { Swiper as SwiperType } from "swiper";
 
-// Define types for the data structures
-interface Setting {
-  logo: string;
-  favicon: string;
-  meta_description: string;
-  updatedAt: string;
-  title: string;
-  address_footer: string;
-}
-
-interface Article {
-  _id: string;
-  title: string;
-  slug: string;
-  image: string;
-  author: string;
-  date: string;
-  tags?: string[];
-}
-
-interface Service {
-  _id: string;
-  name: string;
-  slug: string;
-  description: string;
-  imageCover: string;
-}
-
-interface Promo {
-  id: string;
-  link?: string;
-  slug: string;
-  image: string;
-}
-
 interface HomeClientProps {
   settings: {
     logo: string;
@@ -63,159 +28,21 @@ interface HomeClientProps {
     phone: string;
     address_footer: string;
   };
+  promos: any[];
+  services: any[];
+  articles: any[];
 }
 
   export default function HomeClient({
     settings,
+    promos,
+    services,
+    articles,
   }: HomeClientProps) {
   const [firstSwiper, setFirstSwiper] = useState<SwiperType | null>(null);
   const [secondSwiper, setSecondSwiper] = useState<SwiperType | null>(null);
 
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [promos, setPromos] = useState<Promo[]>([]);
-  const [serviceDetails, setServiceDetails] = useState<Record<string, any>>({});
-
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || '';
-
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (typeof window === "undefined") return;
-
-  //     const cachedSetting = localStorage.getItem("settingCache");
-  //     const cachedSettingExpired = localStorage.getItem("settingCacheExpired");
-  //     const now = Date.now();
-
-  //     // **Check if cache is still valid**
-  //     if (cachedSetting && cachedSettingExpired && now < parseInt(cachedSettingExpired)) {
-  //       const cachedData: Setting = JSON.parse(cachedSetting);
-  //       setSettings(cachedData);
-  //       setIsLoading(false);
-
-  //       // **Check if data in API is newer**
-  //       try {
-  //         const response = await fetch(`/api/settings`, {
-  //           method: "GET",
-  //           headers: {
-  //             "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-  //             "Content-Type": "application/json",
-  //           },
-  //         });
-  //         if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
-
-  //         const data: Setting = await response.json();
-  //         if (data && data.updatedAt && cachedData.updatedAt !== data.updatedAt) {
-  //           setSettings(data);
-  //           localStorage.setItem("settingCache", JSON.stringify(data));
-  //           localStorage.setItem("settingCacheExpired", (now + 86400000).toString());
-  //         }
-  //       } catch (error) {
-  //         console.error("Error checking API for updates:", error);
-  //       }
-  //       return;
-  //     }
-
-  //     // **Fetch new data if cache is not available or expired**
-  //     try {
-  //       const response = await fetch(`/api/settings`, {
-  //         method: "GET",
-  //         headers: {
-  //           "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //       });
-  //       if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
-
-  //       const data: Setting = await response.json();
-  //       if (data && data.updatedAt) {
-  //         setSettings(data);
-  //         localStorage.setItem("settingCache", JSON.stringify(data));
-  //         localStorage.setItem("settingCacheExpired", (now + 86400000).toString());
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching settings:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
-
-  useEffect(() => {
-    const fetchArticles = async () => {
-      try {
-        const response = await fetch(`/api/articles`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log('result', result)
-        setArticles(result.articles.slice(0, 3));
-      } catch (error) {
-        console.error("Error fetching articles:", error);
-      }
-    };
-
-    fetchArticles();
-  }, []);
-
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await fetch(`/api/services`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        setServices(result.services.slice(0, 6));
-      } catch (error) {
-        console.error("Error fetching services:", error);
-      }
-    };
-
-    fetchServices();
-  }, []);
-
-  useEffect(() => {
-    const fetchPromos = async () => {
-      try {
-        const response = await fetch(`/api/promos`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        setPromos(result.promos);
-      } catch (error) {
-        console.error("Error fetching promos:", error);
-      }
-    };
-
-    fetchPromos();
-  }, []);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -230,34 +57,10 @@ interface HomeClientProps {
   const firstHalf = services.slice(0, midIndex); // First half of the services
   const secondHalf = services.slice(midIndex);
 
-  // const schemaData = {
-  //   "@context": "https://schema.org",
-  //   "@type": "WebPage",
-  //   name: `${settings.title}`,
-  //   description: `${settings.meta_description}`,
-  //   url: `${baseUrl}`,
-  //   publisher: {
-  //     "@type": "Organization",
-  //     name: `${settings.title}`,
-  //     logo: {
-  //       "@type": "ImageObject",
-  //       url: `${baseUrl}${settings.logo}`
-  //     }
-  //   },
-  //   mainEntityOfPage: {
-  //     "@type": "WebPage",
-  //     "@id": `${baseUrl}`
-  //   },
-  //   breadcrumb: {
-  //     "@type": "BreadcrumbList",
-  //     itemListElement: [{
-  //       "@type": "ListItem",
-  //       position: 1,
-  //       name: "Beranda",
-  //       item: `${baseUrl}`
-  //     }]
-  //   }
-  // };
+  const formattedPhone =
+    settings.phone && settings.phone.startsWith("0")
+      ? "62" + settings.phone.slice(1)
+      : settings.phone;
 
   const schemaData = {
       "@context": "https://schema.org",
@@ -278,7 +81,7 @@ interface HomeClientProps {
               },
               "contactPoint": {
                   "@type": "ContactPoint",
-                  "telephone": "+62 812-8036-0370",
+                  "telephone": {formattedPhone},
                   "contactType": "customer service",
                   "areaServed": "ID",
                   "availableLanguage": "Indonesian"
@@ -305,9 +108,6 @@ interface HomeClientProps {
           __html: JSON.stringify(schemaData),
         }}
       />
-      {isLoading ? (
-        <div className="skeleton-logo skeleton-logo-100 skeleton-logo-banner" />
-      ) : (
         <Swiper
           pagination={{
             clickable: true,
@@ -322,7 +122,7 @@ interface HomeClientProps {
           className="myBanner"
         >
           {promos.map(promo => (
-            <SwiperSlide key={promo.id}>
+            <SwiperSlide key={promo._id}>
               <Link href={promo.link ? promo.link : `/promo/${promo.slug}`} target="blank_">
                 <div
                   className={styles.banner}
@@ -333,51 +133,10 @@ interface HomeClientProps {
             </SwiperSlide>
           ))}
         </Swiper>
-      )}
       <div className={styles.section_1}>
         <div className={styles.heading_section}>
           <h2><span>Layanan</span> Kami</h2>
         </div>
-        {isLoading ? (
-          <div className={styles.slide_section_1}>
-            <Swiper
-              dir="rtl"
-              navigation={true}
-              modules={[Navigation, Controller]}
-              className="mySwiper"
-              loop={true}
-              onSwiper={setSecondSwiper}
-              controller={{ control: firstSwiper }}
-            >
-              <SwiperSlide>
-                <div className={styles.box_service_layout}>
-                  <div className={`${styles.box_service}`}>
-                    <div className="skeleton-logo skeleton-logo-100 skeleton-logo-service" />
-                  </div>
-                </div>
-              </SwiperSlide>
-            </Swiper>
-
-            <Swiper
-              navigation={true}
-              modules={[Navigation, Controller]}
-              className="mySwiper mySwiperSecond"
-              loop={true}
-              onSwiper={setFirstSwiper}
-              controller={{ control: secondSwiper }}
-            >
-              <SwiperSlide>
-                <div
-                  className={`${styles.box_service_layout} ${styles.box_service_layout_second}`}
-                >
-                  <div className={`${styles.box_service} ${styles.box_service_second}`}>
-                    <div className="skeleton-logo skeleton-logo-100 skeleton-logo-service" />
-                  </div>
-                </div>
-              </SwiperSlide>
-            </Swiper>
-          </div>
-        ) : (
           <div className={styles.slide_section_1}>
             <Swiper
               dir="rtl"
@@ -456,7 +215,6 @@ interface HomeClientProps {
               ))}
             </Swiper>
           </div>
-        )}
       </div>
       <h1 className={styles.heading_hide}>Selamat Datang di Website NMW Aesthetic Clinic</h1>
       <div className={styles.section_2}>

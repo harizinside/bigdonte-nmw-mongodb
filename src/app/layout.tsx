@@ -1,74 +1,75 @@
-"use client"
 import "@/css/global.css";
-import Navbar from "@/components/Navbar/page";
-import Footer from "@/components/Footer/page";
-import { usePathname } from "next/navigation";
+import LayoutWrapper from "@/components/LayoutWrapper/page";
+import Script from "next/script"; 
+
+async function fetchWithAuth(url: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+
+  const response = await fetch(`${baseUrl}${url}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Gagal mengambil data dari ${url}`);
+  }
+
+  return response.json();
+}
+
+async function fetchData() {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+
+  const [settingsRes] = await Promise.all([
+    fetchWithAuth(`/api/settings`),
+  ]);
+
+  return {
+    settings: settingsRes || { phone: "", logo: "", favicon: "", title: "", address_footer: "", meta_description: "" },
+    baseUrl,
+  };
+}
+
+export async function generateMetadata() {
+  const { settings, baseUrl } = await fetchData();
+
+  return {
+    title: settings.title || "Judul Default",
+    description: settings.meta_description,
+    robots: "index, follow",
+    icons: {
+      icon: `${baseUrl}${settings.favicon}`,
+      apple: `${baseUrl}${settings.favicon}`,
+    },
+  };
+}
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-
-  // Cek apakah berada di dashboard
-  const isDashboard = pathname.startsWith("/dashboard");
-
   return (
     <html lang="id">
-      <style jsx global>{`
-          .mySwiper .swiper-button-prev{
-            position: absolute;
-            top: 7.5vw;
-            width: 4.1vw;
-            background-color: transparent;
-            border: .1vw solid black;
-            height: 2.4vw;
-            border-radius: 100vw;
-            margin-top: calc(0px -(var(--swiper-navigation-size) / 2));
-            z-index: 10;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--swiper-navigation-color, var(--swiper-theme-color));
-            background-color: white;
-            background-image: url(../images/nav_right.svg);
-            background-size: 2vw;
-            background-repeat: no-repeat;
-            background-position: center;
-            transition: .3s all;
-          }
-          .mySwiperSecond .swiper-button-prev{
-            background-image: url(../images/nav_left.svg);
-            transition: .3s all;
-          }
-            @media(max-width:768px){
-            .mySwiper .swiper-button-prev{
-              position: absolute;
-              top: 7.5vw;
-              width: 15vw;
-              height: 6vw;
-              background-size: 6vw;
-            }
-            .mySwiper .swiper-button-prev, .mySwiper .swiper-rtl .swiper-button-next{
-              left: 8.3vw;
-              top: 27vw;
-            }
-            .mySwiper .swiper-button-next, .mySwiper .swiper-rtl .swiper-button-prev{
-              right: 8.3vw;
-              left: auto;
-            }
-            .swiper-button-next, .swiper-rtl .swiper-button-prev{
-              right: 8.3vw !important;
-              top: 27vw;
-            }
-    }
-      `}</style>
+      <head>
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-TX18KNDEWY"
+        />
+        <Script id="google-analytics">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-TX18KNDEWY');
+          `}
+        </Script>
+      </head>
       <body>
-        {!isDashboard && <Navbar />}
-        {children}
-        {!isDashboard && <Footer />}
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );

@@ -1,15 +1,5 @@
 import { Metadata } from "next";
 import HomeClient from "./HomeClient";
-import { notFound } from "next/navigation";
-
-interface Setting {
-  logo: string;
-  favicon: string;
-  title: string;
-  meta_description: string;
-  phone: string;
-  address_footer: string;
-}
 
 async function fetchWithAuth(url: string) {
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
@@ -32,11 +22,17 @@ async function fetchWithAuth(url: string) {
 async function fetchData() {
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
 
-  const [settingsRes] = await Promise.all([
+  const [settingsRes, promoRes, servicesRes, articlesRes] = await Promise.all([
     fetchWithAuth(`/api/settings`),
+    fetchWithAuth(`/api/promos`),
+    fetchWithAuth(`/api/services`),
+    fetchWithAuth(`/api/articles`),
   ]);
 
   return {
+    promos: promoRes.promos || [],
+    services: servicesRes.services.slice(0, 6) || [],
+    articles: articlesRes.articles.slice(0, 3) || [],
     settings: settingsRes || { phone: "", logo: "", favicon: "", title: "", address_footer: "", meta_description: "" },
     baseUrl,
   };
@@ -93,9 +89,12 @@ export async function generateMetadata(): Promise<Metadata> {
 };
 
 export default async function Home() {
-  const { settings } = await fetchData();
+  const { settings, promos, services, articles } = await fetchData();
 
   return <HomeClient 
           settings={settings}
+          promos={promos}
+          services={services}
+          articles={articles}
          />;
 }

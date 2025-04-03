@@ -8,7 +8,6 @@ import banner from "@/css/Banner.module.css";
 import breadcrumb from "@/css/Breadcrumb.module.css";
 import loadingStyles from "@/css/Loading.module.css";
 
-// ✅ Type Definition for Catalog Item
 interface CatalogItem {
   _id: number;
   title: string;
