@@ -60,7 +60,7 @@ async function fetchWithAuth(url: string) {
       services: servicesRes,
       patient: patientRes.patients || [],
       servicesList: servicesListRes.servicesList || [],
-      settings: settingsRes.settings || { logo: "" },
+      settings: settingsRes || { logo: "" },
       baseUrl,
     };
   }
@@ -139,7 +139,7 @@ export default async function Layanan({ params }: Props) {
       name: "NMW Aesthetic Clinic",
       logo: {
         "@type": "ImageObject",
-        url: `${baseUrl}${settings.logo}`,
+        url: `${baseUrl}${settings?.logo}`,
       },
     },
     mainEntityOfPage: {

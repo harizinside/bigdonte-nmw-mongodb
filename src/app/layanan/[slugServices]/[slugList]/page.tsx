@@ -27,7 +27,7 @@ async function fetchWithAuth(url: string) {
   
 
 async function fetchData(slugList: string) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+    const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
   
     const [servicesListRes, servicesTypeRes, settingsRes] = await Promise.all([
       fetchWithAuth(`/api/servicesList/${slugList}`),
@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         url: `${baseUrl}/layanan/${slugServices}/${slugList}`,
         images: [
           {
-            url: `${baseUrl}${servicesList.imageCover}`,
+            url: `${baseUrl}${servicesList.imageBanner}`,
             width: 800,
             height: 600,
             alt: `${servicesList.name} | NMW Aesthetic Clinic`,
@@ -92,7 +92,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: `${servicesList.name} | NMW Aesthetic Clinic`,
         description:
           `${truncatedText}`,
-        images: [`${baseUrl}${servicesList.imageCover}`],
+        images: [`${baseUrl}${servicesList.imageBanner}`],
       },
       alternates: {
         canonical: `${baseUrl}/layanan/${slugServices}/${slugList}`,
