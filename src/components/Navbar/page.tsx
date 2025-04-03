@@ -60,7 +60,7 @@ export default function Navbar() {
     
     useEffect(() => {
         if (pathname) {
-            setIsSticky(!pathname.startsWith("/article/"));
+            setIsSticky(!pathname.startsWith("/artikel/"));
         }
     }, [pathname]);
 
@@ -254,7 +254,7 @@ export default function Navbar() {
             }
 
             try {
-                const response = await fetch(`${baseUrl}/popups`);
+                const response = await fetch(`${baseUrl}/api/popups`);
                 const data = await response.json();
                 if (data.popups) {
                     const popupItems = data.popups.filter((popup: Popup) => popup.status === true);
