@@ -81,7 +81,7 @@ export default function PromoClient({ slug }: Props) {
       name: "NMW Aesthetic Clinic",
       logo: {
         "@type": "ImageObject",
-        url: `${baseUrl}/${promo.image}`
+        url: `${baseUrl}${promo.image}`
       }
     },
     mainEntityOfPage: {
