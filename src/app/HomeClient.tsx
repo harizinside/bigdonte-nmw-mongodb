@@ -58,9 +58,9 @@ interface HomeClientProps {
   const secondHalf = services.slice(midIndex);
 
   const formattedPhone =
-    settings.phone && settings.phone.startsWith("0")
-      ? "62" + settings.phone.slice(1)
-      : settings.phone;
+  settings.phone && settings.phone.startsWith("0")
+    ? "+62 " + settings.phone.slice(1).replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3")
+    : settings.phone;
 
   const schemaData = {
       "@context": "https://schema.org",
