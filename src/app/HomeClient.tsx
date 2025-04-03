@@ -2,7 +2,7 @@
 
 import styles from "@/css/Home.module.css";
 import { FaWhatsapp } from "react-icons/fa";
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Controller } from "swiper/modules";
@@ -26,6 +26,8 @@ interface Setting {
   meta_description: string;
   updatedAt: string;
   title: string;
+  address_footer: string;
+  phone: string;
 }
 
 interface Article {
@@ -53,6 +55,12 @@ interface Promo {
   image: string;
 }
 
+interface Social {
+    title: string;
+    link: string;
+    updatedAt: string;
+}
+
 export default function HomeClient() {
   const [firstSwiper, setFirstSwiper] = useState<SwiperType | null>(null);
   const [secondSwiper, setSecondSwiper] = useState<SwiperType | null>(null);
@@ -61,6 +69,7 @@ export default function HomeClient() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [promos, setPromos] = useState<Promo[]>([]);
+  const [socials, setSocials] = useState<Social[]>([]);
   const [serviceDetails, setServiceDetails] = useState<Record<string, any>>({});
 
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || '';
@@ -192,6 +201,64 @@ export default function HomeClient() {
     fetchPromos();
   }, []);
 
+  const fetchSocials = useCallback(async () => {
+          if (typeof window === "undefined") return;
+  
+          const cachedSocials = localStorage.getItem("socialsCache");
+          const cachedExpired = localStorage.getItem("socialsCacheExpired");
+          const now = Date.now();
+  
+          if (cachedSocials && cachedExpired && now < parseInt(cachedExpired)) {
+              const cachedData = JSON.parse(cachedSocials);
+              setSocials(cachedData);
+              setIsLoading(false);
+              try {
+                  const response = await fetch(`/api/social`, {
+                      method: "GET",
+                      headers: {
+                        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+                        "Content-Type": "application/json",
+                      },
+                    });
+                  if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
+                  const data = await response.json();
+                  if (data.length > 0 && data[0].updatedAt !== cachedData[0].updatedAt) {
+                      setSocials(data);
+                      localStorage.setItem("socialsCache", JSON.stringify(data));
+                      localStorage.setItem("socialsCacheExpired", (now + 86400000).toString());
+                  }
+              } catch (error) {
+                  console.error("Error checking API for updates:", error);
+              }
+              return;
+          }
+  
+          try {
+              const response = await fetch(`/api/social`, {
+                  method: "GET",
+                  headers: {
+                    "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                });
+              if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
+              const data = await response.json();
+              if (data.length > 0) {
+                  setSocials(data);
+                  localStorage.setItem("socialsCache", JSON.stringify(data));
+                  localStorage.setItem("socialsCacheExpired", (now + 86400000).toString());
+              }
+          } catch (error) {
+              console.error("Error fetching socials:", error);
+          } finally {
+              setIsLoading(false);
+          }
+      }, [baseUrl]);
+  
+      useEffect(() => {
+          fetchSocials();
+      }, [fetchSocials]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("id-ID", {
@@ -207,32 +274,42 @@ export default function HomeClient() {
 
   const schemaData = {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: `${settings?.title}`,
-    description: `${settings?.meta_description}`,
-    url: `${baseUrl}`,
-    publisher: {
-      "@type": "Organization",
-      name: `${settings?.title}`,
-      logo: {
-        "@type": "ImageObject",
-        url: `${baseUrl}${settings?.logo}`
-      }
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${baseUrl}`
-    },
-    breadcrumb: {
-      "@type": "BreadcrumbList",
-      itemListElement: [{
-        "@type": "ListItem",
-        position: 1,
-        name: "Beranda",
-        item: `${baseUrl}`
-      }]
-    }
-  };
+    "@graph": [
+        {
+            "@type": "Organization",
+            "name": `${settings?.title}`,
+            "url": `${baseUrl}`,
+            "logo": `${baseUrl}/${settings?.logo}`,
+            "description": `${settings?.meta_description}`,
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress":  `${settings?.address_footer}`,
+                "addressLocality": "Jakarta Selatan",
+                "addressRegion": "DKI Jakarta",
+                "postalCode": "12160",
+                "addressCountry": "ID"
+            },
+            "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": `${settings?.phone}`,
+                "contactType": "customer service",
+                "areaServed": "ID",
+                "availableLanguage": "Indonesian"
+            },
+            "sameAs": socials.map(item => item.link)
+        },
+        {
+            "@type": "WebSite",
+            "name": `${settings?.title}`,
+            "url": `${baseUrl}`,
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": `${baseUrl}/search?q={search_term_string}`,
+                "query-input": "required name=search_term_string"
+            }
+        }
+    ]
+};
 
   return (
     <>
