@@ -7,23 +7,43 @@ interface Setting {
   favicon: string;
   title: string;
   meta_description: string;
+  phone: string;
+  address_footer: string;
 }
 
-async function getSetting(): Promise<Setting | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
-  const response = await fetch(`${baseUrl}/api/settings`, {
+async function fetchWithAuth(url: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+
+  const response = await fetch(`${baseUrl}${url}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
     },
   });
-  if (!response.ok) return null;
+
+  if (!response.ok) {
+    throw new Error(`Gagal mengambil data dari ${url}`);
+  }
+
   return response.json();
 }
 
+
+async function fetchData() {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+
+  const [settingsRes] = await Promise.all([
+    fetchWithAuth(`/api/settings`),
+  ]);
+
+  return {
+    settings: settingsRes || { phone: "", logo: "", favicon: "", title: "", address_footer: "", meta_description: "" },
+    baseUrl,
+  };
+}
+
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSetting();
-  if (!settings) notFound();
+  const { settings, baseUrl } = await fetchData();
 
   return{
     title: `${settings.title}`,
@@ -50,10 +70,10 @@ export async function generateMetadata(): Promise<Metadata> {
       title: `${settings.title}`,
       description: `${settings.meta_description}`,
       type: "website",
-      url: `${process.env.NEXT_PUBLIC_API_WEB_URL}`,
+      url: `${baseUrl}`,
       images: [
         {
-          url: `${process.env.NEXT_PUBLIC_API_WEB_URL}${settings.logo}`,
+          url: `${baseUrl}${settings.logo}`,
           width: 800,
           height: 600,
           alt: `${settings.title}`,
@@ -64,14 +84,18 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: `${settings.title}`,
       description: `${settings.meta_description}`,
-      images: [`${process.env.NEXT_PUBLIC_API_WEB_URL}${settings.logo}`],
+      images: [`${baseUrl}${settings.logo}`],
     },
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}`,
+      canonical: `${baseUrl}`,
     },
   }
 };
 
-export default function Home() {
-  return <HomeClient />;
+export default async function Home() {
+  const { settings } = await fetchData();
+
+  return <HomeClient 
+          settings={settings}
+         />;
 }

@@ -2,7 +2,7 @@
 
 import styles from "@/css/Home.module.css";
 import { FaWhatsapp } from "react-icons/fa";
-import React, { useRef, useState, useEffect, useMemo  } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Controller } from "swiper/modules";
@@ -26,6 +26,7 @@ interface Setting {
   meta_description: string;
   updatedAt: string;
   title: string;
+  address_footer: string;
 }
 
 interface Article {
@@ -53,11 +54,23 @@ interface Promo {
   image: string;
 }
 
-export default function HomeClient() {
+interface HomeClientProps {
+  settings: {
+    logo: string;
+    favicon: string;
+    title: string;
+    meta_description: string;
+    phone: string;
+    address_footer: string;
+  };
+}
+
+  export default function HomeClient({
+    settings,
+  }: HomeClientProps) {
   const [firstSwiper, setFirstSwiper] = useState<SwiperType | null>(null);
   const [secondSwiper, setSecondSwiper] = useState<SwiperType | null>(null);
 
-  const [settings, setSettings] = useState<Setting | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [promos, setPromos] = useState<Promo[]>([]);
@@ -204,31 +217,6 @@ export default function HomeClient() {
     fetchPromos();
   }, []);
 
-  useEffect(() => {
-    const fetchSetting = async () => {
-      try {
-        const response = await fetch(`/api/settings`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log('result', result)
-        setSettings(result);
-      } catch (error) {
-        console.error("Error fetching articles:", error);
-      }
-    };
-
-    fetchSetting();
-  }, []);
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("id-ID", {
@@ -242,40 +230,72 @@ export default function HomeClient() {
   const firstHalf = services.slice(0, midIndex); // First half of the services
   const secondHalf = services.slice(midIndex);
 
-  const schemaData = useMemo(() => {
-    if (!settings) return null; // Jangan render schema jika settings belum tersedia
+  // const schemaData = {
+  //   "@context": "https://schema.org",
+  //   "@type": "WebPage",
+  //   name: `${settings.title}`,
+  //   description: `${settings.meta_description}`,
+  //   url: `${baseUrl}`,
+  //   publisher: {
+  //     "@type": "Organization",
+  //     name: `${settings.title}`,
+  //     logo: {
+  //       "@type": "ImageObject",
+  //       url: `${baseUrl}${settings.logo}`
+  //     }
+  //   },
+  //   mainEntityOfPage: {
+  //     "@type": "WebPage",
+  //     "@id": `${baseUrl}`
+  //   },
+  //   breadcrumb: {
+  //     "@type": "BreadcrumbList",
+  //     itemListElement: [{
+  //       "@type": "ListItem",
+  //       position: 1,
+  //       name: "Beranda",
+  //       item: `${baseUrl}`
+  //     }]
+  //   }
+  // };
 
-    return {
+  const schemaData = {
       "@context": "https://schema.org",
-      "@type": "WebPage",
-      name: settings?.title || "NMW Aesthetic Clinic",
-      description: settings?.meta_description || "Klinik kecantikan terbaik untuk perawatan kulit.",
-      url: baseUrl,
-      publisher: {
-        "@type": "Organization",
-        name: settings?.title || "NMW Aesthetic Clinic",
-        logo: {
-          "@type": "ImageObject",
-          url: settings?.logo ? `${baseUrl}${settings.logo}` : `${baseUrl}/default-logo.png`,
-        },
-      },
-      mainEntityOfPage: {
-        "@type": "WebPage",
-        "@id": baseUrl,
-      },
-      breadcrumb: {
-        "@type": "BreadcrumbList",
-        itemListElement: [
+      "@graph": [
           {
-            "@type": "ListItem",
-            position: 1,
-            name: "Beranda",
-            item: baseUrl,
+              "@type": "Organization",
+              "name": `${settings.title}`,
+              "url": `${baseUrl}`,
+              "logo": `${baseUrl}${settings.logo}`,
+              "description": `${settings.meta_description}`,
+              "address": {
+                  "@type": "PostalAddress",
+                  "streetAddress": `${settings.address_footer}`,
+                  "addressLocality": "Jakarta Selatan",
+                  "addressRegion": "DKI Jakarta",
+                  "postalCode": "12160",
+                  "addressCountry": "ID"
+              },
+              "contactPoint": {
+                  "@type": "ContactPoint",
+                  "telephone": "+62 812-8036-0370",
+                  "contactType": "customer service",
+                  "areaServed": "ID",
+                  "availableLanguage": "Indonesian"
+              },
           },
-        ],
-      },
-    };
-  }, [settings, baseUrl]);
+          {
+              "@type": "WebSite",
+              "name": `${settings.title}`,
+              "url": `${baseUrl}`,
+              "potentialAction": {
+                  "@type": "SearchAction",
+                  "target": `${baseUrl}/search?q={search_term_string}`,
+                  "query-input": "required name=search_term_string"
+              }
+          }
+      ]
+  };
 
   return (
     <>

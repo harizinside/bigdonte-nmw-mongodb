@@ -339,7 +339,7 @@ export default function Navbar() {
             <Head>
                 <meta name="google-site-verification" content="iYG_LhQQBgtnR0eh5LxjemSAR_8cAHBnM7WZ_Dqq_N8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <link rel="icon" href={`${baseUrl}/${settings?.favicon}`} />
+                <link rel="icon" href={`${baseUrl}${settings?.favicon}`} />
                 <link rel="apple-touch-icon" href={`${baseUrl}/${settings?.favicon}`} />
                 <meta name="robots" content="index, follow" />
                 <script type="application/ld+json">

@@ -18,7 +18,7 @@ export default function SigninWithPassword() {
             withCredentials: true,
           });
           if (data?.userId) {
-            router.push("/"); // Redirect ke home jika sudah login
+            router.push("/dashboard"); // Redirect ke home jika sudah login
           }
         } catch (error) {
           setLoading(false); // Biarkan form login muncul jika tidak login
