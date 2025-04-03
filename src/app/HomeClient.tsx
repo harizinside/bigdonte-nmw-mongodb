@@ -279,9 +279,12 @@ export default function HomeClient() {
 
   return (
     <>
-      <script type="application/ld+json">
-        {JSON.stringify(schemaData)}
-      </script>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schemaData),
+        }}
+      />
       {isLoading ? (
         <div className="skeleton-logo skeleton-logo-100 skeleton-logo-banner" />
       ) : (
