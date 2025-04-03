@@ -8,34 +8,13 @@ import { HiOutlineEnvelope } from "react-icons/hi2";
 import { FaFacebook, FaInstagram, FaTiktok, FaYoutube, FaTwitter, FaLinkedin, FaWhatsapp } from "react-icons/fa";
 import { IoLogoWhatsapp } from "react-icons/io5";
 import Link from "next/link";
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { IoIosMenu } from "react-icons/io";
 import { CgClose } from "react-icons/cg";
 import { IoMdClose } from "react-icons/io";
 import popup from "@/css/Popup.module.css";
-
-interface Service {
-    _id: string;
-    name: string;
-    slug: string;
-}
-
-interface Social {
-    title: string;
-    link: string;
-    updatedAt: string;
-}
-
-interface Settings {
-    phone: string;
-    email: string;
-    logo: string;
-    favicon: string;
-    social_media: string;
-    direct_link: string;
-    address_header:string;
-}
+import { useNavbar } from "@/hooks/useNavbar";
 
 interface Popup {
     link: string;
@@ -59,13 +38,9 @@ interface HomeClientProps {
     articles: any[];
   }
   
-    export default function NavbarClient({
-      settings,
-      promos,
-      socials,
-      services,
-      articles,
-    }: HomeClientProps) {
+  export default function NavbarClient() {
+    const { settings, promos, services, articles, socials, loading, error } = useNavbar();
+
     const [dropdownActive, setDropdownActive] = useState<string | null>(null);
     const pathname = usePathname(); 
     const router = useRouter();
@@ -82,26 +57,6 @@ interface HomeClientProps {
             setIsSticky(!pathname.startsWith("/artikel/"));
         }
     }, [pathname]);
-
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-    //             const response = await fetch(`/api/services`, {
-    //                 method: "GET",
-    //                 headers: {
-    //                   "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-    //                   "Content-Type": "application/json",
-    //                 },
-    //               });
-    //             const data = await response.json();
-    //             const reversedData = Array.isArray(data.services) ? [...data.services].reverse() : [];
-    //             setServices(reversedData);
-    //         } catch (error) {
-    //             console.error('Error fetching services:', error);
-    //         }
-    //     };
-    //     fetchData();
-    // }, [baseUrl]);
 
     const handleClickOutside = (event: MouseEvent) => {
         if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
@@ -226,7 +181,7 @@ interface HomeClientProps {
                     "areaServed": "ID",
                     "availableLanguage": "Indonesian"
                 },
-                "sameAs": socials.map(item => item.link)
+                "sameAs": socials.map((item) => item.link),
             },
             {
                 "@type": "WebSite",

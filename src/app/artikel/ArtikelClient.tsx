@@ -6,77 +6,17 @@ import styles from "@/css/Article.module.css";
 import banner from "@/css/Banner.module.css";
 import Image from "next/image";
 import breadcrumb from "@/css/Breadcrumb.module.css";
-import loadingStyles from "@/css/Loading.module.css";
-
-interface Article {
-  _id: string;
-  title: string;
-  slug: string;
-  author: string;
-  date: string;
-  created_at: string;
-  description: string;
-  tags: string[];
-  image: string;
-  status: boolean;
-}
 
 interface Props {
-  articles?: Article[];
-  tags?: string[];
+  tags: any[];
+  articles: any[];
 }
 
-const ArtikelClient: React.FC<Props> = () => {
+export default function ArtikelClient({
+  tags,
+  articles,
+}: Props) {
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
-
-  const [loading, setLoading] = useState(true);
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
-
-  // Fetch data from the API
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const responseArticles = await fetch(`${baseUrl}/api/articles?page=all`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-            },
-          });
-        const dataArticles = await responseArticles.json();
-
-        const responseTags = await fetch(`${baseUrl}/api/articles?tags`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-            },
-          });
-        const dataTags = await responseTags.json();
-
-        // Filter articles with status true and sort by date and created_at
-        const filteredArticles = dataArticles.articles
-          .filter((article: Article) => article.status === true)
-          .sort((a: Article, b: Article) => {
-            const dateA = new Date(a.date);
-            const dateB = new Date(b.date);
-            const createdAtA = new Date(a.created_at);
-            const createdAtB = new Date(b.created_at);
-
-            return dateB.getTime() - dateA.getTime() || createdAtB.getTime() - createdAtA.getTime();
-          });
-
-        setArticles(filteredArticles);
-        setTags(dataTags.tags || []);
-      } catch (error) {
-        console.error("Failed to fetch articles and tags:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [baseUrl]);
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -220,20 +160,6 @@ const ArtikelClient: React.FC<Props> = () => {
         </div>
       </div>
 
-        {loading && (
-            <div className={loadingStyles.box}>
-            <div className={loadingStyles.content}>
-                <Image
-                priority
-                width={500}
-                height={500}
-                src="/images/logo.svg"
-                alt="Loading"
-                />
-            </div>
-            </div>
-        )}
-
       {/* Additional Articles */}
       {articles.length > 3 && (
         <div className={styles.article_section}>
@@ -284,5 +210,3 @@ const ArtikelClient: React.FC<Props> = () => {
     </div>
   );
 };
-
-export default ArtikelClient;
