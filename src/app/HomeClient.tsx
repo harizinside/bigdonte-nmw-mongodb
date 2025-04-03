@@ -81,7 +81,7 @@ interface HomeClientProps {
               },
               "contactPoint": {
                   "@type": "ContactPoint",
-                  "telephone": {formattedPhone},
+                  "telephone": formattedPhone,
                   "contactType": "customer service",
                   "areaServed": "ID",
                   "availableLanguage": "Indonesian"
