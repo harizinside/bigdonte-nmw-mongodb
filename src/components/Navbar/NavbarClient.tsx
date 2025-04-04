@@ -118,7 +118,13 @@ interface HomeClientProps {
             }
 
             try {
-                const response = await fetch(`${baseUrl}/api/popups`);
+                const response = await fetch(`/api/popups`, {
+                    method: "GET",
+                    headers: {
+                      "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+                      "Content-Type": "application/json",
+                    },
+                  });
                 const data = await response.json();
                 if (data.popups) {
                     const popupItems = data.popups.filter((popup: Popup) => popup.status === true);
@@ -259,7 +265,7 @@ interface HomeClientProps {
                         <Link href="/">
                             <img
                                 src={`${baseUrl}${settings?.logo}`}
-                                alt="NMW Clinic Logo | Logo NMW Clinic | Logo NMW Clinic png"
+                                alt="NMW Clinic Logo"
                                 loading="lazy"
                             />
                         </Link>
