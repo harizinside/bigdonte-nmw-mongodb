@@ -28,11 +28,6 @@ const nextConfig = {
         source: "/sitemap.xml",
         destination: "/api/sitemap",
       },
-    ];
-  },
-
-  async rewrites() {
-    return [
       {
         source: "/robots.txt",
         destination: "/api/robots",
