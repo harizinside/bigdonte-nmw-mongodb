@@ -9,7 +9,7 @@ interface TokenPayload extends JwtPayload {
 
 // Fungsi untuk membuat token
 export function generateToken(userId: string) {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
 }
 
 // Fungsi untuk memverifikasi token

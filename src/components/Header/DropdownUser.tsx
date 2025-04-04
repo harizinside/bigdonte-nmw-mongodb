@@ -9,7 +9,7 @@ const DropdownUser = () => {
     await fetch("/api/auth/logout", { method: "POST" });
     alert("Logout berhasil!");
     sessionStorage.clear();
-    window.location.href = "/login";
+    window.location.href = "/dashboard/login";
   };
 
   return (

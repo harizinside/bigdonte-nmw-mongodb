@@ -250,7 +250,7 @@ const Settings = () => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-col sm:items-start sm:justify-between">
-        <Breadcrumb pageName="Settings" routeSecond="" pageNameSecond="" route="" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
+        <Breadcrumb pageName="Settings" routeSecond="" pageNameSecond="" route="dashboard/settings" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
       </div>
       <div className="flex flex-col gap-10">
         <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">

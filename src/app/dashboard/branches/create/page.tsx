@@ -111,14 +111,14 @@ const CreateBranch = () => {
 
   const handlePush = () => {
     setIsOpen(false);
-    router.push("/branches");
+    router.push("/dashboard/branches");
   } 
   
 
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="branches" pageName="Manage Branches" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
+        <Breadcrumb route="dashboard/branches" pageName="Manage Branches" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
       </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -221,7 +221,7 @@ const CreateBranch = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
                         {loading ? "Saving..." : "Save Branch"}
                     </button>
-                    <Link href={'/branches'}>
+                    <Link href={'/dashboard/branches'}>
                         <button type="button" className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                             Cancel
@@ -258,118 +258,3 @@ const CreateBranch = () => {
 };
 
 export default CreateBranch;
-
-// 'use client'
-
-// import { useState } from "react";
-
-// const BranchForm = () => {
-//   const [formData, setFormData] = useState({
-//     name: "",
-//     address: "",
-//     phone: "",
-//     location: "",
-//     operasional: [{ day: "", time: "" }], // Default satu input
-//     image: "",
-//   });
-
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState("");
-//   const [success, setSuccess] = useState("");
-
-//   // Handle perubahan input form umum
-//   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-//     setFormData({
-//       ...formData,
-//       [e.target.name]: e.target.value,
-//     });
-//   };
-
-//   // Handle perubahan untuk operasional
-//   const handleOperasionalChange = (index: number, value: string, field: "day" | "time") => {
-//     const newOperasional = [...formData.operasional];
-//     newOperasional[index][field] = value;
-//     setFormData({ ...formData, operasional: newOperasional });
-//   };
-
-//   // Menambah jam operasional baru
-//   const addOperasionalHour = () => {
-//     setFormData({
-//       ...formData,
-//       operasional: [...formData.operasional, { day: "", time: "" }],
-//     });
-//   };
-
-//   // Menghapus jam operasional
-//   const removeOperasionalHour = (index: number) => {
-//     const newOperasional = formData.operasional.filter((_, i) => i !== index);
-//     setFormData({ ...formData, operasional: newOperasional });
-//   };
-
-//   // Handle submit form
-//   const handleSubmit = async (e: { preventDefault: () => void; }) => {
-//     e.preventDefault();
-  
-//     const formattedOperasional = formData.operasional.map(
-//       (op) => `${op.day} : ${op.time}`
-//     );
-  
-//     const payload = {
-//       ...formData,
-//       operasional: formattedOperasional, // Konversi ke array of string
-//     };
-  
-//     try {
-//       const response = await fetch("/api/branches", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(payload),
-//       });
-  
-//       if (!response.ok) {
-//         throw new Error("Gagal menambahkan cabang");
-//       }
-  
-//       console.log("Cabang berhasil ditambahkan!");
-//     } catch (error) {
-//       console.error("Error:", error);
-//     }
-//   };
-  
-
-//   return (
-//     <form onSubmit={handleSubmit} className="space-y-6">
-//       <input type="text" name="name" placeholder="Nama Cabang" value={formData.name} onChange={handleChange} required />
-//       <input type="text" name="address" placeholder="Alamat" value={formData.address} onChange={handleChange} required />
-//       <input type="text" name="phone" placeholder="Nomor Telepon" value={formData.phone} onChange={handleChange} required />
-//       <input type="url" name="location" placeholder="URL Google Maps" value={formData.location} onChange={handleChange} required />
-//       <input type="url" name="image" placeholder="URL Gambar Cabang" value={formData.image} onChange={handleChange} required />
-
-//       {/* Operational Hours */}
-//       <div className="flex flex-col w-full mb-7">
-//         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Operational Hours</label>
-//         {formData.operasional.map((op, index) => (
-//           <div key={index} className="mb-4 flex flex-col gap-0 xl:flex-row">
-//             <input type="text" placeholder="Ex: Senin - Jumat" value={op.day} onChange={(e) => handleOperasionalChange(index, e.target.value, "day")} className="w-full xl:w-1/2 rounded-[7px] border px-4 py-2" />
-//             <input type="text" placeholder="Ex: 10:00-17:00" value={op.time} onChange={(e) => handleOperasionalChange(index, e.target.value, "time")} className="w-full xl:w-1/2 rounded-[7px] border px-4 py-2" />
-//             <button type="button" onClick={() => removeOperasionalHour(index)} className="ml-2 text-red-500">✖</button>
-//           </div>
-//         ))}
-//         <button type="button" onClick={addOperasionalHour} className="text-orange-400 border border-orange-400 px-3 py-1 rounded-[7px] hover:bg-orange-400 hover:text-white">
-//           Add Operational Hours
-//         </button>
-//       </div>
-
-//       <button type="submit" disabled={loading} className="bg-blue-500 text-white px-4 py-2 rounded">
-//         {loading ? "Mengirim..." : "Tambahkan Cabang"}
-//       </button>
-
-//       {success && <p style={{ color: "green" }}>{success}</p>}
-//       {error && <p style={{ color: "red" }}>{error}</p>}
-//     </form>
-//   );
-// };
-
-// export default BranchForm;

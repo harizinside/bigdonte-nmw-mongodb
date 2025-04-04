@@ -71,7 +71,7 @@ const CreateLegality = () => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="legality" pageName="Manage Legality" routeSecond="" pageNameSecond="" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
+        <Breadcrumb route="dashboard/legality" pageName="Manage Legality" routeSecond="" pageNameSecond="" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
       </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

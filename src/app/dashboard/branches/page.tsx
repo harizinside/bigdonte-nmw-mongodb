@@ -17,7 +17,7 @@ const BranchesPage = () => {
             <Breadcrumb route="branches" pageName="Manage Branches" routeSecond="" pageNameSecond="" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
             <ButtonDefault
                     label="Add New Branch"
-                    link="/branches/create"
+                    link="/dashboard/branches/create"
                     customClasses="bg-green text-white py-[11px] px-6 rounded-lg"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22"><path fill="currentColor" d="M19 12.998h-6v6h-2v-6H5v-2h6v-6h2v6h6z"/></svg>

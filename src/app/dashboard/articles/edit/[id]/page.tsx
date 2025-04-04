@@ -274,7 +274,7 @@ const EditArticle = () => {
     <DefaultLayout>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="articles" pageName="Manage Articles" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
+          <Breadcrumb route="dashboard/articles" pageName="Manage Articles" routeSecond="" pageNameSecond="/ Edit" routeThird="" pageNameThird={`/ ${article?.title}`} routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
         </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

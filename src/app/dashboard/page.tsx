@@ -43,7 +43,7 @@ export default function Dashboard() {
       <ECommerce />
       <div className="flex flex-col gap-5 mt-9">
         <TableEleven limit={5} showPagination={false} />
-        <Link href={"/articles"}>
+        <Link href={"/dashboard/articles"}>
           <button className="flex w-max justify-center m-auto gap-2 rounded-[7px] bg-primary p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
             See Other
             <svg
@@ -67,7 +67,7 @@ export default function Dashboard() {
       </div>
       <div className="flex flex-col gap-5 mt-9">
         <TableThree limit={5} showPagination={false} />
-        <Link href={"/doctors"}>
+        <Link href={"/dashboard/sdoctors"}>
           <button className="flex w-max justify-center m-auto gap-2 rounded-[7px] bg-primary p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
             See Other
             <svg

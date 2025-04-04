@@ -26,7 +26,6 @@ const CreatArticle = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<string>("");
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
   const [selectedDoctor, setSelectedDoctor] = useState<string>("");
   const [selectedService, setSelectedService] = useState<string>("");
@@ -111,7 +110,7 @@ const CreatArticle = () => {
 
   const handlePush = () => {
     setIsOpen(false);
-    router.push("/articles");
+    router.push("/dashboard/articles");
   } 
 
   const changeTextColor = () => {
@@ -194,7 +193,7 @@ const CreatArticle = () => {
     <DefaultLayout>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="articles" pageName="Manage Articles" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameFour="" routeFour="" pageNameThird="" routeFive="" pageNameFive=""/>
+          <Breadcrumb route="dashboard/articles" pageName="Manage Articles" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameFour="" routeFour="" pageNameThird="" routeFive="" pageNameFive=""/>
         </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -474,7 +473,7 @@ const CreatArticle = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
                         {loading ? "Saving..." : "Save Article"}
                     </button>
-                    <Link href={'/articles'}>
+                    <Link href={'/dashboard/articles'}>
                         <button className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                             Cancel

@@ -68,7 +68,7 @@ export function useNavbar() {
         const [settingsRes, promoRes, servicesRes, articlesRes, socialRes] = await Promise.all([
           fetchWithAuth(`/api/settings`),
           fetchWithAuth(`/api/promos`),
-          fetchWithAuth(`/api/services`),
+          fetchWithAuth(`/api/services?page=all`),
           fetchWithAuth(`/api/articles`),
           fetchWithAuth(`/api/social`),
         ]);

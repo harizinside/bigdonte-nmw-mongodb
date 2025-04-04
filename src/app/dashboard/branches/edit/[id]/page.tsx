@@ -6,7 +6,6 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Image from "next/image";
 import Link from "next/link";
-import axios from "axios";
 
 const EditBranch = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -163,13 +162,13 @@ const EditBranch = () => {
 
 const handlePush = () => {
   setIsOpen(false);
-  router.push("/branches");
+  router.push("/dashboard/branches");
 }
 
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="branches" pageName="Manage Branches" routeSecond="" pageNameSecond="/ Edit" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
+        <Breadcrumb route="dashboard/branches" pageName="Manage Branches" routeSecond="" pageNameSecond="/ Edit" routeThird="" pageNameThird={`/ ${formData?.name}`} routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
       </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -185,16 +184,6 @@ const handlePush = () => {
                   {previewImage && <Image src={previewImage} alt="Preview"  width="700"
                         height="700" priority
                         className="w-full rounded-xl" />}
-                    {/* {(branch.image) && (
-                        <Image
-                        width="700"
-                        height="700"
-                        src={`${branch.image}`} 
-                        alt={branch.name}
-                        priority
-                        className="w-full rounded-xl"
-                        />
-                    )} */}
                 </div>
               <div className="mb-5">
                 <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
@@ -281,7 +270,7 @@ const handlePush = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
                         {loading ? "Updating..." : "Update"}
                     </button>
-                    <Link href={'/branches'}>
+                    <Link href={'/dashboard/branches'}>
                         <button type="button" className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                             Cancel
@@ -318,226 +307,3 @@ const handlePush = () => {
 };
 
 export default EditBranch;
-// "use client";
-
-// import { useState, useEffect } from "react";
-// import { useRouter } from "next/navigation";
-// import { useParams } from "next/navigation"; // Untuk mendapatkan ID dari URL
-// import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-// import DefaultLayout from "@/components/Layouts/DefaultLaout";
-// import axios from "axios";
-
-// const EditBranch = () => {
-//   const [loading, setLoading] = useState(false);
-//   const router = useRouter();
-//   const { id } = useParams(); // Ambil ID dari URL
-//   const [message, setMessage] = useState("");
-//   const [previewImage, setPreviewImage] = useState<string | null>(null);
-//   const [image, setImage] = useState<File | null>(null);
-  
-//   const [formData, setFormData] = useState({
-//     name: "",
-//     address: "",
-//     phone: "",
-//     location: "",
-//     operasional: [{ day: "", time: "" }],
-//     image: "",
-//   });
-
-//   // Fetch data branch berdasarkan ID dan isi ke formData
-//   useEffect(() => {
-//     if (!id) return;
-  
-//     const fetchBranch = async () => {
-//       try {
-//         setLoading(true);
-//         const res = await fetch(`/api/branches/${id}`);
-//         if (!res.ok) throw new Error("Gagal mengambil data cabang");
-  
-//         const responseData = await res.json();
-  
-//         // 🔹 Konversi operasional dari string ke array objek
-//         const parsedOperasional = Array.isArray(responseData.operasional)
-//           ? responseData.operasional.map((item: string) => {
-//               const [day, time] = item.split(" : ");
-//               return { day: day || "", time: time || "" };
-//             })
-//           : [{ day: "", time: "" }];
-  
-//         // 🔹 Set default value dari API ke formData
-//         setFormData({
-//           name: responseData.name || "",
-//           address: responseData.address || "",
-//           phone: responseData.phone || "",
-//           location: responseData.location || "",
-//           operasional: parsedOperasional,
-//           image: responseData.image || "",
-//         });
-  
-//         setPreviewImage(responseData.image); // Preview gambar lama
-//       } catch (error) {
-//         console.error("Error fetching branch data:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-  
-//     fetchBranch();
-//   }, [id]);
-  
-
-//   // Handle perubahan input form umum
-//   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-//     setFormData({
-//       ...formData,
-//       [e.target.name]: e.target.value,
-//     });
-//   };
-
-//   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const file = e.target.files?.[0];
-//     if (file) {
-//       setImage(file);
-//       setPreviewImage(URL.createObjectURL(file));
-//     }
-//   };
-
-//   // Handle perubahan untuk operasional
-//   const handleOperasionalChange = (index: number, value: string, field: "day" | "time") => {
-//     const newOperasional = [...formData.operasional];
-//     newOperasional[index][field] = value;
-//     setFormData({ ...formData, operasional: newOperasional });
-//   };
-
-//   // Menambah jam operasional baru
-//   const addOperasionalHour = () => {
-//     setFormData({
-//       ...formData,
-//       operasional: [...formData.operasional, { day: "", time: "" }],
-//     });
-//   };
-
-//   // Menghapus jam operasional
-//   const removeOperasionalHour = (index: number) => {
-//     const newOperasional = formData.operasional.filter((_, i) => i !== index);
-//     setFormData({ ...formData, operasional: newOperasional });
-//   };
-
-//   // Handle submit form (Edit)
-//   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault();
-//     setLoading(true);
-  
-//     try {
-//       let imageUrl = formData.image; // Gunakan image lama jika tidak ada perubahan
-  
-//       if (image) {
-//         console.log("Uploading image to Cloudinary...");
-  
-//         // Perbaikan: Gunakan `FormData` bawaan JS, bukan `formData` dari state
-//         const imageFormData = new FormData();
-//         imageFormData.append("file", image);
-//         imageFormData.append("upload_preset", "nmw-clinic"); // Sesuaikan dengan Cloudinary
-//         imageFormData.append("folder", "branches"); // Folder Cloudinary
-  
-//         const cloudinaryResponse = await axios.post(
-//           "https://api.cloudinary.com/v1_1/duwyojrax/image/upload",
-//           imageFormData,
-//           {
-//             headers: { "Content-Type": "multipart/form-data" },
-//           }
-//         );
-  
-//         console.log("Cloudinary Response:", cloudinaryResponse.data);
-  
-//         // Gunakan URL dengan format WebP untuk optimasi
-//         const originalUrl = cloudinaryResponse.data.secure_url;
-//         imageUrl = originalUrl.replace("/upload/", "/upload/f_webp/");
-  
-//         console.log("Final WebP Image URL:", imageUrl);
-//       } else {
-//         console.log("No new image uploaded, using existing image:", imageUrl);
-//       }
-  
-//       // Perbaikan: Konversi operasional ke array string agar sesuai dengan API
-//       const formattedOperasional = formData.operasional.map(
-//         (op) => `${op.day} : ${op.time}`
-//       );
-  
-//       // Payload update
-//       const payload = {
-//         ...formData,
-//         image: imageUrl, // Simpan URL yang sudah diperbarui
-//         operasional: formattedOperasional,
-//       };
-  
-//       const response = await fetch(`/api/branches/${id}`, {
-//         method: "PUT",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify(payload),
-//       });
-  
-//       if (!response.ok) throw new Error("Gagal mengupdate cabang");
-  
-//       setMessage("Cabang berhasil diperbarui!");
-//       console.log("Cabang berhasil diperbarui!");
-  
-//       setTimeout(() => {
-//         router.push("/branches");
-//       }, 1500);
-//     } catch (error) {
-//       console.error("Error:", error);
-//       setMessage("Terjadi kesalahan saat memperbarui cabang.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <DefaultLayout>
-//       <form onSubmit={handleSubmit}>
-//         <label>Nama Cabang:</label>
-//         <input type="text" name="name" value={formData.name} onChange={handleChange} required />
-
-//         <label>Alamat:</label>
-//         <textarea name="address" value={formData.address} onChange={handleChange} required />
-
-//         <label>Telepon:</label>
-//         <input type="text" name="phone" value={formData.phone} onChange={handleChange} required />
-
-//         <label>Lokasi (Google Maps URL):</label>
-//         <input type="text" name="location" value={formData.location} onChange={handleChange} required />
-
-//         <label>Jam Operasional:</label>
-//         {formData.operasional.map((op, index) => (
-//           <div key={index}>
-//             <input
-//               type="text"
-//               value={op.day}
-//               onChange={(e) => handleOperasionalChange(index, e.target.value, "day")}
-//               placeholder="Hari (contoh: Senin - Jumat)"
-//             />
-//             <input
-//               type="text"
-//               value={op.time}
-//               onChange={(e) => handleOperasionalChange(index, e.target.value, "time")}
-//               placeholder="Jam (contoh: 10.00 - 17.00)"
-//             />
-//             <button type="button" onClick={() => removeOperasionalHour(index)}>Hapus</button>
-//           </div>
-//         ))}
-//         <button type="button" onClick={addOperasionalHour}>Tambah Jam Operasional</button>
-
-//         <label>Gambar:</label>
-//         {previewImage && <img src={previewImage} alt="Preview" width="100" />}
-//         <input type="file" accept="image/*" onChange={handleImageChange} />
-
-//         <button type="submit" disabled={loading}>
-//           {loading ? "Menyimpan..." : "Simpan Perubahan"}
-//         </button>
-//       </form>
-//     </DefaultLayout>
-//   );
-// };
-
-// export default EditBranch;

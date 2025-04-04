@@ -14,7 +14,7 @@ const AchievmentsPage = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Breadcrumb route="achievements" pageName="Manage Achievements" routeSecond="" pageNameSecond="" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
+            <Breadcrumb route="dashboard/achievements" pageName="Manage Achievements" routeSecond="" pageNameSecond="" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
             <ButtonDefault
                     label="Add New Achievement"
                     link="/dashboard/achievements/create"

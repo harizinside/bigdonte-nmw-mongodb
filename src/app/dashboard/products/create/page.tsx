@@ -73,13 +73,13 @@ const CreateProduct = () => {
 
   const handlePush = () => {
     setIsOpen(false);
-    router.push("/products");
+    router.push("/dashboard/products");
   } 
 
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="products" pageName="Manage Product" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
+          <Breadcrumb route="dashboard/products" pageName="Manage Product" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
         </div>
 
     <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
@@ -91,20 +91,7 @@ const CreateProduct = () => {
                 Create Product
               </h3>
             </div>
-            {/* <form action="#"> */}
               <div className="p-6.5">
-                {/* <div className="w-30 h-auto mb-5 overflow-hidden object-cover object-center ">
-                    {(previewImage) && (
-                        <Image
-                        width="800"
-                        height="800"
-                        priority
-                        src={`${previewImage}`} 
-                        alt="Preview"
-                        className="w-full rounded-lg"
-                        />
-                    )}
-                </div> */}
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
                     <div className="w-full xl:w-1/3">
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
@@ -163,7 +150,7 @@ const CreateProduct = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
                         {loading ? "Saving..." : "Save Product"}
                     </button>
-                    <Link href={'/products'}>
+                    <Link href={'/dashboard/products'}>
                         <button className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                             Cancel
