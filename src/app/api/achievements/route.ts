@@ -65,7 +65,10 @@ export async function POST(request: Request) {
     const imageFile = formData.get("image") as File;
 
     if (!title || !description || !date || !imageFile) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Semua field harus diisi." },
+        { status: 400 }
+      );
     }
 
     const timestamp = Date.now();
@@ -73,9 +76,8 @@ export async function POST(request: Request) {
     const fileName = `${timestamp}-${originalName}.webp`;
     const imagePath = path.join(process.cwd(), "public", "uploads", "achievements", fileName);
 
-    // Konversi gambar ke WebP
-    const imageByteData = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(imageByteData);
+    // Konversi ke WebP
+    const buffer = Buffer.from(await imageFile.arrayBuffer());
 
     try {
       await sharp(buffer)
@@ -83,17 +85,20 @@ export async function POST(request: Request) {
         .toFile(imagePath);
     } catch (err: any) {
       if (err.code === "EACCES" || err.code === "EROFS") {
-        return NextResponse.json({
-          error: "Gagal menyimpan file: Akses ditolak atau folder public hanya-baca. Pastikan folder memiliki permission write.",
-          detail: err.message,
-        }, { status: 500 });
+        return NextResponse.json(
+          {
+            error: "Gagal menyimpan gambar. Folder public mungkin hanya-baca di server (misalnya Vercel).",
+          },
+          { status: 500 }
+        );
       }
 
-      // Tangkap error sharp lainnya
-      return NextResponse.json({
-        error: "Gagal mengkonversi atau menyimpan gambar.",
-        detail: err.message,
-      }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: "Terjadi kesalahan saat mengolah gambar.",
+        },
+        { status: 500 }
+      );
     }
 
     // Simpan ke DB
@@ -110,10 +115,13 @@ export async function POST(request: Request) {
     return NextResponse.json(newAchievement, { status: 201 });
 
   } catch (error: any) {
-    console.error("Error creating achievement:", error);
-    return NextResponse.json({
-      error: "Terjadi kesalahan saat membuat achievement.",
-      detail: error.message,
-    }, { status: 500 });
+    // Tangani error umum di luar proses konversi/simpan
+    return NextResponse.json(
+      {
+        error: "Terjadi kesalahan saat membuat data prestasi.",
+        message: error?.message || "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
