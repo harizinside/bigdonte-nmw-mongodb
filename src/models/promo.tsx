@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const PromoSchema = new Schema(
   {
-    image: { type: String, required: true },
+    image: { type: String },
     slug: { type: String, unique: true }, 
     link: { type: String, required: false },
     title: { type: String, required: false },

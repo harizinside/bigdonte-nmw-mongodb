@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     const documentFile = formData.get("document") as File;
     const imageFile = formData.get("image") as File;
 
-    if (!title || !documentFile || !date || !imageFile) {
+    if (!title || !documentFile || !date) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 

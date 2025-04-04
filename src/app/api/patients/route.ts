@@ -92,7 +92,7 @@ export async function POST(request: Request) {
     const slugServicesList = formData.get("slugServicesList") as string; 
     const slugServicesType = formData.get("slugServicesType") as string; 
 
-    if (!name || !description || !image) {
+    if (!name || !description) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 

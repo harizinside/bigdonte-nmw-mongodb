@@ -3,7 +3,7 @@ import mongoose, { Schema } from "mongoose";
 const ServicesTypeSchema = new Schema(
   {
     name: { type: String, required: true },
-    image: { type: String, required: true },
+    image: { type: String },
     description: { type: String, required: true },
     slug: { type: String, required: true, unique: true }, 
     id_services: { type: mongoose.Schema.Types.ObjectId, ref: "Services", required: true }, 

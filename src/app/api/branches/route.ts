@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     const operasional = formData.getAll("operasional") as string[];
     const imageFile = formData.get("image") as File;
 
-    if (!name || !address || !phone || !location || operasional.length === 0 || !imageFile) {
+    if (!name || !address || !phone || !location || operasional.length === 0) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 

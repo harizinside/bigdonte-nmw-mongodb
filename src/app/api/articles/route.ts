@@ -101,8 +101,7 @@ export async function POST(request: Request) {
       !title ||
       !slug ||
       !date ||
-      !description ||
-      !imageFile
+      !description
     ) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }

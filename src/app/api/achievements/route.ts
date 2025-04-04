@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     const date = formData.get("date") as string;
     const imageFile = formData.get("image") as File;
 
-    if (!title || !description || !date || !imageFile) {
+    if (!title || !description || !date) {
       return NextResponse.json(
         { error: "Semua field harus diisi." },
         { status: 400 }

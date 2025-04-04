@@ -7,7 +7,7 @@ const BranchSchema = new mongoose.Schema(
     phone: { type: String, required: true },
     location: { type: String, required: true }, // URL Google Maps
     operasional: { type: [String], required: true }, // Array jam operasional
-    image: { type: String, required: true }, // URL gambar cabang
+    image: { type: String }, // URL gambar cabang
   },
   { timestamps: true }
 );

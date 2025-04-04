@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const MediaSchema = new Schema(
   {
-    image: { type: String, required: true },
+    image: { type: String },
   },
   { timestamps: true }
 );

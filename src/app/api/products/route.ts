@@ -79,7 +79,7 @@ export async function POST(request: Request) {
     const link = formData.get("link") as string;
     const description = formData.get("description") as string;
 
-    if (!name || !link || !imageFile || !description) {
+    if (!name || !link || !description) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
