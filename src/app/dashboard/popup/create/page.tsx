@@ -22,7 +22,7 @@ const CreatePopup = () => {
     };
   
     const handleSubmit = async () => {
-      if (!image || !link) {
+      if (!link) {
         setMessage("Please fill in all required fields!");
         setIsOpen(true);
         return;
@@ -33,7 +33,9 @@ const CreatePopup = () => {
       try {
         const formData = new FormData();
         formData.append("link", link); 
-        formData.append("image", image); 
+        if (image) {
+          formData.append("image", image);
+        }
         formData.append("status", "1");
 
         const response = await axios.post(

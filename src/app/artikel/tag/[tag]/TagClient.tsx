@@ -46,6 +46,7 @@ export default function TagClient({ tag }: TagClientProps) {
           headers: {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
           },
+          cache: "no-store",
         });
         const data = await response.json();
         setArticlesAll(data.articles || []);

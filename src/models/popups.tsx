@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const PopupsSchema = new Schema(
   {
-    image: { type: String, required: true },
+    image: { type: String },
     link: { type: String, required: true },
     status: { type: Boolean, required: true },
   },

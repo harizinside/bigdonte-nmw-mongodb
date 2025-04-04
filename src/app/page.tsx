@@ -9,6 +9,7 @@ async function fetchWithAuth(url: string) {
     headers: {
       Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
     },
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -92,9 +93,9 @@ export default async function Home() {
   const { settings, promos, services, articles } = await fetchData();
 
   return <HomeClient 
-          settings={settings}
-          promos={promos}
-          services={services}
-          articles={articles}
-         />;
+    settings={settings}
+    promos={promos}
+    services={services}
+    articles={articles}
+  />;
 }

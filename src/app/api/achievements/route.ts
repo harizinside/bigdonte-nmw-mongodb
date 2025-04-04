@@ -69,31 +69,51 @@ export async function POST(request: Request) {
     }
 
     const timestamp = Date.now();
-    const originalName = imageFile.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, ""); // Hapus ekstensi
+    const originalName = imageFile.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, "");
     const fileName = `${timestamp}-${originalName}.webp`;
-    const imagePath = path.join(process.cwd(), "public", "uploads", "achievements",fileName);
+    const imagePath = path.join(process.cwd(), "public", "uploads", "achievements", fileName);
 
-    // Konversi gambar ke WebP menggunakan Sharp
+    // Konversi gambar ke WebP
     const imageByteData = await imageFile.arrayBuffer();
     const buffer = Buffer.from(imageByteData);
-    await sharp(buffer)
-      .webp({ quality: 80 }) // Kompresi ke WebP dengan kualitas 80%
-      .toFile(imagePath);
 
-    // Simpan ke MongoDB
+    try {
+      await sharp(buffer)
+        .webp({ quality: 80 })
+        .toFile(imagePath);
+    } catch (err: any) {
+      if (err.code === "EACCES" || err.code === "EROFS") {
+        return NextResponse.json({
+          error: "Gagal menyimpan file: Akses ditolak atau folder public hanya-baca. Pastikan folder memiliki permission write.",
+          detail: err.message,
+        }, { status: 500 });
+      }
+
+      // Tangkap error sharp lainnya
+      return NextResponse.json({
+        error: "Gagal mengkonversi atau menyimpan gambar.",
+        detail: err.message,
+      }, { status: 500 });
+    }
+
+    // Simpan ke DB
     await connectToDatabase();
     const newAchievement = new Achievement({
       title,
       description,
       date,
-      image: `/uploads/achievements/${fileName}`, // Path relatif untuk akses publik
+      image: `/uploads/achievements/${fileName}`,
     });
 
     await newAchievement.save();
 
     return NextResponse.json(newAchievement, { status: 201 });
-  } catch (error) {
+
+  } catch (error: any) {
     console.error("Error creating achievement:", error);
-    return NextResponse.json({ error: "Failed to create achievement" }, { status: 500 });
+    return NextResponse.json({
+      error: "Terjadi kesalahan saat membuat achievement.",
+      detail: error.message,
+    }, { status: 500 });
   }
 }

@@ -123,10 +123,10 @@ interface HomeClientProps {
         >
           {promos.map(promo => (
             <SwiperSlide key={promo._id}>
-              <Link href={promo.link ? promo.link : `/promo/${promo.slug}`} target="blank_">
+              <Link href={promo.link ? promo.link : `/promo/${promo.slug}`}>
                 <div
                   className={styles.banner}
-                  style={{ backgroundImage: `url(${baseUrl}/${promo.image})` }}
+                  style={{ backgroundImage: `url(${baseUrl}${promo.image})` }}
                 >
                 </div>
               </Link>

@@ -67,6 +67,7 @@ export default function RootLayout({
             gtag('config', 'G-TX18KNDEWY');
           `}
         </Script>
+        
       </head>
       <body>
         <LayoutWrapper>{children}</LayoutWrapper>

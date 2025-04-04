@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     const status = formData.get("status") === "1"; 
     const imageFile = formData.get("image") as File;
 
-    if (!link || status === null || !imageFile) {
+    if (!link || status === null) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
   
