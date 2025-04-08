@@ -1,6 +1,8 @@
 import "@/css/global.css";
 import LayoutWrapper from "@/components/LayoutWrapper/page";
 import Script from "next/script"; 
+// import ProgressBar from "@/components/ProgressBar/page";
+import NextTopLoader from 'nextjs-toploader';
 
 async function fetchWithAuth(url: string) {
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
@@ -70,6 +72,16 @@ export default function RootLayout({
         
       </head>
       <body>
+      <NextTopLoader
+        color="#fff"
+        height={3}
+        easing="ease"
+        speed={200}
+        initialPosition={0.08}
+        crawlSpeed={200}
+        crawl={true}
+      />
+        {/* <ProgressBar /> */}
         <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>

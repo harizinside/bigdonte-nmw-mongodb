@@ -104,7 +104,6 @@ useEffect(() => {
                 ? `/api/doctors?page=all`  // Panggil API dengan page=all
                 : `/api/doctors?page=${currentPage}&limit=${itemsPerPage}&id_position=${activeTab}`;
 
-            console.log("Fetching doctors from:", url);
             const response = await fetch(url, {
                 method: "GET",
                 headers: {

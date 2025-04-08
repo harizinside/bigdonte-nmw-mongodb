@@ -33,8 +33,6 @@ export default function TagClient({ tag }: TagClientProps) {
   const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
   const [dataTags, setDataTags] = useState<Tag[]>([]);
 
-  console.log('Tag yang diterima di TagClient:', tag); 
-
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
 
   useEffect(() => {

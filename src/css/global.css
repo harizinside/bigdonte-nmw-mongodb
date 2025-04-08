@@ -67,10 +67,11 @@
 /* NProgress custom styles */
 #nprogress {
   pointer-events: none;
+  z-index: 9999;
 }
 
 #nprogress .bar {
-  background: #fff !important;
+  background: white !important;
   position: fixed;
   top: 0;
   left: 0;

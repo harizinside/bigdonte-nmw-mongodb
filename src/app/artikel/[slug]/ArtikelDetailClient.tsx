@@ -162,8 +162,6 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
     fetchProductAll();
   }, [products, baseUrl, serviceId, doctorId, slug]);
 
-  console.log('product data', products)
-
   useEffect(() => {
     if (services && services.description && services.description !== "-") {
       setHtmlContentSc(services.description);
