@@ -3,6 +3,8 @@ import Position from "@/models/position";
 import { NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: any, { params }: any) {
   const authError = validateToken(req);
   if (authError) return authError;

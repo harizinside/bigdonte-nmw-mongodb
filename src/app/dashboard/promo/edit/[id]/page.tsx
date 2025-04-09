@@ -124,7 +124,7 @@ const EditPromo = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="dashboard/promo" pageName="Manage Promo" routeSecond="" pageNameSecond="/ Edit" routeThird="" pageNameThird={`/ ${promo?.title}`} routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
+          <Breadcrumb route="dashboard/promo" pageName="Manage Promo" routeSecond={`dashboard/promo/edit/${id}`} pageNameSecond="/ Edit" routeThird={`dashboard/promo/edit/${id}`} pageNameThird={`/ ${promo?.title}`} routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
         </div>
 
     <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

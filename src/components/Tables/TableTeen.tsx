@@ -98,9 +98,9 @@ const TableTeen = () => {
   return (
     <div className="rounded-[10px] border border-stroke bg-white p-4 shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card sm:p-7.5">
       <div className="max-w-full overflow-x-auto">
-        {loading ? (
+        {/* {loading ? (
           <p className="text-center text-gray-500 dark:text-white mb-5 text-2xl font-semibold">Loading...</p>
-        ) : (
+        ) : ( */}
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-[#F7F9FC] text-left dark:bg-dark-2">
@@ -192,7 +192,7 @@ const TableTeen = () => {
             ))}
           </tbody>
         </table>
-        )}
+        {/* )} */}
         {isOpen && selectedPromo && (
           <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-35 z-999 flex justify-center items-center z-50">
             <div className="bg-white rounded-2xl p-6 py-9 w-1/3 shadow-lg">

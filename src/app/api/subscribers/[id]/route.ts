@@ -3,6 +3,8 @@ import Subscriber from "@/models/subscribers";
 import { NextResponse } from "next/server";
 import { validateToken } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   const authError = validateToken(req);
   if (authError) return authError;

@@ -8,6 +8,8 @@ import fs from "fs/promises";
 import sharp from "sharp";
 import mongoose from "mongoose";
 
+export const dynamic = "force-dynamic";
+
 // GET: Get promo by ID
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const authError = validateToken(req);

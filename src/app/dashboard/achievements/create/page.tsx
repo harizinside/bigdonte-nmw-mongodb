@@ -76,7 +76,7 @@ const CreateAchievment = () => {
   return (
     <DefaultLayout>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumb route="dashboard/achievements" pageName="Manage Achievements" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
+          <Breadcrumb route="dashboard/achievements" pageName="Manage Achievements" routeSecond={`dashboard/achievements/create`} pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
         </div>
 
     <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

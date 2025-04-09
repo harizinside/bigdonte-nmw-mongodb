@@ -1,12 +1,9 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Social from "@/models/socialMedia";
 import { NextResponse } from "next/server";
-import cloudinary from "@/lib/cloudinary"; 
 import { validateToken } from "@/lib/auth";
-import path from "path";
-import fs from "fs/promises";
-import sharp from "sharp";
-import mongoose from "mongoose";
+
+export const dynamic = "force-dynamic";
 
 // GET: Get doctor by ID
 export async function GET(req: any, { params }: any) {
