@@ -65,7 +65,7 @@ const TableFive = () => {
     if (!selectedCatalog) return;
     try {
       setLoadingDelete(true);
-      const response = await fetch(`api/catalogs/${selectedCatalog._id}`, {
+      const response = await fetch(`/api/catalogs/${selectedCatalog._id}`, {
         method: 'DELETE',
         headers: {
           "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,

@@ -23,7 +23,7 @@ const Breadcrumb = ({ pageName, pageNameSecond, route, routeSecond, routeThird, 
       <nav>
         <ol className="flex items-center gap-2">
           <li>
-            <Link className="font-medium" href="/">
+            <Link className="font-medium" href="/dashboard">
               Dashboard /
             </Link>
           </li>

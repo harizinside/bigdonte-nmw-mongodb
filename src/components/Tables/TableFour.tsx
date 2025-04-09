@@ -63,7 +63,7 @@ const TableFour = () => {
       if (!selectedBranches) return;
       try {
         setLoadingDelete(true);
-        const response = await fetch(`api/branches/${selectedBranches._id}`, {
+        const response = await fetch(`/api/branches/${selectedBranches._id}`, {
           method: 'DELETE',
           headers: {
             "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,

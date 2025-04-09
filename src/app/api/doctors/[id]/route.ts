@@ -8,6 +8,8 @@ import fs from "fs/promises";
 import sharp from "sharp";
 import mongoose from "mongoose";
 
+export const dynamic = "force-dynamic";
+
 // GET: Get doctor by ID
 export async function GET(req: any, { params }: any) {
   const authError = validateToken(req);

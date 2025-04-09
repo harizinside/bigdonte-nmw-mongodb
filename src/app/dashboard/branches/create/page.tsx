@@ -98,7 +98,7 @@ const CreateBranch = () => {
       console.log("Cabang berhasil ditambahkan!");
 
       setTimeout(() => {
-        router.push("/branches");
+        router.push("/dashboard/branches");
       }, 1500);
     } catch (error) {
       console.error("Error:", error);
@@ -118,7 +118,7 @@ const CreateBranch = () => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="dashboard/branches" pageName="Manage Branches" routeSecond="" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
+        <Breadcrumb route="dashboard/branches" pageName="Manage Branches" routeSecond="dashboard/branches/create" pageNameSecond="/ Create" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
       </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

@@ -125,7 +125,7 @@ const EditServiceType = () => {
     <DefaultLayout>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="dashboard/services" pageName="Manage Services" routeSecond={`dashboard/services/${slugServices}`} pageNameSecond={`/ ${formattedTitle}`} routeThird={`dashboard/services/${slugServices}/${slugServicesList}`} pageNameThird={`/ ${formattedTitleList}`} routeFour="" pageNameFour=" / Edit" routeFive="" pageNameFive={`/ ${formattedTitleType}`} />
+        <Breadcrumb route="dashboard/services" pageName="Manage Services" routeSecond={`dashboard/services/${slugServices}`} pageNameSecond={`/ ${formattedTitle}`} routeThird={`dashboard/services/${slugServices}/${slugServicesList}`} pageNameThird={`/ ${formattedTitleList}`} routeFour={`/dashboard/services/${slugServices}/${slugServicesList}/edit/${service.slug}`} pageNameFour=" / Edit" routeFive="" pageNameFive={`/ ${formattedTitleType}`} />
       </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

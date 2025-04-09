@@ -8,6 +8,8 @@ import path from "path";
 import fs from "fs/promises";
 import sharp from "sharp";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: any, { params }: any) {
   const authError = validateToken(req);
   if (authError) return authError; 

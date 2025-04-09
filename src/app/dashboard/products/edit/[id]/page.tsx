@@ -14,6 +14,7 @@ type Product = {
   name: string;
   description: string;
   link: string;
+  slug: string;
 }; 
  
 const EditProduct = () => { 
@@ -118,7 +119,7 @@ const handlePush = () => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="dashboard/achievements" pageName="Manage Achievements" routeSecond="" pageNameSecond="/ Edit" routeThird="" pageNameThird={`/ ${products?.name}`} routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
+        <Breadcrumb route="dashboard/products" pageName="Manage Products" routeSecond={`dashboard/products/edit/${products?._id}`} pageNameSecond="/ Edit" routeThird={`dashboard/products/edit/${products?._id}`} pageNameThird={`/ ${products?.name}`} routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
       </div>
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
         <div className="flex flex-col gap-9"> 

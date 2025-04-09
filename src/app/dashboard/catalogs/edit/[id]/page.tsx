@@ -130,7 +130,7 @@ const handleUpdate = async (e: React.FormEvent) => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="dashboard/catalogs" pageName="Manage Catalogs" routeSecond="" pageNameSecond="/ Edit" routeThird="" pageNameThird={`/ ${catalog?.title}`} routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
+        <Breadcrumb route="dashboard/catalogs" pageName="Manage Catalogs" routeSecond={`dashboard/catalogs/edit/${catalog?._id}`} pageNameSecond="/ Edit" routeThird={`dashboard/catalogs/edit/${catalog?._id}`} pageNameThird={`/ ${catalog?.title}`} routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
       </div>
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
         <div className="flex flex-col gap-9"> 

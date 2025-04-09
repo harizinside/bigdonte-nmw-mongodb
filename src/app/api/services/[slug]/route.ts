@@ -9,21 +9,8 @@ import path from "path";
 import fs from "fs/promises";
 import sharp from "sharp";
 import mongoose from "mongoose";
-// export async function GET(req: any, { params }: any) {
-//   const authError = validateToken(req);
-//   if (authError) return authError; 
 
-//   await connectToDatabase();
-
-
-//   const services = await Services.findOne({ slug: params.slug });
-
-//   if (!services) {
-//     return NextResponse.json({ message: "services not found" }, { status: 404 });
-//   }
-
-//   return NextResponse.json(services, { status: 200 });
-// }
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request, { params }: { params: { slug: string } }) {
   const authError = validateToken(req);

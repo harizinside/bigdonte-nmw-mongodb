@@ -8,6 +8,8 @@ import fs from "fs/promises";
 import sharp from "sharp";
 import { writeFile } from "fs/promises";
 
+export const dynamic = "force-dynamic";
+
 // GET: Get catalog by ID
 export async function GET(req: any, { params }: { params: { id: string } }) {
    const authError = validateToken(req);
@@ -95,49 +97,6 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
 
   return NextResponse.json(updatedCatalog, { status: 200 });
 }
-
-
-// DELETE: Delete catalog
-// export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-//    const authError = validateToken(req);
-//     if (authError) return authError;
-//   await connectToDatabase();
-
-//   console.log("Deleting catalog with ID:", params.id);
-//   const catalog = await Catalog.findById(params.id);
-//   if (!catalog) {
-//     return NextResponse.json({ message: "Catalog not found" }, { status: 404 });
-//   }
-
-//   // Delete image from Cloudinary
-//   if (catalog.image) {
-//     try {
-//       const imagePublicId = catalog.image.match(/\/v\d+\/catalogs\/([^/.]+)/)?.[1];
-//       if (imagePublicId) {
-//         await cloudinary.uploader.destroy(`catalogs/${imagePublicId}`);
-//       }
-//     } catch (error) {
-//       console.error("Error deleting image from Cloudinary:", error);
-//     }
-//   }
-
-//   // Delete document (PDF) from Cloudinary
-//   if (catalog.document) {
-//     try {
-//       const documentPublicId = catalog.document.match(/\/v\d+\/catalogs\/([^/.]+)/)?.[1];
-//       if (documentPublicId) {
-//         await cloudinary.uploader.destroy(`catalogs/${documentPublicId}`, { resource_type: "raw" });
-//       }
-//     } catch (error) {
-//       console.error("Error deleting document from Cloudinary:", error);
-//     }
-//   }
-
-//   // Delete catalog from database
-//   await Catalog.findByIdAndDelete(params.id);
-//   console.log("Catalog successfully deleted.");
-//   return NextResponse.json({ message: "Catalog deleted successfully" }, { status: 200 });
-// }
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   const authError = validateToken(req);

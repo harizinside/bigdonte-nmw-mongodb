@@ -70,7 +70,7 @@ const TableThree: React.FC<TableProps> = ({ limit = null, showPagination = true 
       if (!selectedDoctor) return;
       try {
         setLoadingDelete(true);
-        const response = await fetch(`api/doctors/${selectedDoctor._id}`, {
+        const response = await fetch(`/api/doctors/${selectedDoctor._id}`, {
           method: 'DELETE',
           headers: {
             "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,

@@ -197,7 +197,7 @@ const EditDoctor = () => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="dashboard/doctors" pageName="Manage Doctors" routeSecond="" pageNameSecond="/ Edit" routeThird="" pageNameThird={`/ ${doctor?.name}`} routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
+        <Breadcrumb route="dashboard/doctors" pageName="Manage Doctors" routeSecond={`dashboard/doctors/edit/${doctor?._id}`} pageNameSecond="/ Edit" routeThird={`dashboard/doctors/edit/${doctor?._id}`} pageNameThird={`/ ${doctor?.name}`} routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
       </div>
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">
         <div className="flex flex-col gap-9"> 

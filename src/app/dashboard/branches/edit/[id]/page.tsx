@@ -6,6 +6,7 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Image from "next/image";
 import Link from "next/link";
+import Branch from "@/models/branchs";
 
 const EditBranch = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -168,7 +169,7 @@ const handlePush = () => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Breadcrumb route="dashboard/branches" pageName="Manage Branches" routeSecond="" pageNameSecond="/ Edit" routeThird="" pageNameThird={`/ ${formData?.name}`} routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
+        <Breadcrumb route="dashboard/branches" pageName="Manage Branches" routeSecond={`dashboard/branches/edit/${id}`} pageNameSecond="/ Edit" routeThird={`dashboard/branches/edit/${id}`} pageNameThird={`/ ${formData?.name}`} routeFour="" pageNameFour="" routeFive="" pageNameFive=""/>
       </div>
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-1">

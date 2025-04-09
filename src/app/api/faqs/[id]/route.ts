@@ -1,8 +1,9 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Faq from "@/models/faqs";
 import { NextResponse } from "next/server";
-import cloudinary from "@/lib/cloudinary"; 
 import { validateToken } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 // GET: Get faq by ID
 export async function GET(req: any, { params }: any) {

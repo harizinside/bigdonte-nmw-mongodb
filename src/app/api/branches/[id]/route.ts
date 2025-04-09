@@ -19,55 +19,6 @@ export async function GET(req: any, { params }: any) {
   return NextResponse.json(branches, { status: 200 });
 }
 
-// export async function PUT(req: Request, { params }: { params: { id: string } }) {
-//   const authError = validateToken(req);
-//   if (authError) return authError;
-//   await connectToDatabase();
-
-//   try {
-//     const { name, address, phone, location, operasional, image } = await req.json();
-
-//     const existingBranch = await Branchs.findById(params.id);
-//     if (!existingBranch) {
-//       return NextResponse.json({ message: "Branch not found" }, { status: 404 });
-//     }
-
-//     let finalImageUrl = existingBranch.image; // Gunakan gambar lama jika tidak ada perubahan
-
-//     if (image && existingBranch.image !== image) {
-//       try {
-//         // Hapus gambar lama jika ada
-//         const oldImageUrl = existingBranch.image;
-//         const publicIdMatch = oldImageUrl.match(/\/v\d+\/branches\/([^/.]+)/);
-//         const oldPublicId = publicIdMatch ? `branches/${publicIdMatch[1]}` : null;
-
-//         if (oldPublicId) {
-//           console.log("Menghapus gambar lama dari Cloudinary:", oldPublicId);
-//           await cloudinary.uploader.destroy(oldPublicId);
-//         }
-
-//         // ✅ Pastikan URL baru dalam format WebP
-//         finalImageUrl = image.replace("/upload/", "/upload/f_webp,q_auto/");
-//         console.log("Final WebP Image URL:", finalImageUrl);
-//       } catch (error) {
-//         console.error("Gagal menghapus atau mengubah gambar:", error);
-//       }
-//     }
-
-//     // Update data branch
-//     const updatedBranch = await Branchs.findByIdAndUpdate(
-//       params.id,
-//       { name, address, phone, location, operasional, image: finalImageUrl },
-//       { new: true }
-//     );
-
-//     return NextResponse.json(updatedBranch, { status: 200 });
-//   } catch (error) {
-//     console.error("Error updating branch:", error);
-//     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
-//   }
-// }
-
 export async function PUT(req: any, { params }: { params: { id: string } }) {
   const authError = validateToken(req);
   if (authError) return authError;
