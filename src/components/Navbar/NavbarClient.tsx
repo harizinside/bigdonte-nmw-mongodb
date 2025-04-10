@@ -132,6 +132,7 @@ interface HomeClientProps {
                 "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
                 "Content-Type": "application/json",
               },
+              cache: "no-store",
             });
       
             const data = await response.json();
