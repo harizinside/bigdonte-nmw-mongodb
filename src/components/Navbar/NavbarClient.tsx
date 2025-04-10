@@ -100,31 +100,6 @@ interface HomeClientProps {
 
     useEffect(() => {
         const fetchData = async () => {
-          const cachedPopup = localStorage.getItem('popupCache');
-          const popupTimestamp = localStorage.getItem('popupTimestamp');
-          const popupShown = localStorage.getItem('popupShown');
-          const now = Date.now();
-      
-          // Cek dari cache
-          if (
-            popupShown === 'true' &&
-            popupTimestamp &&
-            now - parseInt(popupTimestamp) < 60 * 60 * 1000
-          ) {
-            if (cachedPopup) {
-              const cachedPopupData = JSON.parse(cachedPopup);
-              const validPopupData = cachedPopupData.filter((popup: Popup) => popup.status === true).slice(0, 1);
-      
-              if (validPopupData.length > 0) {
-                setPopupData(validPopupData);
-                setShowPopup(true);
-              }
-            }
-            setIsLoading(false);
-            return;
-          }
-      
-          // Ambil dari API
           try {
             const response = await fetch(`/api/popups`, {
               method: "GET",
@@ -132,25 +107,19 @@ interface HomeClientProps {
                 "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
                 "Content-Type": "application/json",
               },
-              cache: "no-store",
+              cache: "no-store", // biar tidak cache dari browser
             });
       
             const data = await response.json();
       
             if (Array.isArray(data.popups)) {
-              // Ambil hanya 1 popup aktif
-              const popupItems = data.popups.filter((popup: Popup) => popup.status === true).slice(0, 1);
+              const popupItems = data.popups
+                .filter((popup: Popup) => popup.status === true)
+                .slice(0, 1); // Ambil hanya 1
       
               if (popupItems.length > 0) {
                 setPopupData(popupItems);
                 setShowPopup(true);
-                localStorage.setItem('popupCache', JSON.stringify(popupItems));
-                localStorage.setItem('popupTimestamp', now.toString());
-                localStorage.setItem('popupShown', 'true');
-              } else {
-                localStorage.removeItem('popupCache');
-                localStorage.removeItem('popupTimestamp');
-                localStorage.removeItem('popupShown');
               }
             }
           } catch (error) {
@@ -161,7 +130,7 @@ interface HomeClientProps {
         };
       
         fetchData();
-      }, [baseUrl]);                  
+      }, [baseUrl]);                        
 
     const iconMapping: { [key: string]: JSX.Element } = {
         Facebook: <FaFacebook />,

@@ -18,6 +18,7 @@ async function getPromo(slug: string): Promise<Promo | null> {
     headers: {
       Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
     },
+    cache: "no-store",
   });
   if (!response.ok) return null;
   return response.json();

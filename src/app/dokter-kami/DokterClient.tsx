@@ -41,6 +41,7 @@ const DokterClient = () => {
                     "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
                     "Content-Type": "application/json",
                     },
+                    cache: "no-store",
                 });
                 if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
                 const result = await response.json();
@@ -51,45 +52,6 @@ const DokterClient = () => {
         };
         fetchPosition();
     }, []);
-
-  // Fetch Doctors
-//   const fetchDoctors = async (page: number, id_position?: string) => {
-//     try {
-//       setIsLoading(true);
-//       let url = `${baseUrl}/api/doctors?page=${page}&limit=12`;
-//       if (id_position) url += `&id_position=${id_position}`;
-
-//       const response = await fetch(`${url}`, {
-//         method: "GET",
-//         headers: {
-//           "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-//           "Content-Type": "application/json",
-//         },
-//       });
-//       if (!response.ok) throw new Error("Failed to fetch doctors");
-
-//       const data = await response.json();
-//       setDoctors(page === 1 ? data.doctors : [...doctors, ...data.doctors]);
-//       setTotalDoctors(data.totalDoctors);
-//     } catch (error) {
-//       console.error(error);
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchPositions();
-//     fetchDoctors(1);
-//   }, []);
-
-//   useEffect(() => {
-//     fetchDoctors(1, activeTab === "all" ? undefined : activeTab);
-//   }, [activeTab]);
-
-//   const handleLoadMore = () => {
-//     setCurrentPage((prev) => prev + 1);
-//   };
 
 const itemsPerPage = 12; 
 
@@ -110,6 +72,7 @@ useEffect(() => {
                     "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
                     "Content-Type": "application/json",
                 },
+                cache: "no-store",
             });
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 

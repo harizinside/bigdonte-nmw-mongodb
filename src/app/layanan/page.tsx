@@ -74,6 +74,7 @@ async function fetchLayanan(): Promise<Service[]> {
     headers: {
       Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
     },
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -91,6 +92,7 @@ async function fetchSetting(): Promise<Setting> {
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
       },
+      cache: "no-store",
     });
   
     if (!response.ok) {

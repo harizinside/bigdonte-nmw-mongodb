@@ -58,6 +58,7 @@ async function fetchTerms(): Promise<Kebijakan[]> {
     headers: {
       Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
     },
+    cache: "no-store",
   });
 
   if (!response.ok) {

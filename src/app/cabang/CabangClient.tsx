@@ -17,53 +17,33 @@ export default function CabangClient() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const cachedData = localStorage.getItem("promoCache");
-      const cacheExpiry = localStorage.getItem("promoCacheExpiry");
-      const now = new Date().getTime();
-
       try {
         const response = await fetch(`/api/branches?page=all`, {
-            method: "GET",
-            headers: {
+          method: "GET",
+          headers: {
             "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
             "Content-Type": "application/json",
-            },
+          },
+          cache: "no-store", // Tetap gunakan untuk bypass cache browser/server
         });
+  
         const data: BranchResponse = await response.json();
-
+  
         if (data && data.branches) {
           const reversedBranches = [...data.branches].reverse();
-
-          if (cachedData && cacheExpiry && now < parseInt(cacheExpiry)) {
-            const parsedCache = JSON.parse(cachedData);
-
-            if (JSON.stringify(parsedCache) !== JSON.stringify(data.branches)) {
-              setBranchs(reversedBranches);
-              localStorage.setItem("promoCache", JSON.stringify(reversedBranches));
-              localStorage.setItem("promoCacheExpiry", (now + 6 * 60 * 60 * 1000).toString());
-            } else {
-              setBranchs([...parsedCache].reverse());
-            }
-          } else {
-            setBranchs(reversedBranches);
-            localStorage.setItem("promoCache", JSON.stringify(reversedBranches));
-            localStorage.setItem("promoCacheExpiry", (now + 6 * 60 * 60 * 1000).toString());
-          }
+          setBranchs(reversedBranches);
         } else {
           console.error("Invalid response data format:", data);
         }
       } catch (error) {
         console.error("Error fetching branches:", error);
-        if (cachedData) {
-          setBranchs([...JSON.parse(cachedData)].reverse());
-        }
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchData();
-  }, [baseUrl]);
+  }, [baseUrl]);  
 
   const schemaData = {
     "@context": "https://schema.org",
