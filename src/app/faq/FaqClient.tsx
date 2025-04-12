@@ -8,7 +8,7 @@ interface Faq {
   _id: string;
   question: string;
   answer: string;
-}
+} 
 
 interface FaqListProps {
   faqs: Faq[];
@@ -31,7 +31,7 @@ export default function FaqClient({ faqs }: FaqListProps) {
           }`}
         >
           <button className={styles.question} onClick={() => toggleFAQ(index)}>
-            {faq.question}
+            <h3>{faq.question}</h3>
             <IoChevronDown />
           </button>
           <div
@@ -39,7 +39,7 @@ export default function FaqClient({ faqs }: FaqListProps) {
               activeIndex === index ? styles.show : ""
             }`}
           >
-            <p>{faq.answer.replace(/<p[^>]*>/g, "").replace(/<\/p>/g, "")}</p>
+            <h6>{faq.answer.replace(/<p[^>]*>/g, "").replace(/<\/p>/g, "")}</h6>
           </div>
         </div>
       ))}

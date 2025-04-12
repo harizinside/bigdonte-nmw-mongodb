@@ -67,11 +67,14 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s all;
-    font-size: .85vw;
     font-family: var(--poppins);
     letter-spacing: .05vw;
     color: #5A5A5A;
     padding: 0 1vw;
+  }
+  .answer h6{
+    font-size: 1vw;
+    font-weight: 400;
   }
   
   .answer.show {
@@ -109,9 +112,12 @@
         font-size: 3.3vw;
       }
       .answer {
-        font-size: 2.5vw;
         letter-spacing: .09vw;
         padding: 0 3vw;
+      }
+      .answer h6{
+        font-size: 2.5vw;
+        font-weight: 400;
       }
       .answer.show {
         margin-top: 2vw;

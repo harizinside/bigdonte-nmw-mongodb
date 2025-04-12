@@ -12,55 +12,17 @@ interface Faq {
   answer: string;
 }
 
-export const metadata: Metadata = {
-  title: "Faq | NMW Aesthetic Clinic",
-  description:
-    "Temukan jawaban atas pertanyaan umum tentang layanan, perawatan, konsultasi, dan prosedur medis di NMW Aesthetic Clinic. Dapatkan informasi lengkap untuk perawatan kecantikan dan kesehatan kulit Anda.",
-    keywords: [
-    "FAQ NMW Clinic",
-    "pertanyaan umum",
-    "layanan medis",
-    "perawatan kulit",
-    "konsultasi kesehatan",
-    "prosedur kecantikan",
-    "perawatan wajah",
-    "estetika medis",
-    "klinik kecantikan",
-    "operasi plastik",
-    "rejuvenasi kulit",
-    "konsultasi medis",
-    "perawatan anti-aging",
-    "informasi kesehatan",
-    "dokter kecantikan",
-    "solusi kecantikan",
-    "klinik estetika",
-    ],
-  openGraph: {
-    title: "Faq NMW Aesthetic Clinic",
-    description:
-      "Temukan jawaban atas pertanyaan umum tentang layanan, perawatan, konsultasi, dan prosedur medis di NMW Aesthetic Clinic. Dapatkan informasi lengkap untuk perawatan kecantikan dan kesehatan kulit Anda.",
-    type: "website",
-    url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/faq`,
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/images/faq_banner.webp`,
-        width: 800,
-        height: 600,
-        alt: "Faq NMW Aesthetic Clinic",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Faq NMW Aesthetic Clinic",
-    description:
-      "Temukan jawaban atas pertanyaan umum tentang layanan, perawatan, konsultasi, dan prosedur medis di NMW Aesthetic Clinic. Dapatkan informasi lengkap untuk perawatan kecantikan dan kesehatan kulit Anda.",
-    images: [`${process.env.NEXT_PUBLIC_API_WEB_URL}/images/faq_banner.webp`],
-  },
-  alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}/faq`,
-  },
-};
+interface Settings {
+  logo: string;
+  title: string;
+}
+
+interface FaqsPage {
+  image: string;
+  title: string;
+  description: string;
+  keywords: string[];
+}
 
 // Fungsi fetch data dari server
 async function fetchFaq(): Promise<Faq[]> {
@@ -81,24 +43,102 @@ async function fetchFaq(): Promise<Faq[]> {
   return data.faqs.reverse();
 }
 
+async function fetchSettings(): Promise<Settings> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+  const response = await fetch(`${baseUrl}/api/settings`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Gagal mengambil data faq");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+async function fetchFaqPage(): Promise<FaqsPage> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+  const response = await fetch(`${baseUrl}/api/faqsPage`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) { 
+    throw new Error("Gagal mengambil data faq");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+    const faqsPage = await fetchFaqPage();
+  
+    const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
+  
+    return {
+      title: `${faqsPage.title}`,
+      description:
+        `${faqsPage.description}`,
+      keywords: [
+        `${faqsPage.keywords.join(", ")}`,
+      ],
+      openGraph: {
+        title: `${faqsPage.title}`,
+        description:
+          `${faqsPage.description}`,
+        type: "website",
+        url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/faq`,
+        images: [
+          {
+            url: `${baseUrl}${faqsPage.image}`,
+            width: 800,
+            height: 600,
+            alt:  `${faqsPage.title}`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${faqsPage.title}`,
+        description:
+          `${faqsPage.description}`,
+        images: [`${baseUrl}${faqsPage.image}`],
+      },
+      alternates: {
+        canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}/faq`,
+      },
+    };
+}
+
 // Komponen Server
 export default async function FaqPage() {
   // Fetch data server-side
   const faqs = await fetchFaq();
+  const settings = await fetchSettings(); 
+  const faqsPage = await fetchFaqPage(); 
 
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `FaQ - NMW Aesthetic Clinic`,
-    description: `Temukan jawaban atas pertanyaan umum tentang layanan, perawatan, konsultasi, dan prosedur medis di NMW Aesthetic Clinic. Dapatkan informasi lengkap untuk perawatan kecantikan dan kesehatan kulit Anda.`,
+    name: `${faqsPage.title}`,
+    description: `${faqsPage.description}`,
     url: `${baseUrl}/faq`,
     publisher: {
     "@type": "Organization",
-    name: "NMW Aesthetic Clinic",
+    name: `${settings.title}`,
     logo: {
         "@type": "ImageObject",
-        url: `${baseUrl}/images/faq_banner.webp`
+        url: `${baseUrl}${settings.logo}`
     }
     },
     mainEntityOfPage: {
@@ -111,13 +151,13 @@ export default async function FaqPage() {
             {
             "@type": "ListItem",
                 position: 1,
-                name: "Home",
+                name: `${settings.title}`,
                 item: `${baseUrl}`
             },
             {
             "@type": "ListItem",
             position: 2,
-                name: "FAQ",
+                name: `${faqsPage.title}`,
                 item: `${baseUrl}/faq`
             }
         ]
@@ -137,8 +177,8 @@ export default async function FaqPage() {
           priority
           width={800}
           height={800}
-          src="/images/faq_banner.webp"
-          alt="Faq NMW Aesthetic Clinic"
+          src={`${baseUrl}${faqsPage.image}`}
+          alt={`${faqsPage.title}`}
         />
       </div>
       <div className={breadcrumb.breadcrumb}>

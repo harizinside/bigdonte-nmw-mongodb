@@ -73,8 +73,6 @@ export async function GET(req: Request) {
   }
 }
 
-
-
 export async function POST(request: Request) {
   try {
     const authError = validateToken(request);

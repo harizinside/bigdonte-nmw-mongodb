@@ -240,7 +240,7 @@
   }
   .article_product .article_heading h3{
     -webkit-line-clamp: 1;
-  display: -webkit-box;
+    display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;

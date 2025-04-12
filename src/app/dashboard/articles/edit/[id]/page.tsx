@@ -112,7 +112,6 @@ const EditArticle = () => {
         e.preventDefault();
         if (!article) return;
         setUpdating(true);
-
       
         try {
           const formData = new FormData();
