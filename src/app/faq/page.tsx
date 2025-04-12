@@ -177,7 +177,7 @@ export default async function FaqPage() {
           priority
           width={800}
           height={800}
-          src={`${baseUrl}${faqsPage.image}`}
+          src={`${faqsPage.image}`}
           alt={`${faqsPage.title}`}
         />
       </div>
