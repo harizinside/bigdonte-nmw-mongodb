@@ -161,6 +161,7 @@ export default async function KatalogPage() {
       ]
     }
   };
+  
   return (
     <div>
       <script

@@ -21,36 +21,6 @@ interface CatalogProps {
 }
 
 export default function KatalogClient({ catalogs }: CatalogProps) {
-  // const [catalogs, setCatalogs] = useState<CatalogItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
-
-  // useEffect(() => {
-  //   const fetchCatalogs = async () => {
-  //     try {
-  //       const response = await fetch(`/api/catalogs?page=all`, {
-  //         method: "GET",
-  //         headers: {
-  //           "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //         cache: "no-store",
-  //       });
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! Status: ${response.status}`);
-  //       }
-
-  //       const result = await response.json();
-  //       setCatalogs(result.catalogs);
-  //     } catch (error) {
-  //       console.error("Error fetching catalog:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchCatalogs();
-  // }, []);
 
   return (
     <div>

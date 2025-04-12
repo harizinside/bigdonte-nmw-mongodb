@@ -3,11 +3,9 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { HiArrowLongRight } from "react-icons/hi2";
 import styles from "@/css/Dokter.module.css";
 import banner from "@/css/Banner.module.css";
 import breadcrumb from "@/css/Breadcrumb.module.css";
-import loadingStyles from "@/css/Loading.module.css";
 
 interface Doctor {
   _id: string;
@@ -21,37 +19,34 @@ interface Position {
   title: string;
 }
 
+interface Settings {
+    logo: string;
+    title: string;
+}
+
+interface DoctorsPage {
+    image: string;
+    headline: string;
+    title: string;
+    description: string;
+    keywords: string[];
+  }
+
+interface PositionListProps {
+    positions: Position[];
+    settings: Settings;
+    doctorsPage: DoctorsPage;
+}
+  
 const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
 
-const DokterClient = () => {
+export default function DokterClient({ positions, settings, doctorsPage }: PositionListProps) {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [positions, setPositions] = useState<Position[]>([]);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalDoctors, setTotalDoctors] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState(false);
-
-    useEffect(() => {
-        const fetchPosition = async () => {
-            try {
-                const response = await fetch(`/api/position?page=all`, {
-                    method: "GET",
-                    headers: {
-                    "Authorization": `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
-                    "Content-Type": "application/json",
-                    },
-                    cache: "no-store",
-                });
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                const result = await response.json();
-                setPositions(result);
-            } catch (error) {
-                console.error("Error fetching position:", error);
-            }
-        };
-        fetchPosition();
-    }, []);
 
 const itemsPerPage = 12; 
 
@@ -103,15 +98,15 @@ useEffect(() => {
 const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `Dokter Kami - NMW Aesthetic Clinic`,
-    description: `Kenali tim dokter profesional di NMW Aesthetic Clinic yang siap memberikan perawatan terbaik untuk kesehatan Anda`,
+    name: `${doctorsPage.title}`,
+    description: `${doctorsPage.description}`,
     url: `${baseUrl}/dokter-kami`,
     publisher: {
       "@type": "Organization",
-      name: "NMW Aesthetic Clinic",
+      name: `${settings.title}`,
       logo: {
         "@type": "ImageObject",
-        url: `${baseUrl}/images/dokter_banner.webp`
+        url: `${baseUrl}${settings.logo}`,
       }
     },
     mainEntityOfPage: {
@@ -124,13 +119,13 @@ const schemaData = {
             {
             "@type": "ListItem",
                 position: 1,
-                name: "Home",
+                name: `${settings.title}`,
                 item: `${baseUrl}`
             },
             {
             "@type": "ListItem",
             position: 2,
-                name: "Dokter Kami",
+                name:  `${doctorsPage.title}`,
                 item: `${baseUrl}/dokter-kami`
             }
         ]
@@ -216,5 +211,3 @@ const schemaData = {
     </>
   );
 };
-
-export default DokterClient;

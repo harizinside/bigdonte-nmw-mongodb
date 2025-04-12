@@ -1,60 +1,118 @@
 import { Metadata } from "next";
 import DokterClient from "./DokterClient";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
+interface PositionItem {
+  _id: string;
+  title: string;
+}
 
-export const metadata: Metadata = {
-  title: "Dokter Kami | NMW Aesthetic Clinic",
-  description: "Kenali tim dokter profesional di NMW Aesthetic Clinic yang siap memberikan perawatan terbaik untuk kesehatan Anda",
-  keywords: [
-        "dokter kecantikan",
-        "dokter kulit",
-        "dokter spesialis estetika",
-        "ahli perawatan kulit",
-        "konsultasi kecantikan",
-        "dokter anti-aging",
-        "dokter bedah plastik",
-        "dokter perawatan wajah",
-        "dokter ahli dermatologi",
-        "spesialis kulit dan kecantikan",
-        "tim medis NMW Clinic",
-        "dokter profesional",
-        "layanan medis terbaik",
-        "konsultasi perawatan kulit",
-        "dokter klinik kecantikan",
-        "ahli kesehatan kulit",
-        "spesialis estetika medis",
-        "dokter terpercaya",
-        "dokter perawatan tubuh",
-        "konsultasi dokter estetika",
-        "dokter bedah estetika",
-        "dokter terbaik NMW Clinic"
-    ],
-  openGraph: {
-    title: "Dokter NMW Aesthetic Clinic",
-    description: "Kenali tim dokter profesional di NMW Aesthetic Clinic yang siap memberikan perawatan terbaik untuk kesehatan Anda",
-    type: "website",
-    url: `${baseUrl}/dokter-kami`,
-    images: [
-      {
-        url: `${baseUrl}/images/dokter_banner.webp`,
-        width: 800,
-        height: 600,
-        alt: "Dokter NMW Aesthetic Clinic",
+interface Settings {
+  logo: string; 
+  title: string;
+}
+
+interface DoctorsPage {
+  image: string;
+  headline: string;
+  title: string;
+  description: string;
+  keywords: string[];
+}
+
+async function fetchPosition(): Promise<PositionItem[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+  const response = await fetch(`${baseUrl}/api/position?page=all`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Gagal mengambil data positions");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+async function fetchSettings(): Promise<Settings> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+  const response = await fetch(`${baseUrl}/api/settings`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Gagal mengambil data faq");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+async function fetchDoctorPage(): Promise<DoctorsPage> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+  const response = await fetch(`${baseUrl}/api/doctorsPage`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) { 
+    throw new Error("Gagal mengambil data doctor");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+    const doctorsPage = await fetchDoctorPage();
+  
+    const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
+  
+    return {
+      title: `${doctorsPage.title}`,
+      description: `${doctorsPage.description}`,
+      keywords: [
+        `${doctorsPage.keywords.join(", ")}`,
+      ],
+      openGraph: {
+        title: `${doctorsPage.title}`,
+        description: `${doctorsPage.description}`,
+        type: "website",
+        url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/dokter-kami`,
+        images: [
+          {
+            url: `${baseUrl}${doctorsPage.image}`,
+            width: 800,
+            height: 600,
+            alt: `${doctorsPage.title}`,
+          },
+        ],
       },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Dokter NMW Aesthetic Clinic",
-    description: "Kenali tim dokter profesional di NMW Aesthetic Clinic yang siap memberikan perawatan terbaik untuk kesehatan Anda",
-    images: [`${baseUrl}/images/dokter_banner.webp`],
-  },
-  alternates: {
-    canonical: `${baseUrl}/dokter-kami`,
-  },
+      twitter: {
+        card: "summary_large_image",
+        title: `${doctorsPage.title}`,
+        description: `${doctorsPage.description}`,
+        images: [`${baseUrl}${doctorsPage.image}`],
+      },
+      alternates: {
+        canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}/dokter-kami`,
+      },
+    }
 };
 
-export default function DokterPage() {
-  return <DokterClient />;
+export default async function DokterPage() {
+  const positions = await fetchPosition();
+  const settings = await fetchSettings();
+  const doctorsPage = await fetchDoctorPage();
+  return <DokterClient positions={positions} doctorsPage={doctorsPage} settings={settings} />;
 }
