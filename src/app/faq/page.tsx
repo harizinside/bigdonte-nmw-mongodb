@@ -90,14 +90,8 @@ export async function generateMetadata(): Promise<Metadata> {
       description:
         `${faqsPage.description}`,
       keywords: [
-        `FAQ NMW Clinic`,
-        `NMW Clinic`,
-        `NMW Aesthetic Clinic`,
-        `Klinik kecantikan terbaik`,
+        `${faqsPage.keywords.join(", ")}`,
       ],
-      // keywords: [
-      //   `${faqsPage.keywords.join(", ")}`,
-      // ],
       openGraph: {
         title: `${faqsPage.title}`,
         description:
@@ -141,16 +135,16 @@ export default async function FaqPage() {
     description: `${faqsPage.description}`,
     url: `${baseUrl}/faq`,
     publisher: {
-    "@type": "Organization",
-    name: `${settings.title}`,
-    logo: {
-        "@type": "ImageObject",
-        url: `${baseUrl}${settings.logo}`
-    }
+      "@type": "Organization",
+      name: `${settings.title}`,
+      logo: {
+          "@type": "ImageObject",
+          url: `${baseUrl}${settings.logo}`
+      }
     },
     mainEntityOfPage: {
-    "@type": "WebPage",
-    "@id": `${baseUrl}/faq`
+      "@type": "WebPage",
+      "@id": `${baseUrl}/faq`
     },
     breadcrumb: {
         "@type": "BreadcrumbList",
