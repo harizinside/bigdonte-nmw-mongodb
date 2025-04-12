@@ -3,7 +3,9 @@ import mongoose, { Schema } from "mongoose";
 const PromoSchema = new Schema(
   {
     image: { type: String },
-    slug: { type: String, unique: true }, 
+    keywords: [{ type: String }],
+    description: { type: String },
+    slug: { type: String },
     link: { type: String, required: false },
     title: { type: String, required: false },
     sk: { type: String, required: false },
@@ -11,6 +13,11 @@ const PromoSchema = new Schema(
     end_date: { type: String, required: false },
   },
   { timestamps: true }
+);
+
+PromoSchema.index(
+  { slug: 1 },
+  { unique: true, partialFilterExpression: { slug: { $exists: true, $ne: "" } } }
 );
 
 const Promo = mongoose.models.Promo || mongoose.model("Promo", PromoSchema);

@@ -22,7 +22,6 @@ const CreatArticle = () => {
   const [tags, setTags] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [SourceLink, setSourceLink] = useState("");
-
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);

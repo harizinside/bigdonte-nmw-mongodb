@@ -16,13 +16,20 @@ interface Promo {
   start_date: string;
   end_date: string;
   sk: string;
+  description: string;
+}
+
+interface Settings {
+  logo: string;
+  title: string;
 }
 
 interface Props {
   slug: string;
+  settings: Settings;
 }
 
-export default function PromoClient({ slug }: Props) {
+export default function PromoClient({ slug, settings }: Props) {
   const [promo, setPromo] = useState<Promo | null>(null);
   const searchParams = useSearchParams();
   const title = searchParams.get('title');
@@ -70,18 +77,20 @@ export default function PromoClient({ slug }: Props) {
         );
     }
 
+    const stripHtml = (html: string) => html.replace(/<[^>]+>/g, "");
+
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `Promo - NMW Aesthetic Clinic`,
-    description: `Dapatkan promo terbaik dari NMW Aesthetic Clinic untuk perawatan kecantikan dan kesehatan kulit Anda. Nikmati penawaran spesial untuk layanan medis, perawatan wajah, dan perawatan tubuh dengan harga terbaik. Jangan lewatkan promo eksklusif yang dirancang khusus untuk memenuhi kebutuhan kecantikan Anda!`,
+    name: `${promo.title}`,
+    description: stripHtml(promo.description),
     url: `${baseUrl}/${promo.slug}`,
     publisher: {
       "@type": "Organization",
-      name: "NMW Aesthetic Clinic",
+      name: `${settings.title}`,
       logo: {
         "@type": "ImageObject",
-        url: `${baseUrl}${promo.image}`
+        url: `${baseUrl}${settings.logo}`
       }
     },
     mainEntityOfPage: {
@@ -94,13 +103,13 @@ export default function PromoClient({ slug }: Props) {
         {
           "@type": "ListItem",
           position: 1,
-          name: "Home",
+          name: `${settings.title}`,
           item: `${baseUrl}`
         },
         {
           "@type": "ListItem",
           position: 2,
-          name: "Promo",
+          name: `${promo.title}`,
           item: `${baseUrl}/promo/${promo.slug}`
         }
       ]
@@ -128,6 +137,9 @@ export default function PromoClient({ slug }: Props) {
               <p>{formatDate(promo.start_date)} - {formatDate(promo.end_date)}</p>
             </div>
           )}
+        </div>
+        <div className={styles.section_1_content}>
+          <div dangerouslySetInnerHTML={{ __html: promo.description }} />
         </div>
         <div className={styles.section_1_content}>
           <div className={styles.section_1_content_heading}>

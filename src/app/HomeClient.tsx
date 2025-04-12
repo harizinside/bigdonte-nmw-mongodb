@@ -11,10 +11,10 @@ import { HiOutlineArrowLongRight } from "react-icons/hi2";
 
 // Import Swiper styles
 import 'swiper/css';
+import 'swiper/css/effect-fade';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import Head from "next/head";
-import { Pagination, Autoplay } from 'swiper/modules';
+import { EffectFade, Pagination, Autoplay } from 'swiper/modules';
 import Image from "next/image";
 
 import type { Swiper as SwiperType } from "swiper";
@@ -112,13 +112,12 @@ interface HomeClientProps {
           pagination={{
             clickable: true,
           }}
-          cssMode={true}
+          effect={'fade'}
           loop={true}
           autoplay={{
             delay: 2500,
-            disableOnInteraction: true,
           }}
-          modules={[Pagination, Autoplay]}
+          modules={[EffectFade, Pagination, Autoplay]}
           className="myBanner"
         >
           {promos.map(promo => (

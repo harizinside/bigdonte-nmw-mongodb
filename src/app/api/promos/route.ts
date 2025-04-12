@@ -60,6 +60,8 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const keywords = formData.getAll("keywords") as string[];
     const sk = formData.get("sk") as string;
     const start_date = formData.get("start_date") as string;
     const end_date = formData.get("end_date") as string;
@@ -87,6 +89,8 @@ export async function POST(request: Request) {
     await connectToDatabase();
     const newPromo = new Promo({
       title,
+      description,
+      keywords,
       sk,
       start_date,
       end_date,

@@ -164,28 +164,28 @@ const FaqsPage = () => {
                             className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
                         />
 
-                        <div className="flex flex-col items-center justify-center">
-                            {/* Preview image di sini */}
-                            {(previewImage || faqsPage?.image) && (
-                            <Image
-                                width={800}
-                                height={800}
-                                src={(previewImage || faqsPage?.image) as string}
-                                alt="Preview"
-                                priority
-                                className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
-                            />
-                            )}
-                            <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9"></div>
-                            <div className="absolute bottom-10 w-100 text-center z-10">
-                                <p className="mt-2.5 text-body-sm text-white font-medium">
-                                <span className="text-orange-400">Click to upload</span> or drag and drop
-                                </p>
-                                <p className="mt-1 text-body-xs text-white">
-                                SVG, PNG, JPG (max, 2MB)
-                                </p>
+                            <div className="flex flex-col items-center justify-center">
+                                {/* Preview image di sini */}
+                                {(previewImage || faqsPage?.image) && (
+                                <Image
+                                    width={800}
+                                    height={800}
+                                    src={(previewImage || faqsPage?.image) as string}
+                                    alt="Preview"
+                                    priority
+                                    className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
+                                />
+                                )}
+                                <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9"></div>
+                                <div className="absolute bottom-10 w-100 text-center z-10">
+                                    <p className="mt-2.5 text-body-sm text-white font-medium">
+                                    <span className="text-orange-400">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="mt-1 text-body-xs text-white">
+                                    SVG, PNG, JPG (max, 2MB)
+                                    </p>
+                                </div>
                             </div>
-                        </div>
                         </div>
                     </div>
                     <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">

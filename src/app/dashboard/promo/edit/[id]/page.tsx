@@ -8,11 +8,33 @@ import RichEditor from "@/components/rich-editor/page";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 
+type Promo = {
+  title: string;
+  description: string;
+  keywords: string[];
+  start_date: string;
+  slug: string;
+  end_date: string;
+  link: string;
+  image: string;
+  sk: string;
+};
+
 const EditPromo = () => {
     const { id } = useParams(); // Ambil ID dokter dari URL
     const router = useRouter();
   
-    const [promo, setPromo] = useState({ title: "", start_date: "", slug: "",end_date: "", link: "", image: "", sk: "" });
+    const [promo, setPromo] = useState<Promo>({
+      title: "",
+      description: "",
+      keywords: [],
+      start_date: "",
+      slug: "",
+      end_date: "",
+      link: "",
+      image: "",
+      sk: "",
+    });
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
     const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
@@ -21,22 +43,38 @@ const EditPromo = () => {
     const [message, setMessage] = useState("");
     const [isCustomLink, setIsCustomLink] = useState(false);
     const [isSlugEdited, setIsSlugEdited] = useState(false);
+    const [keywordsString, setKeywordsString] = useState("");
 
     useEffect(() => {
         setIsCustomLink(!!promo?.link); 
     }, [promo?.link]); 
 
     useEffect(() => {
-          if (!isSlugEdited && promo.title) {
-            const generatedSlug = promo.title
-              .toLowerCase()
-              .replace(/[^\w\s-]/g, "") // Hapus karakter selain huruf, angka, spasi, dan "-"
-              .replace(/\s+/g, "-") // Ganti spasi dengan "-"
-              .replace(/-+/g, "-"); // Hapus duplikasi "-"
-        
-            setPromo((prev) => ({ ...prev, slug: generatedSlug }));
-          }
-        }, [promo.title, isSlugEdited]);  
+      if (!isSlugEdited && promo.title) {
+        const generatedSlug = promo.title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "") // Hapus karakter selain huruf, angka, spasi, dan "-"
+          .replace(/\s+/g, "-") // Ganti spasi dengan "-"
+          .replace(/-+/g, "-"); // Hapus duplikasi "-"
+    
+        setPromo((prev) => ({ ...prev, slug: generatedSlug }));
+      }
+    }, [promo.title, isSlugEdited]);  
+
+    const handleKeywordsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setKeywordsString(value);
+    
+      if (promo) {
+        setPromo({
+          ...promo,
+          keywords: value
+            .split(",")
+            .map((k) => k.trim())
+            .filter((k) => k.length > 0),
+        });
+      }
+    };
    
     // Fetch data dokter berdasarkan ID
     useEffect(() => {
@@ -59,6 +97,7 @@ const EditPromo = () => {
           if (responseData) {
             setPromo(responseData);
             setPreviewImage(responseData.image);
+            setKeywordsString(responseData.keywords?.join(", ") || "");
           }
           
         } catch (error) {
@@ -80,6 +119,7 @@ const EditPromo = () => {
         const formData = new FormData();
         
         formData.append("title", promo.title || "");
+        formData.append("description", promo.description || "");
         formData.append("sk", promo.sk || "");
         formData.append("slug", promo.slug);
         formData.append("start_date", promo.start_date || "");
@@ -92,6 +132,8 @@ const EditPromo = () => {
         if (image) {
           formData.append("image", image);
         }
+
+        promo.keywords.forEach(keywords => formData.append("keywords", keywords));
       
         try {
           const res = await fetch(`/api/promos/${id}`, {
@@ -134,93 +176,175 @@ const EditPromo = () => {
                 <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
                     <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3 flex justify-between items-center">
                         <h3 className="font-semibold text-dark dark:text-white">Edit Promo</h3>
-                    
                     </div>
-                    
                     <div className="p-6.5">
-                    <div className="w-40 h-auto mb-5 overflow-hidden object-cover object-center ">
-                        {(previewImage || promo?.image) && (
-                          <Image
-                            width={800}
-                            height={800}
-                            src={(previewImage || promo?.image) as string}
-                            priority
-                            alt="Preview"
-                            className="w-full rounded-lg"
-                          />
-                        )}
-                    </div>
                     {isCustomLink ? (
+                      <>
                         <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
-                        <div className="w-full xl:w-1/2">
+                          <div className="w-full xl:w-full">
                             <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Image
                             </label>
+                            <div
+                              id="FileUpload"
+                              className="relative block w-full h-65 cursor-pointer appearance-none rounded-xl border border-dashed border-gray-4 bg-gray-2 px-4 py-4 hover:border-orange-500 dark:border-dark-3 dark:bg-dark-2 dark:hover:border-orange-400 sm:py-7.5"
+                            >
                             <input
-                            type="file"
-                            accept="image/*"
+                                type="file"
                                 onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    setImage(file);
-                                    setPreviewImage(URL.createObjectURL(file));
-                                }
-                                }}
-                            className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:text-white"
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                      setImage(file);
+                                      setPreviewImage(URL.createObjectURL(file));
+                                  }
+                                  }}
+                                name="profilePhoto"
+                                id="profilePhoto"
+                                accept="image/png, image/jpg, image/jpeg"
+                                className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
                             />
+    
+                                <div className="flex flex-col items-center justify-center">
+                                    {/* Preview image di sini */}
+                                    {(previewImage) && (
+                                    <Image
+                                        width={800}
+                                        height={800}
+                                        src={previewImage}
+                                        alt="Preview"
+                                        priority
+                                        className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
+                                    />
+                                    )}
+                                    <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9"></div>
+                                    <div className="absolute bottom-10 w-100 text-center z-10">
+                                        <p className="mt-2.5 text-body-sm text-white font-medium">
+                                        <span className="text-orange-400">Click to upload</span> or drag and drop
+                                        </p>
+                                        <p className="mt-1 text-body-xs text-white">
+                                        SVG, PNG, JPG (max, 2MB)
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="w-full xl:w-1/2">
+                        <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
+                          <div className="w-full xl:w-full">
                                 <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                                 Custom Link
                                 <span className="text-red">*</span>
                                 </label>
                                 <input
-                                type="text"
-                                placeholder="Enter custom link"
-                                defaultValue={promo.link}
-                                onChange={(e) => setPromo({ ...promo, link: e.target.value })}
-                                className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        // Form Default
-                        <>
-                        <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
-                            <div className="w-full xl:w-1/2">
-                            <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                Upload Image
-                            </label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    setImage(file);
-                                    setPreviewImage(URL.createObjectURL(file));
-                                }
-                                }}
-                                className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-                            />
-                            </div>
-                            <div className="w-full xl:w-1/2">
-                                <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                                Promo Title
-                                <span className="text-red">*</span>
-                                </label>
-                                <input
-                                type="text"
-                                placeholder="Enter promo title"
-                                defaultValue={promo.title} 
-                                onChange={(e) => setPromo({ ...promo, title: e.target.value })}
-                                className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                                  type="text"
+                                  placeholder="Enter custom link"
+                                  defaultValue={promo.link}
+                                  onChange={(e) => setPromo({ ...promo, link: e.target.value })}
+                                  className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                                 />
                             </div>
                         </div>
                         <div className="mb-7 flex flex-col gap-4.5 xl:flex-row w-full">
                             <div className="w-full">
-                                <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">S&K</label>
+                                <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Promo Description</label>
+                                <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
+                                    <RichEditor value={promo?.description || ""} onChange={(html) => setPromo({ ...promo, description: html })} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mb-6 flex flex-col gap-4.5 xl:flex-row">
+                            <div className="w-full xl:w-full">
+                                <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                                    Promo Keywords
+                                </label>
+                                <input
+                                    type="text"
+                                    name="keywords"
+                                    onChange={handleKeywordsChange}
+                                    value={keywordsString}
+                                    placeholder="Separate with commas (clinic, nmw, skincare)"
+                                    className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                                    />
+                            </div>
+                        </div>
+                        </>
+                    ) : (
+                        // Form Default
+                        <>
+                        <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
+                            <div className="w-full xl:w-full">
+                              <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                                  Upload Image
+                              </label>
+                              <div
+                                id="FileUpload"
+                                className="relative block w-full h-65 cursor-pointer appearance-none rounded-xl border border-dashed border-gray-4 bg-gray-2 px-4 py-4 hover:border-orange-500 dark:border-dark-3 dark:bg-dark-2 dark:hover:border-orange-400 sm:py-7.5"
+                              >
+                              <input
+                                  type="file"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                        setImage(file);
+                                        setPreviewImage(URL.createObjectURL(file));
+                                    }
+                                    }}
+                                  name="profilePhoto"
+                                  id="profilePhoto"
+                                  accept="image/png, image/jpg, image/jpeg"
+                                  className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
+                              />
+      
+                                  <div className="flex flex-col items-center justify-center">
+                                      {/* Preview image di sini */}
+                                      {(previewImage) && (
+                                      <Image
+                                          width={800}
+                                          height={800}
+                                          src={previewImage}
+                                          alt="Preview"
+                                          priority
+                                          className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
+                                      />
+                                      )}
+                                      <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9"></div>
+                                      <div className="absolute bottom-10 w-100 text-center z-10">
+                                          <p className="mt-2.5 text-body-sm text-white font-medium">
+                                          <span className="text-orange-400">Click to upload</span> or drag and drop
+                                          </p>
+                                          <p className="mt-1 text-body-xs text-white">
+                                          SVG, PNG, JPG (max, 2MB)
+                                          </p>
+                                      </div>
+                                  </div>
+                              </div>
+                            </div>
+                        </div>
+                        <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
+                            <div className="w-full xl:w-full">
+                                <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                                  Promo Title
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="Enter promo title"
+                                  defaultValue={promo.title} 
+                                  onChange={(e) => setPromo({ ...promo, title: e.target.value })}
+                                  className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                                />
+                            </div>
+                        </div>
+                        <div className="mb-7 flex flex-col gap-4.5 xl:flex-row w-full">
+                            <div className="w-full">
+                                <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Promo Description</label>
+                                <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
+                                    <RichEditor value={promo?.description || ""} onChange={(html) => setPromo({ ...promo, description: html })} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mb-7 flex flex-col gap-4.5 xl:flex-row w-full">
+                            <div className="w-full">
+                                <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Promo S&K</label>
                                 <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
                                     <RichEditor value={promo?.sk || ""} onChange={(html) => setPromo({ ...promo, sk: html })} />
                                 </div>
@@ -262,6 +386,21 @@ const EditPromo = () => {
                                     </div>
                                 </div>
                             </div>
+                            </div>
+                        </div>
+                        <div className="mb-6 flex flex-col gap-4.5 xl:flex-row">
+                            <div className="w-full xl:w-full">
+                                <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                                    Promo Keywords
+                                </label>
+                                <input
+                                    type="text"
+                                    name="keywords"
+                                    onChange={handleKeywordsChange}
+                                    value={keywordsString}
+                                    placeholder="Separate with commas (clinic, nmw, skincare)"
+                                    className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                                    />
                             </div>
                         </div>
                         <input

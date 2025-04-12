@@ -136,7 +136,7 @@ export default async function PenghargaanPage() {
     "@type": "WebPage",
     name: `${achievementsPage.title}`, 
     description: `${achievementsPage.description}`,
-    url: `${baseUrl}/katalog`,
+    url: `${baseUrl}/penghargaan`,
     publisher: {
       "@type": "Organization",
       name: `${settings.title}`,
@@ -147,7 +147,7 @@ export default async function PenghargaanPage() {
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${baseUrl}/katalog`
+      "@id": `${baseUrl}/penghargaan`
     },
     breadcrumb: {
       "@type": "BreadcrumbList",
@@ -162,7 +162,7 @@ export default async function PenghargaanPage() {
           "@type": "ListItem",
           position: 2,
           name: `${achievementsPage.title}`,
-          item: `${baseUrl}/katalog`
+          item: `${baseUrl}/penghargaan`
         }
       ]
     }

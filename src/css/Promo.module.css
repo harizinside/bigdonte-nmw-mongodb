@@ -128,8 +128,10 @@
         letter-spacing: .04vw;
     }
     .section_1_content p{
-        font-size: 3vw;
-        letter-spacing: .06vw;
+        font-size: 3.5vw;
+        line-height: 1.5;
+        letter-spacing: .08vw;
+        font-weight: 500;
     }
     .service_description{
         font-size: 3vw;
