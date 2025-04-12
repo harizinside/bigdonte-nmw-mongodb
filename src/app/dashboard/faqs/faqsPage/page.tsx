@@ -10,6 +10,7 @@ import axios from "axios";
 type FaqsPage = {
   _id: number;
   title: string;
+  headline: string;
   description: string;
   image: string;
   keywords: string[];
@@ -99,6 +100,7 @@ const FaqsPage = () => {
        
         const formData = new FormData();
         formData.append("title", faqsPage.title);
+        formData.append("headline", faqsPage.headline);
         formData.append("description", faqsPage.description);
       
         if (image) {
@@ -147,9 +149,9 @@ const FaqsPage = () => {
             </div>
             <div className="p-6.5">
                 <form onSubmit={handleUpdate} encType="multipart/form-data">
-                    <div className="mb-4 flex flex-col gap-4.5 xl:flex-row">
+                    <div className="mb-4 flex flex-col gap-4.5 xl:flex-row ">
 
-                    <div
+                        <div
                         id="FileUpload"
                         className="relative mb-5.5 block w-full h-65 cursor-pointer appearance-none rounded-xl border border-dashed border-gray-4 bg-gray-2 px-4 py-4 hover:border-orange-500 dark:border-dark-3 dark:bg-dark-2 dark:hover:border-orange-400 sm:py-7.5"
                         >
@@ -187,7 +189,7 @@ const FaqsPage = () => {
                         </div>
                     </div>
                     <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
-                        <div className="w-full xl:w-full">
+                        <div className="w-full xl:w-1/2">
                             <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                                 Page Title
                             </label>
@@ -197,6 +199,19 @@ const FaqsPage = () => {
                                 name="title"
                                 onChange={handleChange}
                                 placeholder="Enter Page Title"
+                                className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                            />
+                        </div>
+                        <div className="w-full xl:w-1/2">
+                            <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                                Page Headline
+                            </label>
+                            <input
+                                type="text"
+                                defaultValue={faqsPage?.headline}
+                                name="headline"
+                                onChange={handleChange}
+                                placeholder="Enter Page headline"
                                 className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                             />
                         </div>

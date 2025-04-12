@@ -19,6 +19,7 @@ interface Settings {
 
 interface FaqsPage {
   image: string;
+  headline: string;
   title: string;
   description: string;
   keywords: string[];
@@ -89,8 +90,14 @@ export async function generateMetadata(): Promise<Metadata> {
       description:
         `${faqsPage.description}`,
       keywords: [
-        `${faqsPage.keywords.join(", ")}`,
+        `FAQ NMW Clinic`,
+        `NMW Clinic`,
+        `NMW Aesthetic Clinic`,
+        `Klinik kecantikan terbaik`,
       ],
+      // keywords: [
+      //   `${faqsPage.keywords.join(", ")}`,
+      // ],
       openGraph: {
         title: `${faqsPage.title}`,
         description:
@@ -190,7 +197,7 @@ export default async function FaqPage() {
         </h5>
       </div>
       <h1 className={styles.heading_hide}>
-        Selamat Datang di Halaman FAQ Pada Website NMW Aesthetic Clinic
+        {faqsPage.headline}
       </h1>
       <div className={styles.faqPage}>
         <div className={styles.heading_section}>

@@ -30,6 +30,7 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
 
   const formData = await req.formData();
     const title = formData.get("title") as string;
+    const headline = formData.get("headline") as string;
     const description = formData.get("description") as string;
     const keywords = formData.getAll("keywords") as string[];
     const imageFileBanner = formData.get("image") as File;
@@ -74,59 +75,12 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
   // Perbarui data Achievement di database
   const updatedFaqs = await FaqsPage.findByIdAndUpdate(
     faqsPageId,
-    { title, description, image: finalImageUrl, keywords },
+    { headline, title, description, image: finalImageUrl, keywords },
     { new: true }
   );
 
   return NextResponse.json(updatedFaqs, { status: 200 });
 }
-
-// export async function POST(request: Request) {
-//   try {
-//     const authError = validateToken(request);
-//     if (authError) return authError;
-
-//     const formData = await request.formData();
-//     const title = formData.get("title") as string;
-//     const description = formData.get("description") as string;
-//     const imageFileBanner = formData.get("image") as File;
-//     const keywords = formData.getAll("keywords") as string[];
-
-//     await connectToDatabase();
-
-//     let Path = null;
-
-//     const timestamp = Date.now();
-
-//     // Proses logo jika ada
-//     if (imageFileBanner) {
-//       const originalName = imageFileBanner.name.replace(/\.(png|jpg|jpeg|svg|webp)$/i, "");
-//       const fileName = `${timestamp}-${originalName}.webp`;
-//       const imagePath = path.join(process.cwd(), "public", "uploads", "faqsPage", fileName);
-
-//       const imageByteData = await imageFileBanner.arrayBuffer();
-//       const buffer = Buffer.from(imageByteData);
-//       await sharp(buffer).webp({ quality: 80 }).toFile(imagePath);
-
-//       Path = `/uploads/faqsPage/${fileName}`; 
-//     }
-
-//     // Simpan atau perbarui data di MongoDB
-//     const updateData: any = {
-//       title,
-//       description,
-//       keywords,
-//       image: Path || null,
-//     };
-
-//     const faqsPage = await FaqsPage.findOneAndUpdate({}, updateData, { upsert: true, new: true });
-
-//     return NextResponse.json(faqsPage, { status: 201 });
-//   } catch (error) {
-//     console.error("Error creating faqsPage:", error);
-//     return NextResponse.json({ error: "Failed to create faqsPage" }, { status: 500 });
-//   }
-// }
 
 export async function POST(request: Request) {
     try {
@@ -135,6 +89,7 @@ export async function POST(request: Request) {
   
       const formData = await request.formData();
       const title = formData.get("title") as string;
+      const headline = formData.get("headline") as string;
       const description = formData.get("description") as string;
       const keywords = formData.getAll("keywords") as string[];
       const imageFile = formData.get("image") as File;
@@ -164,6 +119,7 @@ export async function POST(request: Request) {
       await connectToDatabase();
       const newFaqsPage = new FaqsPage({
         title,
+        headline,
         description,
         keywords,
         image: `/uploads/faqsPage/${imageFileName}`,
