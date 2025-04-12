@@ -38,7 +38,7 @@ async function fetchCatalog(): Promise<CatalogItem[]> {
   });
 
   if (!response.ok) {
-    throw new Error("Gagal mengambil data faq");
+    throw new Error("Gagal mengambil data katalog");
   }
 
   const data = await response.json();
@@ -56,7 +56,7 @@ async function fetchSettings(): Promise<Settings> {
   });
 
   if (!response.ok) {
-    throw new Error("Gagal mengambil data faq");
+    throw new Error("Gagal mengambil data katalog");
   }
 
   const data = await response.json();
@@ -74,7 +74,7 @@ async function fetchCatalogPage(): Promise<CatalogsPage> {
   });
 
   if (!response.ok) { 
-    throw new Error("Gagal mengambil data faq");
+    throw new Error("Gagal mengambil data katalog");
   }
 
   const data = await response.json();

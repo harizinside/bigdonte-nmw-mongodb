@@ -15,45 +15,18 @@ interface Achievement {
   image: string;
 }
 
-export const metadata: Metadata = {
-    title: "Penghargaan | NMW Aesthetic Clinic",
-    description:
-      "Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional",
-    keywords: [
-      "pencapaian NMW Clinic",
-      "penghargaan klinik kecantikan",
-      "prestasi NMW Aesthetic Clinic",
-      "penghargaan layanan medis",
-      "inovasi medis",
-      "pengakuan industri kecantikan",
-      "penghargaan layanan terbaik",
-    ],
-    openGraph: {
-      title: "Penghargaan NMW Aesthetic Clinic",
-      description:
-        "Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional",
-      type: "website",
-      url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/penghargaan`,
-      images: [
-        {
-          url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/images/banner_award.webp`,
-          width: 800,
-          height: 600,
-          alt: "Penghargaan NMW Aesthetic Clinic",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: "Penghargaan NMW Aesthetic Clinic",
-      description:
-        "Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic sebagai bukti komitmen kami dalam memberikan layanan kesehatan terbaik dan profesional",
-      images: [`${process.env.NEXT_PUBLIC_API_WEB_URL}/images/banner_award.webp`],
-    },
-    alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}/penghargaan`,
-    },
-  };
+interface Settings {
+  logo: string;
+  title: string;
+}
+
+interface AchievementsPage {
+  image: string;
+  headline: string;
+  title: string;
+  description: string;
+  keywords: string[];
+}
 
 // Fungsi server untuk fetch data
 async function fetchAchievements(): Promise<Achievement[]> {
@@ -74,27 +47,125 @@ async function fetchAchievements(): Promise<Achievement[]> {
   return data.achievements;
 }
 
+async function fetchSettings(): Promise<Settings> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+  const response = await fetch(`${baseUrl}/api/settings`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Gagal mengambil data achievement");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+async function fetchAchievementPage(): Promise<AchievementsPage> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+  const response = await fetch(`${baseUrl}/api/achievementsPage`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) { 
+    throw new Error("Gagal mengambil data achievement");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+    const achievementsPage = await fetchAchievementPage();
+  
+    const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
+  
+    return {
+    title: `${achievementsPage.title}`,
+    description:
+      `${achievementsPage.description}`,
+    keywords: [
+      `${achievementsPage.keywords.join(", ")}`,
+    ],
+    openGraph: {
+      title: `${achievementsPage.title}`,
+      description:
+        `${achievementsPage.description}`,
+      type: "website",
+      url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/penghargaan`,
+      images: [
+        {
+          url: `${baseUrl}${achievementsPage.image}`,
+          width: 800,
+          height: 600,
+          alt: `${achievementsPage.title}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${achievementsPage.title}`,
+      description:
+        `${achievementsPage.description}`,
+      images: [`${baseUrl}${achievementsPage.image}`,],
+    },
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}/penghargaan`,
+    },
+  };
+}
+
 // Fungsi server component
 export default async function PenghargaanPage() {
   // Fetch data server-side
   const achievements = await fetchAchievements();
+  const achievementsPage = await fetchAchievementPage();
+  const settings = await fetchSettings(); 
 
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: "Penghargaan - NMW Aesthetic Clinic",
-    description:
-      "Lihat daftar penghargaan yang telah diraih oleh NMW Aesthetic Clinic",
-    url: `${baseUrl}/penghargaan`,
+    name: `${achievementsPage.title}`, 
+    description: `${achievementsPage.description}`,
+    url: `${baseUrl}/katalog`,
     publisher: {
       "@type": "Organization",
-      name: "NMW Aesthetic Clinic",
+      name: `${settings.title}`,
       logo: {
         "@type": "ImageObject",
-        url: `${baseUrl}/images/banner_award.webp`,
-      },
+        url: `${baseUrl}${settings.logo}`
+      }
     },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${baseUrl}/katalog`
+    },
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: `${settings.title}`,
+          item: `${baseUrl}`
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: `${achievementsPage.title}`,
+          item: `${baseUrl}/katalog`
+        }
+      ]
+    }
   };
 
   return (
@@ -110,8 +181,8 @@ export default async function PenghargaanPage() {
           priority
           width={800}
           height={800}
-          src="/images/banner_award.webp"
-          alt="Layanan NMW Aesthetic Clinic"
+          src={`${achievementsPage.image}`}
+          alt={`${achievementsPage.title}`}
         />
       </div>
       <div className={breadcrumb.breadcrumb}>
@@ -123,7 +194,7 @@ export default async function PenghargaanPage() {
         </h5>
       </div>
       <h1 className={styles.heading_hide}>
-        Selamat Datang di Halaman Penghargaan
+        {achievementsPage.headline}
       </h1>
 
       {achievements.length === 0 ? (
