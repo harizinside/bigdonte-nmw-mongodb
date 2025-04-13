@@ -6,6 +6,7 @@ const PatientSchema = new Schema(
     image: { type: String },
     imageSecond: { type: String },
     description: { type: String },
+    keywords: [{ type: String }],
     slug: { type: String, required: true, unique: true }, 
     id_services: { type: mongoose.Schema.Types.ObjectId, ref: "Services", required: true }, 
     id_servicesList: { type: mongoose.Schema.Types.ObjectId, ref: "ServicesList", required: true }, 

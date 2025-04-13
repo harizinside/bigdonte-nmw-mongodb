@@ -86,6 +86,7 @@ export async function POST(request: Request) {
     let name = formData.get("name") as string; 
     let slug = formData.get("slug") as string;
     const description = formData.get("description") as string;
+    const keywords = formData.getAll("keywords") as string[];
     const image = formData.get("image") as File;
     const imageSecond = formData.get("imageSecond") as File;
     const slugServices = formData.get("slugServices") as string; 
@@ -142,6 +143,7 @@ export async function POST(request: Request) {
       name,
       slug,
       description,
+      keywords,
       id_services: service._id,
       id_servicesList: serviceList._id,
       id_servicesType: serviceType._id,

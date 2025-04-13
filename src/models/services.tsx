@@ -9,6 +9,7 @@ const ServicesSchema = new Schema(
     slug: { type: String, required: true, unique: true }, 
     phone: { type: String, required: true },
     template: { type: Boolean, required: true }, 
+    keywords: [{ type: String }],
   },
   { timestamps: true }
 );

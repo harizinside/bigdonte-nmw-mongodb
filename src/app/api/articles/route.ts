@@ -81,6 +81,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const title = formData.get("title") as string;
     const slug = formData.get("slug") as string;
+    const excerpt = formData.get("excerpt") as string;
     const imageSourceName = formData.get("imageSourceName") as string;
     const imageSourceLink = formData.get("imageSourceLink") as string;
     const date = formData.get("date") as string;
@@ -132,6 +133,7 @@ export async function POST(request: Request) {
       imageSourceName,
       imageSourceLink,
       date,
+      excerpt,
       description,
       author,
       editor,

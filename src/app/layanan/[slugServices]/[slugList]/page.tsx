@@ -8,6 +8,15 @@ interface Props {
   };
 }
 
+interface ServicesPage {
+  image: string;
+  headline: string;
+  title: string;
+  description: string;
+  keywords: string[];
+}
+
+
 async function fetchWithAuth(url: string) {
     const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
   
@@ -43,6 +52,24 @@ async function fetchData(slugList: string) {
       baseUrl,
     };
   }
+
+  async function fetchServicePage(): Promise<ServicesPage> {
+    const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+    const response = await fetch(`${baseUrl}/api/servicesPage`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+      },
+      cache: "no-store",
+    });
+  
+    if (!response.ok) { 
+      throw new Error("Gagal mengambil data services");
+    }
+  
+    const data = await response.json();
+    return data;
+  }
   
 
 // Generate metadata untuk SEO
@@ -55,26 +82,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
 
-    title: `${servicesList.name} | NMW Aesthetic Clinic`,
+    title: `${servicesList.name}`,
       description:
         `${truncatedText}`,
-      keywords: [
-        "NMW Aesthetic Clinic",
-        "perawatan kulit",
-        "klinik kecantikan",
-        "estetika medis",
-        "bedah plastik",
-        "konsultasi kesehatan",
-        "perawatan wajah",
-        "rejuvenasi kulit",
-        "anti-aging",
-        "dokter kecantikan",
-        "laser treatment",
-        "facial treatment",
-        "lifting & tightening",
-      ],
+        keywords: (servicesList.keywords?.length
+          ? servicesList.keywords
+          : ["nmw clinic", "nmw", "nmw website"]
+        ).join(", "),
       openGraph: {
-        title: `${servicesList.name} | NMW Aesthetic Clinic`,
+        title: `${servicesList.name}`,
         description:
           `${truncatedText}`,
         type: "website",
@@ -84,13 +100,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             url: `${baseUrl}${servicesList.imageBanner}`,
             width: 800,
             height: 600,
-            alt: `${servicesList.name} | NMW Aesthetic Clinic`,
+            alt: `${servicesList.name}`,
           },
         ],
       },
       twitter: {
         card: "summary_large_image",
-        title: `${servicesList.name} | NMW Aesthetic Clinic`,
+        title: `${servicesList.name}`,
         description:
           `${truncatedText}`,
         images: [`${baseUrl}${servicesList.imageBanner}`],
@@ -105,6 +121,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function JenisLayanan({ params }: Props) {
   const { slugServices, slugList } = params;
   const { servicesList, servicesType, settings } = await fetchData(slugList);
+  const servicesPage = await fetchServicePage();
 
   if (!servicesList || !servicesType) {
     return <div className="emptyPage">Layanan tidak ditemukan</div>;
@@ -112,6 +129,7 @@ export default async function JenisLayanan({ params }: Props) {
 
   return (
     <ServicesListClient
+      servicesPage={servicesPage}
       servicesList={servicesList}
       servicesType={servicesType}
       settings={settings}

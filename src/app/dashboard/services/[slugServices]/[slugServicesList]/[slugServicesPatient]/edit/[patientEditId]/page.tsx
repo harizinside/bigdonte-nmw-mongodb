@@ -4,24 +4,42 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Link from "next/link";
 import { useState, useEffect, useRef, useMemo  } from "react";
-import RichEditor from "@/components/rich-editor/page";
+import RichEditor from "@/components/rich-editor/page"; 
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+
+type Patient = {
+  name: string;
+  slug: string;
+  keywords: string[]; // <-- ini penting!
+  description: string;
+  image: string;
+  imageSecond: string;
+};
 
 const EditPatients = () => {
     const { slugServices, slugServicesList, slugServicesPatient, patientEditId } = useParams(); // Ambil slug service dari URL
     const router = useRouter();
   
-    const [patients, setPatients] = useState({ name: "", slug: "",description: "", image: "", imageSecond: ""});
+    const [patients, setPatients] = useState<Patient>({
+        name: "",
+        slug: "",
+        keywords: [],
+        description: "",
+        image: "",
+        imageSecond: "",
+      });
     const [loading, setLoading] = useState(true);
     const [, setSlug] = useState("");
     const [updating, setUpdating] = useState(false);
     const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
     const [imageSecond, setImageSecond] = useState<File | null>(null); // Perbaiki tipe state
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [previewImageSecond, setPreviewImageSecond] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [isSlugEdited, setIsSlugEdited] = useState(false);
+    const [keywordsString, setKeywordsString] = useState("");
     // Fetch data dokter berdasarkan ID
     useEffect(() => {
       if (!patientEditId) return;
@@ -40,6 +58,9 @@ const EditPatients = () => {
           const responseData = await response.json();
     
           setPatients(responseData)
+          setPreviewImage(responseData.image);
+          setPreviewImageSecond(responseData.imageSecond);
+          setKeywordsString(responseData.keywords.join(", ") || "");
           setPreviewImage(responseData.image);
         } catch (error) { 
           console.error("Error fetching service:", error);
@@ -61,7 +82,22 @@ const EditPatients = () => {
     
         setPatients((prev) => ({ ...prev, slug: generatedSlug }));
       }
-    }, [patients.name, isSlugEdited]);  
+    }, [patients.name, isSlugEdited]);
+    
+    const handleKeywordsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setKeywordsString(value);
+    
+      if (patients) {
+        setPatients({
+          ...patients,
+          keywords: value
+            .split(",")
+            .map((k) => k.trim())
+            .filter((k) => k.length > 0),
+        });
+      }
+    };
   
     // Handle Update
     const handleUpdate = async (e: React.FormEvent) => { 
@@ -80,6 +116,8 @@ const EditPatients = () => {
         if (imageSecond) {
           formData.append("imageSecond", imageSecond);
         }
+
+        patients.keywords.forEach(keywords => formData.append("keywords", keywords));
       
         try {
           const response = await fetch(`/api/patients/${patientEditId}`, {
@@ -137,62 +175,98 @@ const EditPatients = () => {
               <div className="p-6.5 ">
                 <div className="flex gap-4.5 xl:flex-row mb-7 items-end">
                     <div className="w-full xl:w-1/2 ">
-                        <div className="w-80 h-auto mb-5 overflow-hidden object-cover object-center ">
-                            {(patients.image) && (
-                                <Image
-                                    width="800"
-                                    height="800"
-                                    src={`${patients.image}`} 
-                                    alt="Preview"
-                                    priority
-                                    className="w-full rounded-md"
-                                />
-                            )}
-                        </div>
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Patient Image
                         </label>
+                        <div
+                          id="FileUpload"
+                          className="relative block w-full h-65 cursor-pointer appearance-none rounded-xl border border-dashed border-gray-4 bg-gray-2 px-4 py-4 hover:border-orange-500 dark:border-dark-3 dark:bg-dark-2 dark:hover:border-orange-400 sm:py-7.5"
+                        >
                         <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
                                 setImage(file);
                                 setPreviewImage(URL.createObjectURL(file));
-                            }
-                        }}
-                        className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
+                              }
+                              }}
+                            name="profilePhoto"
+                            id="profilePhoto"
+                            accept="image/png, image/jpg, image/jpeg"
+                            className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
                         />
-                    </div>
-                    <div className="w-full xl:w-1/2">
-                        <div className="w-80 h-auto mb-5 overflow-hidden object-cover object-center ">
-                            {(patients.imageSecond) && (
+
+                            <div className="flex flex-col items-center justify-center">
+                                {/* Preview image di sini */}
+                                {(previewImage) && (
                                 <Image
-                                    width="800"
-                                    height="800"
-                                    src={`${patients.imageSecond}`} 
+                                    width={800}
+                                    height={800}
+                                    src={previewImage}
                                     alt="Preview"
                                     priority
-                                    className="w-full rounded-md"
+                                    className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
                                 />
-                            )}
+                                )}
+                                <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
+                                <div className="absolute bottom-10 w-100 text-center z-10">
+                                    <p className="mt-2.5 text-body-sm text-white font-medium">
+                                    <span className="text-orange-400">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="mt-1 text-body-xs text-white">
+                                    SVG, PNG, JPG (max, 2MB)
+                                    </p>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                    <div className="w-full xl:w-1/2">
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Patient Image Second
                         </label>
+                        <div
+                          id="FileUpload"
+                          className="relative block w-full h-65 cursor-pointer appearance-none rounded-xl border border-dashed border-gray-4 bg-gray-2 px-4 py-4 hover:border-orange-500 dark:border-dark-3 dark:bg-dark-2 dark:hover:border-orange-400 sm:py-7.5"
+                        >
                         <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
                                 setImageSecond(file);
-                                setPreviewImage(URL.createObjectURL(file));
-                            }
-                        }}
-                        className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
+                                setPreviewImageSecond(URL.createObjectURL(file));
+                              }
+                              }}
+                            name="profilePhoto"
+                            id="profilePhoto"
+                            accept="image/png, image/jpg, image/jpeg"
+                            className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
                         />
+
+                            <div className="flex flex-col items-center justify-center">
+                                {/* Preview image di sini */}
+                                {(previewImageSecond) && (
+                                <Image
+                                    width={800}
+                                    height={800}
+                                    src={previewImageSecond}
+                                    alt="Preview"
+                                    priority
+                                    className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
+                                />
+                                )}
+                                <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
+                                <div className="absolute bottom-10 w-100 text-center z-10">
+                                    <p className="mt-2.5 text-body-sm text-white font-medium">
+                                    <span className="text-orange-400">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="mt-1 text-body-xs text-white">
+                                    SVG, PNG, JPG (max, 2MB)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
@@ -217,6 +291,21 @@ const EditPatients = () => {
                       <RichEditor value={patients?.description || ""} onChange={(html) => setPatients({ ...patients, description: html })}/>
                     </div>
                   </div>
+                </div>
+                <div className="mb-0 flex flex-col gap-4.5 xl:flex-row">
+                    <div className="w-full xl:w-full">
+                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                            Service List Keywords
+                        </label>
+                        <input
+                            type="text"
+                            name="keywords"
+                            onChange={handleKeywordsChange}
+                            value={keywordsString}
+                            placeholder="Separate with commas (clinic, nmw, skincare)"
+                            className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                        />
+                    </div>
                 </div>
                 <input
                   type="text"

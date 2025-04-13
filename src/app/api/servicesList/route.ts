@@ -89,6 +89,7 @@ export async function POST(request: Request) {
     let name = formData.get("name") as string; 
     let slug = formData.get("slug") as string;
     const description = formData.get("description") as string;
+    const keywords = formData.getAll("keywords") as string[];
     const sensitive_content = formData.get("sensitive_content") === "1";
     const imageFileBanner = formData.get("imageBanner") as File;
     const imageFileCover = formData.get("imageCover") as File;
@@ -140,6 +141,7 @@ export async function POST(request: Request) {
       name,
       slug,
       description,
+      keywords,
       sensitive_content,
       id_services: service._id,
       imageBanner: `/uploads/services-list/${fileName}`,

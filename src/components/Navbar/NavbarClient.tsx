@@ -252,7 +252,7 @@ interface HomeClientProps {
                         <Link href="/">
                             <img
                                 src={`${baseUrl}${settings?.logo}`}
-                                alt="NMW Clinic Logo"
+                                alt={settings.title}
                                 loading="lazy"
                             />
                         </Link>

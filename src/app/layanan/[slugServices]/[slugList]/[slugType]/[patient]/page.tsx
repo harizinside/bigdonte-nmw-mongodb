@@ -5,8 +5,6 @@ import banner from "@/css/Banner.module.css";
 import styles from "@/css/Layanan.module.css";
 import breadcrumb from "@/css/Breadcrumb.module.css";
 import notFound from "../../../../../../../public/images/data_empty.webp"
-import { StaticImport } from "next/dist/shared/lib/get-img-props";
-import { JSXElementConstructor, Key, PromiseLikeOfReactNode, ReactElement, ReactNode, ReactPortal } from "react";
 import { Metadata } from "next";
 
 // **Tipe Data untuk Props**
@@ -17,6 +15,7 @@ interface ServiceType {
     image: string;
     imageSecond: string;
     description: string;
+    keywords: string[];
   }
   
   interface Patient {
@@ -26,6 +25,14 @@ interface ServiceType {
   
   interface Settings {
     logo: string;
+  }
+
+  interface ServicesPage {
+    image: string;
+    headline: string;
+    title: string;
+    description: string;
+    keywords: string[];
   }
   
   interface Props {
@@ -61,9 +68,27 @@ interface ServiceType {
   
     return {
       patientsType: servicesTypeRes as ServiceType,
-      settings: settingsRes || { logo: "" },
+      settings: settingsRes || { logo: "", title: "" },
       baseUrl,
     };
+  }
+
+  async function fetchServicePage(): Promise<ServicesPage> {
+    const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+    const response = await fetch(`${baseUrl}/api/servicesPage`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+      },
+      cache: "no-store",
+    });
+  
+    if (!response.ok) { 
+      throw new Error("Gagal mengambil data services");
+    }
+  
+    const data = await response.json();
+    return data;
   }
   
   // **Generate Metadata**
@@ -82,25 +107,14 @@ interface ServiceType {
     const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
   
     return {
-      title: `${patientsType.name} | NMW Aesthetic Clinic`,
+      title: `${patientsType.name}`,
       description: `${truncatedText}`,
-      keywords: [
-        "NMW Aesthetic Clinic",
-        "perawatan kulit",
-        "klinik kecantikan",
-        "estetika medis",
-        "bedah plastik",
-        "konsultasi kesehatan",
-        "perawatan wajah",
-        "rejuvenasi kulit",
-        "anti-aging",
-        "dokter kecantikan",
-        "laser treatment",
-        "facial treatment",
-        "lifting & tightening",
-      ],
+      keywords: (patientsType.keywords?.length
+        ? patientsType.keywords
+        : ["nmw clinic", "nmw", "nmw website", "Pasien NMW Aesthetic Clinic", "Pasien NMW", "Pasien NMW Bedah Plastik", "Pasien NMW Dermatologi", "Pasien NMW Spesialis Kulit dan Kelamin", "Pasien NMW Perawatan Kulit Estetik"]
+      ).join(", "), 
       openGraph: {
-        title: `${patientsType.name} | NMW Aesthetic Clinic`,
+        title: `${patientsType.name}`,
         description: `${truncatedText}`,
         type: "website",
         url: `${baseUrl}/layanan/${slugServices}/${slugList}/${patientsType.slug}`,
@@ -109,13 +123,13 @@ interface ServiceType {
             url: `${baseUrl}${patientsType.image}`,
             width: 800,
             height: 600,
-            alt: `${patientsType.name} | NMW Aesthetic Clinic`,
+            alt: `${patientsType.name}`,
           },
         ],
       },
       twitter: {
         card: "summary_large_image",
-        title: `${patientsType.name} | NMW Aesthetic Clinic`,
+        title: `${patientsType.name}`,
         description: `${truncatedText}`,
         images: [`${baseUrl}${patientsType.image}`],
       },
@@ -129,6 +143,7 @@ interface ServiceType {
 export default async function Patient({ params }: Props) {
   const { slugServices, slugList, slugType, patient } = params;
   const { patientsType, settings, baseUrl } = await fetchData(patient);
+  const servicesPage = await fetchServicePage();
 
   function formatText(text: string | undefined): string {
     if (!text) return "";
@@ -150,12 +165,12 @@ export default async function Patient({ params }: Props) {
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `${patientsType?.name} - NMW Aesthetic Clinic`,
+    name: `${patientsType?.name}`,
     description: `${truncatedText}`,
     url: `${baseUrl}/layanan/${slugServices}/${slugList}/${slugType}/${patientsType.slug}`,
     publisher: {
       "@type": "Organization",
-      name: "NMW Aesthetic Clinic",
+      name: `${settings?.title}`,
       logo: {
         "@type": "ImageObject",
         url: `${baseUrl}${settings?.logo}`,
@@ -168,8 +183,8 @@ export default async function Patient({ params }: Props) {
     breadcrumb: {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Beranda", item: `${baseUrl}` },
-        { "@type": "ListItem", position: 2, name: "Layanan", item: `${baseUrl}/layanan` },
+        { "@type": "ListItem", position: 1, name: `${settings?.title}`, item: `${baseUrl}` },
+        { "@type": "ListItem", position: 2, name: `${servicesPage.title}`, item: `${baseUrl}/layanan` },
         { "@type": "ListItem", position: 3, name: `${formattedName}`, item: `${baseUrl}/layanan/${slugServices}` },
         { "@type": "ListItem", position: 4, name: `${formattedNameList}`, item: `${baseUrl}/layanan/${slugServices}/${slugList}` },
         { "@type": "ListItem", position: 5, name: `${formattedNameType}`, item: `${baseUrl}/layanan/${slugServices}/${slugList}/${slugType}` },

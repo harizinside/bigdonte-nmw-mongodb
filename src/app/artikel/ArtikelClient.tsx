@@ -34,7 +34,7 @@ export default function ArtikelClient({
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: `${articlesPage.title}`,
-    description: `${articlesPage.title}`,
+    description: `${articlesPage.description}`,
     url: `${baseUrl}/artikel`,
     publisher: {
       "@type": "Organization",

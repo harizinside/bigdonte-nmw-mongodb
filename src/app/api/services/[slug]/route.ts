@@ -52,6 +52,7 @@ export async function PUT(req: any, { params }: any) {
   const name = formData.get("name") as string;
   const slug = formData.get("slug") as string;
   const description = formData.get("description") as string;
+  const keywords = formData.getAll("keywords") as string[];
   const phone = formData.get("phone") as string;
   const template = formData.get("template") === "1";
   const imageFileBanner = formData.get("imageBanner") as File;
@@ -128,7 +129,7 @@ export async function PUT(req: any, { params }: any) {
   // Perbarui data Achievement di database
   const updatedServices = await Services.findOneAndUpdate(
     { slug: params.slug }, // Query berdasarkan slug
-    { name, description, phone, slug, template, imageBanner: finalImageUrl, imageCover: finalImageCoverUrl },
+    { name, description, keywords, phone, slug, template, imageBanner: finalImageUrl, imageCover: finalImageCoverUrl },
     { new: true }
   );  
 

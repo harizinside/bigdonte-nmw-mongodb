@@ -8,6 +8,7 @@ const ServicesListSchema = new Schema(
     description: { type: String, required: true },
     slug: { type: String, required: true, unique: true }, 
     sensitive_content: { type: Boolean, required: true },
+    keywords: [{ type: String }],
     id_services: { type: mongoose.Schema.Types.ObjectId, ref: "Services", required: true }, 
   },
   { timestamps: true }

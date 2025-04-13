@@ -16,57 +16,20 @@ interface Service {
 }
 
 interface Setting {
+    title: string;
     phone: string;
     logo: string;
-  }
+}
 
-export const metadata: Metadata = {
-    title: "Layanan NMW Aesthetic Clinic - Perawatan Kulit & Estetika Medis",
-    description:
-      "Temukan layanan terbaik dari NMW Aesthetic Clinic, mulai dari perawatan kulit, bedah plastik, konsultasi kesehatan, hingga perawatan anti-aging. Kunjungi klinik kecantikan terpercaya untuk solusi kecantikan yang optimal.",
-    keywords: [
-    "NMW Aesthetic Clinic",
-    "perawatan kulit",
-    "klinik kecantikan",
-    "estetika medis",
-    "bedah plastik",
-    "konsultasi kesehatan",
-    "perawatan wajah",
-    "rejuvenasi kulit",
-    "anti-aging",
-    "dokter kecantikan",
-    "laser treatment",
-    "facial treatment",
-    "lifting & tightening",
-    ],
-    openGraph: {
-      title: "Layanan NMW Aesthetic Clinic - Perawatan Kulit & Estetika Medis",
-      description:
-        "Temukan layanan terbaik dari NMW Aesthetic Clinic, mulai dari perawatan kulit, bedah plastik, konsultasi kesehatan, hingga perawatan anti-aging. Kunjungi klinik kecantikan terpercaya untuk solusi kecantikan yang optimal.",
-      type: "website",
-      url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/layanan`,
-      images: [
-        {
-          url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/images/detail-artikel-banner.png`,
-          width: 800,
-          height: 600,
-          alt: "Layanan NMW Aesthetic Clinic - Perawatan Kulit & Estetika Medis",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: "Layanan NMW Aesthetic Clinic - Perawatan Kulit & Estetika Medis",
-      description:
-        "Temukan layanan terbaik dari NMW Aesthetic Clinic, mulai dari perawatan kulit, bedah plastik, konsultasi kesehatan, hingga perawatan anti-aging. Kunjungi klinik kecantikan terpercaya untuk solusi kecantikan yang optimal.",
-      images: [`${process.env.NEXT_PUBLIC_API_WEB_URL}/images/detail-artikel-banner.png`],
-    },
-    alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}/layanan`,
-    },
-  };
+interface ServicesPage {
+  image: string;
+  headline: string;
+  title: string;
+  description: string;
+  keywords: string[];
+}
 
-// Fungsi server untuk fetch data
+  // Fungsi server untuk fetch data
 async function fetchLayanan(): Promise<Service[]> {
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
   const response = await fetch(`${baseUrl}/api/services?page=all`, {
@@ -98,16 +61,76 @@ async function fetchSetting(): Promise<Setting> {
     if (!response.ok) {
       throw new Error("Gagal mengambil data pengaturan");
     }
-  
+   
     const data = await response.json();
     return data; // Pastikan API mengembalikan objek, bukan array
+}
+
+async function fetchServicePage(): Promise<ServicesPage> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+  const response = await fetch(`${baseUrl}/api/servicesPage`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) { 
+    throw new Error("Gagal mengambil data services");
   }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+    const servicesPage = await fetchServicePage();
+  
+    const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
+  
+    return {
+    title: `${servicesPage.title}`,
+    description:
+      `${servicesPage.description}`,
+      keywords: (servicesPage.keywords?.length
+        ? servicesPage.keywords
+        : ["nmw clinic", "nmw", "nmw website"]
+      ).join(", "),
+    openGraph: {
+      title: `${servicesPage.title}`,
+      description:
+        `${servicesPage.description}`,
+      type: "website",
+      url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/layanan`,
+      images: [
+        {
+          url: `${baseUrl}${servicesPage.image}`,
+          width: 800,
+          height: 600,
+          alt: `${servicesPage.title}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${servicesPage.title}`,
+      description:
+        `${servicesPage.description}`,
+      images: [`${baseUrl}${servicesPage.image}`,],
+    },
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}/layanan`,
+    },
+  };
+}
 
 // Fungsi server component
 export default async function LayananPage() {
   // Fetch data server-side
   const services = await fetchLayanan();
   const settings = await fetchSetting();
+  const servicesPage = await fetchServicePage();
 
   const formattedPhone = settings?.phone?.startsWith("0")
     ? "62" + settings.phone.slice(1) // Replace first '0' with '62'
@@ -117,12 +140,12 @@ export default async function LayananPage() {
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `NMW Aesthetic Clinic`,
-    description: `Temukan layanan terbaik dari NMW Aesthetic Clinic, mulai dari perawatan kulit, bedah plastik, konsultasi kesehatan, hingga perawatan anti-aging. Kunjungi klinik kecantikan terpercaya untuk solusi kecantikan yang optimal.`,
+    name: `${servicesPage.title}`,
+    description: `${servicesPage.description}`,
     url: `${baseUrl}/layanan`,
     publisher: {
       "@type": "Organization",
-      name: "NMW Aesthetic Clinic",
+      name: `${settings.title}`,
       logo: {
         "@type": "ImageObject",
         url: `${baseUrl}${settings.logo}`,
@@ -138,13 +161,13 @@ export default async function LayananPage() {
           {
             "@type": "ListItem",
             position: 1,
-            name: "Beranda",
+            name: `${settings.title}`,
             item: `${baseUrl}`
           },
           {
             "@type": "ListItem",
             position: 2,
-            name: "Layanan",
+            name: `${servicesPage.title}`,
             item: `${baseUrl}/layanan`
           },
         ]
@@ -160,11 +183,14 @@ export default async function LayananPage() {
         }}
       />
       <div className={banner.banner}>
-            <Image priority width={500} height={500} src={`/images/detail-artikel-banner.png`} alt="Layanan NMW Aesthetic Clinic" />
-        </div>
+          <Image priority width={500} height={500} src={servicesPage.image} alt={servicesPage.title} />
+      </div>
         <div className={breadcrumb.breadcrumb}>
             <h5><Link href={'/'}>Home</Link> / <span>Layanan</span></h5>
         </div>
+        <h1 className={styles.heading_hide}>
+          {servicesPage.headline}
+        </h1>
         <div className={styles.section_1}>
             <div className={styles.section_1_heading}>
                 <h1>
@@ -175,11 +201,7 @@ export default async function LayananPage() {
                 <Link href={`https://api.whatsapp.com/send?phone=${formattedPhone}`} target="blank_"><button className={styles.btn_layanan}>Buat Janji Temu Sekarang <FaWhatsapp/></button></Link>
             </div>
             <div className={styles.section_1_content}>
-                <p>Di NMW Aesthetic Clinic, kami menghadirkan solusi perawatan kulit yang inovatif dan berbasis medis untuk membantu Anda mencapai kulit sehat, cerah, dan bercahaya. Dengan kombinasi teknologi terkini, tenaga medis profesional, serta bahan berkualitas tinggi, kami menawarkan berbagai layanan estetika yang disesuaikan dengan kebutuhan unik kulit Anda. Setiap prosedur yang kami lakukan telah melalui penelitian mendalam dan dirancang untuk memberikan hasil yang efektif, aman, dan sesuai dengan standar medis terbaik.
-                    <br/><br/>
-                    Kami memahami bahwa setiap individu memiliki kondisi kulit yang berbeda, sehingga setiap perawatan yang kami berikan bersifat personal dan disesuaikan dengan jenis kulit serta kebutuhan spesifik Anda. Dengan pendekatan yang holistik, kami tidak hanya fokus pada hasil jangka pendek tetapi juga kesehatan kulit dalam jangka panjang.
-                    <br/><br/>
-                    Di NMW Aesthetic Clinic, kami berkomitmen untuk memberikan pelayanan terbaik yang mengutamakan kepuasan dan kenyamanan pasien. Klinik kami dirancang dengan suasana yang tenang dan nyaman, menciptakan pengalaman perawatan yang menyenangkan dan bebas dari rasa khawatir. Kami percaya bahwa kecantikan sejati berasal dari kulit yang sehat, dan dengan dukungan dari tim medis profesional kami, Anda dapat menikmati perawatan berkualitas tinggi yang membantu meningkatkan rasa percaya diri Anda dalam setiap momen kehidupan.</p>
+                <p>{servicesPage.description}</p>
             </div> 
         </div>
         <div className={styles.section_3}>

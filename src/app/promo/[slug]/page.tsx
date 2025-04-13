@@ -42,7 +42,7 @@ async function fetchSettings(): Promise<Settings> {
   });
 
   if (!response.ok) {
-    throw new Error("Gagal mengambil data achievement");
+    throw new Error("Gagal mengambil data setting");
   }
 
   const data = await response.json();
@@ -60,7 +60,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     return {
       title: `${promo.title}`,
       description: stripHtml(promo.description),
-      keywords: [`${promo.keywords.join(", ")}`],
+      keywords: (promo.keywords?.length
+        ? promo.keywords
+        : ["promo", "nmw", "nmw website", "nmw promo", "nmw clinic promo"]
+      ).join(", "),
       openGraph: {
         title: `${promo.title}`,
         description: stripHtml(promo.description),

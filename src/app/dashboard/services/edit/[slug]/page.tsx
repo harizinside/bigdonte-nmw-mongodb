@@ -8,22 +8,46 @@ import RichEditor from "@/components/rich-editor/page";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 
+type Service = {
+  name: string;
+  slug: string;
+  keywords: string[]; // <-- ini penting!
+  description: string;
+  phone: string;
+  sensitive_content: boolean;
+  template: boolean;
+  imageBanner: string;
+  imageCover: string;
+};
+
 const EditService = () => {
     const { slug } = useParams(); // Ambil slug service dari URL
     const router = useRouter();
-  
-    const [service, setService] = useState({ name: "", slug: "",description: "", phone: "", sensitive_content: false, template:false, imageBanner: "", imageCover: ""});
+    
+    const [service, setService] = useState<Service>({
+      name: "",
+      slug: "",
+      keywords: [],
+      description: "",
+      phone: "",
+      sensitive_content: false,
+      template: false,
+      imageBanner: "",
+      imageCover: "",
+    });
     const [loading, setLoading] = useState(true);
     const [, setSlug] = useState("");
     const [updating, setUpdating] = useState(false);
     const [image, setImage] = useState<File | null>(null); // Perbaiki tipe state
     const [imageSecond, setImageSecond] = useState<File | null>(null); // Perbaiki tipe state
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [previewImageBanner, setPreviewImageBanner] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     // Pastikan state diinisialisasi dengan tipe boolean
     const [template, setTemplate] = useState<boolean | null>(null);
     const [isSlugEdited, setIsSlugEdited] = useState(false);
+    const [keywordsString, setKeywordsString] = useState("");
     // Fetch data dokter berdasarkan ID
     useEffect(() => {
       if (!slug) return;
@@ -45,6 +69,8 @@ const EditService = () => {
 
           setTemplate(responseData.template);
           setPreviewImage(responseData.imageCover);
+          setPreviewImageBanner(responseData.imageBanner);
+          setKeywordsString(responseData.keywords.join(", ") || "");
         } catch (error) { 
           console.error("Error fetching service:", error);
         } finally {
@@ -79,6 +105,21 @@ const EditService = () => {
     const isTemplateChecked = (service: { template: any; }, value: any) => {
       return service.template === value;
     };
+
+    const handleKeywordsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setKeywordsString(value);
+    
+      if (service) {
+        setService({
+          ...service,
+          keywords: value
+            .split(",")
+            .map((k) => k.trim())
+            .filter((k) => k.length > 0),
+        });
+      }
+    };
   
     // Handle Update
     const handleUpdate = async (e: React.FormEvent) => { 
@@ -99,6 +140,8 @@ const EditService = () => {
         if (imageSecond) {
           formData.append("imageCover", imageSecond);
         }
+
+        service.keywords.forEach(keywords => formData.append("keywords", keywords));
       
         try {
           const response = await fetch(`/api/services/${slug}`, {
@@ -124,7 +167,7 @@ const EditService = () => {
       
   
   const handlePush = () => {
-    setIsOpen(false);
+    setIsOpen(false); 
     router.push("/dashboard/services");
   }
 
@@ -153,62 +196,98 @@ const EditService = () => {
               <div className="p-6.5 ">
                 <div className="flex gap-4.5 xl:flex-row mb-7 items-end">
                     <div className="w-full xl:w-1/2 ">
-                        <div className="w-80 h-auto mb-5 overflow-hidden object-cover object-center ">
-                            {(service.imageBanner) && (
-                                <Image
-                                    width="300"
-                                    height="370"
-                                    src={`${service.imageBanner}`} 
-                                    alt="Preview"
-                                    priority
-                                    className="w-full rounded-md"
-                                />
-                            )}
-                        </div>
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Banner Image
                         </label>
+                        <div
+                          id="FileUpload"
+                          className="relative block w-full h-65 cursor-pointer appearance-none rounded-xl border border-dashed border-gray-4 bg-gray-2 px-4 py-4 hover:border-orange-500 dark:border-dark-3 dark:bg-dark-2 dark:hover:border-orange-400 sm:py-7.5"
+                        >
                         <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                setImage(file);
-                                setPreviewImage(URL.createObjectURL(file));
-                            }
-                        }}
-                        className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                  setImageSecond(file);
+                                  setPreviewImageBanner(URL.createObjectURL(file));
+                              }
+                              }}
+                            name="profilePhoto"
+                            id="profilePhoto"
+                            accept="image/png, image/jpg, image/jpeg"
+                            className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
                         />
-                    </div>
-                    <div className="w-full xl:w-1/2">
-                        <div className="w-80 h-auto mb-5 overflow-hidden object-cover object-center ">
-                            {(service.imageCover) && (
+
+                            <div className="flex flex-col items-center justify-center">
+                                {/* Preview image di sini */}
+                                {(previewImageBanner) && (
                                 <Image
-                                    width="300"
-                                    height="370"
-                                    src={`${service.imageCover}`} 
+                                    width={800}
+                                    height={800}
+                                    src={previewImageBanner}
                                     alt="Preview"
                                     priority
-                                    className="w-full rounded-md"
+                                    className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
                                 />
-                            )}
+                                )}
+                                <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
+                                <div className="absolute bottom-10 w-100 text-center z-10">
+                                    <p className="mt-2.5 text-body-sm text-white font-medium">
+                                    <span className="text-orange-400">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="mt-1 text-body-xs text-white">
+                                    SVG, PNG, JPG (max, 2MB)
+                                    </p>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                    <div className="w-full xl:w-1/2">
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Cover Image
                         </label>
-                        <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                setImageSecond(file);
-                                setPreviewImage(URL.createObjectURL(file));
-                            }
-                        }}
-                        className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
+                        <div
+                          id="FileUpload"
+                          className="relative block w-full h-65 cursor-pointer appearance-none rounded-xl border border-dashed border-gray-4 bg-gray-2 px-4 py-4 hover:border-orange-500 dark:border-dark-3 dark:bg-dark-2 dark:hover:border-orange-400 sm:py-7.5"
+                        >
+                        <input 
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                  setImage(file);
+                                  setPreviewImage(URL.createObjectURL(file));
+                              }
+                              }}
+                            name="profilePhoto"
+                            id="profilePhoto"
+                            accept="image/png, image/jpg, image/jpeg"
+                            className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
                         />
+
+                            <div className="flex flex-col items-center justify-center">
+                                {/* Preview image di sini */}
+                                {(previewImage) && (
+                                <Image
+                                    width={800}
+                                    height={800}
+                                    src={previewImage}
+                                    alt="Preview"
+                                    priority
+                                    className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
+                                />
+                                )}
+                                <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
+                                <div className="absolute bottom-10 w-100 text-center z-10">
+                                    <p className="mt-2.5 text-body-sm text-white font-medium">
+                                    <span className="text-orange-400">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="mt-1 text-body-xs text-white">
+                                    SVG, PNG, JPG (max, 2MB)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
@@ -248,7 +327,7 @@ const EditService = () => {
                   </div>
                 </div>
                 
-                <div> 
+                <div className="mb-7"> 
                     <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                         Choose Service Page Template
                     </label>
@@ -331,6 +410,21 @@ const EditService = () => {
 
                     </ul>
                 </div>
+                <div className="mb-6 flex flex-col gap-4.5 xl:flex-row">
+                    <div className="w-full xl:w-full">
+                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
+                            Service Keywords
+                        </label>
+                        <input
+                            type="text"
+                            name="keywords"
+                            onChange={handleKeywordsChange}
+                            value={keywordsString}
+                            placeholder="Separate with commas (clinic, nmw, skincare)"
+                            className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
+                        />
+                    </div>
+                </div>
                 <input
                   type="text"
                   value={service.slug}
@@ -338,13 +432,13 @@ const EditService = () => {
                     setService((prev) => ({ ...prev, slug: e.target.value }));
                     setIsSlugEdited(true); // Tandai bahwa slug telah diedit user
                   }}
-                  className="hidden"
+                  className="hidden" 
                 />
 
                 <div className="flex gap-3 mt-7">
                     <button type="submit" disabled={updating} className="flex w-max gap-2 justify-center rounded-[7px] bg-green-500 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
-                        {updating ? "Updating..." : "Update"}
+                        {updating ? "Updating..." : "Update Service"}
                     </button>
                     <Link href={'/dashboard/services'}>
                         <button type="button" className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">

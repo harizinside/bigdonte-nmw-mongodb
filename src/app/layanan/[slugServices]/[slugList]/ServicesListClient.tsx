@@ -23,8 +23,16 @@ interface ServicesListClientProps {
   settings: {
     phone: string;
     logo: string;
+    title: string;
   };
   slugServices: string;
+  servicesPage: {
+    image: string;
+    headline: string;
+    title: string;
+    description: string;
+    keywords: string[];
+  }
 }
 
 export default function ServicesListClient({
@@ -32,6 +40,7 @@ export default function ServicesListClient({
   servicesType,
   settings,
   slugServices,
+  servicesPage,
 }: ServicesListClientProps) {
   const router = useRouter();
   const [htmlContent, setHtmlContent] = useState("");
@@ -72,12 +81,12 @@ export default function ServicesListClient({
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `${servicesList.name ? `${servicesList.name}` : `Layanan NMW Aesthetic Clinic`}`,
+    name: `${servicesList.name}`,
     description: `${servicesList.description ? `${servicesList.description.replace(/<[^>]+>/g, '').slice(0, 100)}${servicesList.description.length > 100 ? '...' : ''}` : 'Layanan NMW Aesthetic Clinic'} `,
     url: `${baseUrl}/layanan/${slugServices}/${servicesList.slug}`,
     publisher: {
         "@type": "Organization",
-        name: "NMW Aesthetic Clinic",
+        name: `${settings.title}`,
         logo: {
             "@type": "ImageObject",
             url: `${baseUrl}${settings.logo}`
@@ -93,13 +102,13 @@ export default function ServicesListClient({
             {
                 "@type": "ListItem",
                 position: 1,
-                name: "Home",
+                name: `${settings.title}`,
                 item: `${baseUrl}`
             },
             {
                 "@type": "ListItem",
                 position: 2,
-                name: "Layanan",
+                name: `${servicesPage.title}`,
                 item: `${baseUrl}/layanan`
             },
             {

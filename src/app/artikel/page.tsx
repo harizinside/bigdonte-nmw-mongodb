@@ -123,9 +123,10 @@ export async function generateMetadata(): Promise<Metadata> {
       title: `${articlesPage.title}`,
       description:
         `${articlesPage.description}`,
-      keywords: [
-        `${articlesPage.keywords.join(", ")}`,
-      ],
+      keywords: (articlesPage.keywords?.length
+        ? articlesPage.keywords
+        : ["nmw clinic", "nmw", "nmw website", "nmw artikel", "nmw clinic artikel"]
+      ).join(", "),
       openGraph: {
         title: `${articlesPage.title}`,
         description:

@@ -15,6 +15,7 @@ import Image from 'next/image';
 interface Article {
   _id: number;
   title: string;
+  excerpt: string;
   description: string;
   image: string;
   author: string;
@@ -53,16 +54,25 @@ interface Product {
   link: string;
 }
 
+interface Settings {
+  logo: string;
+  title: string;
+}
+
+interface ArticlesPage {
+  title: string;
+}
+
 interface Props {
     slug: string;
     doctorId: number;
     serviceId: number;
     products: string[];
+    settings: Settings;
+    articlesPage: ArticlesPage;
 }
   
-export default function ArtikelDetailClient({ slug, doctorId, serviceId, products }: Props) {
-
-  const [loading, setLoading] = useState(false);
+export default function ArtikelDetailClient({ slug, doctorId, serviceId, products, settings, articlesPage }: Props) {
   const [error, setError] = useState(null);
   const [toc, setToc] = useState<{ id: string; text: string; tag: string }[]>([]);
   const [modifiedContent, setModifiedContent] = useState("");
@@ -175,9 +185,6 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
     }
   }, [services]);
 
-  const plainText = article?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
-  const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
-
   const tags = Array.isArray(article?.tags) ? article.tags : [];
 
   const formatDate = (dateString: string) => {
@@ -241,6 +248,8 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
 
   if (error) return <p>Error: {error}</p>;
 
+  const plainText = article?.excerpt.replace(/<\/?[^>]+(>|$)/g, "") || "";
+
   if (!article) {
     return (
       <div className={loadingStyles.box}>
@@ -254,15 +263,15 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: `${article.title ? `${article.title}` : `Artikel NMW Aesthetic Clinic`} - NMW Aesthetic Clinic`,
-    description: `${truncatedText}`,
+    headline: `${article.title ? `${article.title}` : `Artikel NMW Aesthetic Clinic`}`,
+    description: `${plainText}`,
     url: `${baseUrl}/artikel/${article.slug}`,
     publisher: {
       "@type": "Organization",
-      name: "NMW Aesthetic Clinic",
+      name: `${settings.title}`,
       logo: {
         "@type": "ImageObject",
-        url: `${article.image ? `${baseUrl}${article.image}` : `${baseUrl}/images/kebijakan-privasi.png`}`
+        url: `${baseUrl}${settings.logo}`
       }
     },
     mainEntityOfPage: {
@@ -271,7 +280,7 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
     },
     image: {
       "@type": "ImageObject",
-      url: `${baseUrl}/${article.image}`
+      url: `${baseUrl}${article.image}`
     },
     author: {
       "@type": "Person",
@@ -288,13 +297,13 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
       {
         "@type": "ListItem",
         position: 1,
-        name: "Beranda",
+        name: `${settings.title}`,
         item: `${baseUrl}`
       },
       {
         "@type": "ListItem",
         position: 2,
-        name: "Artikel",
+        name: `${articlesPage.title}`,
         item: `${baseUrl}/artikel`
       },
       {
@@ -537,15 +546,6 @@ export default function ArtikelDetailClient({ slug, doctorId, serviceId, product
           </div>
         </div>
       </div>
-
-      {/* {loading && (
-          <div className={loadingStyles.box}>
-            <div className={loadingStyles.content}>
-              <img src="/images/logo.svg" loading="lazy" />
-              <span>LOADING</span>
-            </div>
-          </div>
-        )} */}
     </div>
   );
 };

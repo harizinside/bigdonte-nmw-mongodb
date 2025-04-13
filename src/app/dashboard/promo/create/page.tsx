@@ -16,7 +16,7 @@ const CreatePromo = () => {
   const [image, setImage] = useState<File | null>(null);
   const [sk, setSk] = useState("");
   const [slug, setSlug] = useState("");
-  const [keywords, setKeywords] = useState("");
+  const [keywords, setKeywords] = useState(""); 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
@@ -133,8 +133,6 @@ const CreatePromo = () => {
               </button>
             </div>
             <div className="p-6.5">
-
-
                 <div className={`mb-1 flex flex-col gap-4.5 xl:flex-col ${isCustomLink ? 'block' : 'hidden'}`}>
                   <div className="mb-4 flex flex-row gap-4.5 xl:flex-row ">
                       <div className="w-full xl:w-full">
@@ -197,7 +195,7 @@ const CreatePromo = () => {
                           <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Description</label>
                           <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
                             <RichEditor onChange={setDescription}/>
-                          </div>
+                          </div> 
                       </div>
                   </div>
                   <div className="mb-1 flex flex-col gap-4.5 xl:flex-row">

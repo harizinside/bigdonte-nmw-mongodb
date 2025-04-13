@@ -33,6 +33,7 @@ export async function PUT(req: any, { params }: any) {
   const name = formData.get("name") as string;
   const slug = formData.get("slug") as string;
   const description = formData.get("description") as string;
+  const keywords = formData.getAll("keywords") as string[];
   const image = formData.get("image") as File;
   const imageSecond = formData.get("imageSecond") as File;
 
@@ -107,7 +108,7 @@ export async function PUT(req: any, { params }: any) {
   // Perbarui data Achievement di database
   const updatedPatients = await Patient.findOneAndUpdate(
     { slug: params.slug }, // Query berdasarkan slug
-    { name, description, slug, image: finalImageUrl, imageSecond: finalImageCoverUrl },
+    { name, description, slug, keywords, image: finalImageUrl, imageSecond: finalImageCoverUrl },
     { new: true }
   );  
 

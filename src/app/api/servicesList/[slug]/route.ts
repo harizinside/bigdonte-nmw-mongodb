@@ -34,6 +34,7 @@ export async function PUT(req: any, { params }: any) {
   const formData = await req.formData();
   const name = formData.get("name") as string;
   const slug = formData.get("slug") as string;
+  const keywords = formData.getAll("keywords") as string[];
   const description = formData.get("description") as string;
   const sensitive_content = formData.get("sensitive_content") === "1";
   const imageFileBanner = formData.get("imageBanner") as File;
@@ -110,7 +111,7 @@ export async function PUT(req: any, { params }: any) {
   // Perbarui data Achievement di database
   const updatedServices = await ServicesList.findOneAndUpdate(
     { slug: params.slug }, // Query berdasarkan slug
-    { name, description, slug, sensitive_content, imageBanner: finalImageUrl, imageCover: finalImageCoverUrl },
+    { name, description, slug, keywords, sensitive_content, imageBanner: finalImageUrl, imageCover: finalImageCoverUrl },
     { new: true }
   );  
 

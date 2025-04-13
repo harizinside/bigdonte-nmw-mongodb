@@ -24,6 +24,14 @@ interface Settings {
   logo: string;
 }
 
+interface ServicesPage {
+  image: string;
+  headline: string;
+  title: string;
+  description: string;
+  keywords: string[];
+}
+
 interface Props {
   params: { slugServices: string };
 }
@@ -66,36 +74,42 @@ async function fetchWithAuth(url: string) {
     };
   }
 
+  async function fetchServicePage(): Promise<ServicesPage> {
+    const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+    const response = await fetch(`${baseUrl}/api/servicesPage`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+      },
+      cache: "no-store",
+    });
+  
+    if (!response.ok) { 
+      throw new Error("Gagal mengambil data services");
+    }
+  
+    const data = await response.json();
+    return data;
+  }
+
   export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slugServices } = params;
-    const { services, patient, servicesList, settings, baseUrl } = await fetchData(slugServices);
+    const { services, baseUrl } = await fetchData(slugServices);
 
     const plainText = services?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
-    const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
   
     return {
-      title: `${services.name} | NMW Aesthetic Clinic`,
+      title: `${services.name}`,
       description:
-        `${truncatedText}`,
-      keywords: [
-        "NMW Aesthetic Clinic",
-        "perawatan kulit",
-        "klinik kecantikan",
-        "estetika medis",
-        "bedah plastik",
-        "konsultasi kesehatan",
-        "perawatan wajah",
-        "rejuvenasi kulit",
-        "anti-aging",
-        "dokter kecantikan",
-        "laser treatment",
-        "facial treatment",
-        "lifting & tightening",
-      ],
+        `${plainText}`,
+      keywords: (services.keywords?.length
+        ? services.keywords
+        : ["nmw clinic", "nmw", "nmw website"]
+      ).join(", "),
       openGraph: {
-        title: `${services.name} | NMW Aesthetic Clinic`,
+        title: `${services.name}`,
         description:
-          `${truncatedText}`,
+          `${plainText}`,
         type: "website",
         url: `${baseUrl}/layanan/${services.slug}`,
         images: [
@@ -103,15 +117,15 @@ async function fetchWithAuth(url: string) {
             url: `${baseUrl}${services.imageCover}`,
             width: 800,
             height: 600,
-            alt: `${services.name} | NMW Aesthetic Clinic`,
+            alt: `${services.name}`,
           },
         ],
       },
       twitter: {
         card: "summary_large_image",
-        title: `${services.name} | NMW Aesthetic Clinic`,
+        title: `${services.name}`,
         description:
-          `${truncatedText}`,
+          `${plainText}`,
         images: [`${baseUrl}${services.imageCover}`],
       },
       alternates: {
@@ -124,20 +138,20 @@ async function fetchWithAuth(url: string) {
 export default async function Layanan({ params }: Props) {
   const { slugServices } = params;
   const { services, patient, servicesList, settings, baseUrl } = await fetchData(slugServices);
+  const servicesPage = await fetchServicePage();
 
   const plainText = services?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
-  const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
 
   // **Schema Data untuk SEO**
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `${services?.name} - NMW Aesthetic Clinic`,
-    description: `${truncatedText}`,
+    name: `${services?.name}`,
+    description: `${plainText}`,
     url: `${baseUrl}/layanan/${services?.slug}`,
     publisher: {
       "@type": "Organization",
-      name: "NMW Aesthetic Clinic",
+      name: `${settings.title}`,
       logo: {
         "@type": "ImageObject",
         url: `${baseUrl}${settings?.logo}`,
@@ -150,8 +164,8 @@ export default async function Layanan({ params }: Props) {
     breadcrumb: {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Beranda", item: `${baseUrl}` },
-        { "@type": "ListItem", position: 2, name: "Layanan", item: `${baseUrl}/layanan` },
+        { "@type": "ListItem", position: 1, name: `${settings.title}`, item: `${baseUrl}` },
+        { "@type": "ListItem", position: 2, name: `${servicesPage.title}`, item: `${baseUrl}/layanan` },
         { "@type": "ListItem", position: 3, name: `${services?.name}`, item: `${baseUrl}/layanan/${services?.slug}` },
       ],
     },

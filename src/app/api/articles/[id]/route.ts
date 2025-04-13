@@ -1,7 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Article from "@/models/articles";
 import { NextResponse } from "next/server";
-import cloudinary from "@/lib/cloudinary"; 
 import { validateToken } from "@/lib/auth";
 import path from "path";
 import fs from "fs/promises";
@@ -68,6 +67,7 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
   // Jika bukan hanya status, lakukan update keseluruhan artikel
   const title = formData.get("title") as string;
   const slug = formData.get("slug") as string;
+  const excerpt = formData.get("excerpt") as string;
   const imageSourceName = formData.get("imageSourceName") as string;
   const imageSourceLink = formData.get("imageSourceLink") as string;
   const date = formData.get("date") as string;
@@ -121,6 +121,7 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
       title,
       description,
       date,
+      excerpt,
       image: finalImageUrl,
       slug,
       imageSourceName,
