@@ -89,10 +89,13 @@ export async function generateMetadata(): Promise<Metadata> {
   
     const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
   
+    const plainText = servicesPage?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
+    const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
+
     return {
     title: `${servicesPage.title}`,
     description:
-      `${servicesPage.description}`,
+      `${truncatedText}`,
       keywords: (servicesPage.keywords?.length
         ? servicesPage.keywords
         : ["nmw clinic", "nmw", "nmw website"]
@@ -100,7 +103,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: `${servicesPage.title}`,
       description:
-        `${servicesPage.description}`,
+        `${truncatedText}`,
       type: "website",
       url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/layanan`,
       images: [
@@ -116,7 +119,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: `${servicesPage.title}`,
       description:
-        `${servicesPage.description}`,
+        `${truncatedText}`,
       images: [`${baseUrl}${servicesPage.image}`,],
     },
     alternates: {
@@ -136,12 +139,15 @@ export default async function LayananPage() {
     ? "62" + settings.phone.slice(1) // Replace first '0' with '62'
     : settings?.phone || "";
 
+  const plainText = servicesPage?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
+  const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
+
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: `${servicesPage.title}`,
-    description: `${servicesPage.description}`,
+    description: `${truncatedText}`,
     url: `${baseUrl}/layanan`,
     publisher: {
       "@type": "Organization",
@@ -200,8 +206,8 @@ export default async function LayananPage() {
 
                 <Link href={`https://api.whatsapp.com/send?phone=${formattedPhone}`} target="blank_"><button className={styles.btn_layanan}>Buat Janji Temu Sekarang <FaWhatsapp/></button></Link>
             </div>
-            <div className={styles.section_1_content}>
-                <p>{servicesPage.description}</p>
+            <div className={styles.section_1_content}> 
+                <p><div dangerouslySetInnerHTML={{ __html: servicesPage.description }} /></p>
             </div> 
         </div>
         <div className={styles.section_3}>

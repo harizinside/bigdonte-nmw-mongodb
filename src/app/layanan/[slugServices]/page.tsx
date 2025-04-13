@@ -97,11 +97,12 @@ async function fetchWithAuth(url: string) {
     const { services, baseUrl } = await fetchData(slugServices);
 
     const plainText = services?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
+    const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
   
     return {
       title: `${services.name}`,
       description:
-        `${plainText}`,
+        `${truncatedText}`,
       keywords: (services.keywords?.length
         ? services.keywords
         : ["nmw clinic", "nmw", "nmw website"]
@@ -109,7 +110,7 @@ async function fetchWithAuth(url: string) {
       openGraph: {
         title: `${services.name}`,
         description:
-          `${plainText}`,
+          `${truncatedText}`,
         type: "website",
         url: `${baseUrl}/layanan/${services.slug}`,
         images: [
@@ -125,7 +126,7 @@ async function fetchWithAuth(url: string) {
         card: "summary_large_image",
         title: `${services.name}`,
         description:
-          `${plainText}`,
+          `${truncatedText}`,
         images: [`${baseUrl}${services.imageCover}`],
       },
       alternates: {
@@ -141,13 +142,13 @@ export default async function Layanan({ params }: Props) {
   const servicesPage = await fetchServicePage();
 
   const plainText = services?.description.replace(/<\/?[^>]+(>|$)/g, "") || "";
-
+  const truncatedText = plainText.length > 156 ? plainText.slice(0, 156) + "..." : plainText;
   // **Schema Data untuk SEO**
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: `${services?.name}`,
-    description: `${plainText}`,
+    description: `${truncatedText}`,
     url: `${baseUrl}/layanan/${services?.slug}`,
     publisher: {
       "@type": "Organization",
