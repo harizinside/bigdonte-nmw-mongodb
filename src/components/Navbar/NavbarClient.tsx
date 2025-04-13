@@ -151,45 +151,6 @@ interface HomeClientProps {
         setShowPopup(false);
     };
 
-    const schemaData = {
-        "@context": "https://schema.org",
-        "@graph": [
-            {
-                "@type": "Organization",
-                "name": `${settings.title}`,
-                "url": `${baseUrl}`,
-                "logo": `${baseUrl}/${settings?.logo}`,
-                "description": `${settings?.meta_description}`,
-                "address": {
-                    "@type": "PostalAddress",
-                    "streetAddress": `${settings?.address_footer}`,
-                    "addressLocality": "Jakarta Selatan",
-                    "addressRegion": "DKI Jakarta",
-                    "postalCode": "12160",
-                    "addressCountry": "ID"
-                },
-                "contactPoint": {
-                    "@type": "ContactPoint",
-                    "telephone": "+62 812-8036-0370",
-                    "contactType": "customer service",
-                    "areaServed": "ID",
-                    "availableLanguage": "Indonesian"
-                },
-                "sameAs": socials.map((item) => item.link),
-            },
-            {
-                "@type": "WebSite",
-                "name":  `${settings.title}`,
-                "url": `${baseUrl}`,
-                "potentialAction": {
-                    "@type": "SearchAction",
-                    "target": `${baseUrl}/search?q={search_term_string}`,
-                    "query-input": "required name=search_term_string"
-                }
-            }
-        ]
-    };
-
     return (
         <>
             <Head>
@@ -198,9 +159,6 @@ interface HomeClientProps {
                 <link rel="icon" href={`${baseUrl}${settings.favicon}`} />
                 <link rel="apple-touch-icon" href={`${baseUrl}${settings?.favicon}`} />
                 <meta name="robots" content="index, follow" />
-                <script type="application/ld+json">
-                    {JSON.stringify(schemaData)}
-                </script>
             </Head>
 
             <div className={isSticky ? styles.header : styles.headerNoSticky}>
