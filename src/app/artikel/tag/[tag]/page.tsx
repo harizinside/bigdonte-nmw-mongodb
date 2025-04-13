@@ -52,7 +52,7 @@ interface TagPageProps {
             width: 800,
             height: 600,
             alt: `Tag ${tag} - NMW Aesthetic Clinic`,
-          },
+          }, 
         ],
       },
       twitter: {

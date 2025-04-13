@@ -32,6 +32,7 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
     const email = formData.get("email") as string;
     const title = formData.get("title") as string;
     const phone = formData.get("phone") as string;
+    const keywords = formData.getAll("keywords") as string[];
     const meta_description = formData.get("meta_description") as string;
     const address_header = formData.get("address_header") as string;
     const address_footer = formData.get("address_footer") as string;
@@ -112,7 +113,7 @@ export async function PUT(req: any, { params }: { params: { id: string } }) {
   // Perbarui data Achievement di database
   const updatedSetting = await Setting.findByIdAndUpdate(
     settingId,
-    { email, phone, title, meta_description, address_header, address_footer, direct_link, favicon: finalImageUrl, logo: finalImageCoverUrl },
+    { email, phone, title, keywords, meta_description, address_header, address_footer, direct_link, favicon: finalImageUrl, logo: finalImageCoverUrl },
     { new: true }
   );
 
@@ -128,6 +129,7 @@ export async function POST(request: Request) {
     const email = formData.get("email") as string;
     const title = formData.get("title") as string;
     const phone = formData.get("phone") as string;
+    const keywords = formData.getAll("keywords") as string[];
     const meta_description = formData.get("meta_description") as string;
     const address_header = formData.get("address_header") as string;
     const address_footer = formData.get("address_footer") as string;
@@ -174,6 +176,7 @@ export async function POST(request: Request) {
       title,
       meta_description,
       phone,
+      keywords,
       address_header,
       address_footer,
       direct_link,

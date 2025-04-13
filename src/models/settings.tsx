@@ -11,6 +11,7 @@ const SettingSchema = new mongoose.Schema(
     address_header: { type: String },
     address_footer: { type: String },
     direct_link: { type: String },
+    keywords: [{ type: String }],
   },
   { timestamps: true }
 );

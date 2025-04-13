@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Image from "next/image";
 
 const CreateCatalog = () => {
   const [title, setTitle] = useState("");
@@ -15,12 +16,14 @@ const CreateCatalog = () => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const router = useRouter();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) { 
       setImage(file);
+      setPreviewImage(URL.createObjectURL(file)); 
     }
   };
 
@@ -102,21 +105,51 @@ const CreateCatalog = () => {
             </div>
             {/* <form action="#"> */}
               <div className="p-6.5">
-                
-                <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
-                    <div className="w-full xl:w-1/2">
+                  <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
+                    <div className="w-full xl:w-full">
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Upload Image
                         </label>
-                        <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
-                        />
+                        <div
+                          id="FileUpload"
+                          className="relative block w-full h-65 cursor-pointer appearance-none rounded-xl border border-dashed border-gray-4 bg-gray-2 px-4 py-4 hover:border-orange-500 dark:border-dark-3 dark:bg-dark-2 dark:hover:border-orange-400 sm:py-7.5"
+                          >
+                          <input
+                              type="file"
+                              onChange={handleImageChange}
+                              name="profilePhoto"
+                              id="profilePhoto"
+                              accept="image/png, image/jpg, image/jpeg"
+                              className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
+                          />
+      
+                              <div className="flex flex-col items-center justify-center">
+                                  {/* Preview image di sini */}
+                                  {(previewImage) && (
+                                  <Image
+                                      width={800}
+                                      height={800}
+                                      src={previewImage}
+                                      alt="Preview"
+                                      priority
+                                      className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
+                                  />
+                                  )}
+                                  <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
+                                  <div className="absolute bottom-10 w-100 text-center z-10">
+                                      <p className="mt-2.5 text-body-sm text-white font-medium">
+                                      <span className="text-orange-400">Click to upload</span> or drag and drop
+                                      </p>
+                                      <p className="mt-1 text-body-xs text-white">
+                                      SVG, PNG, JPG (max, 2MB)
+                                      </p>
+                                  </div>
+                              </div>
+                        </div>
                     </div>
-
-                    <div className="w-full xl:w-1/2">
+                  </div>
+                <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
+                    <div className="w-full xl:w-1/3">
                       <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                         Catalog Title
                         <span className="text-red">*</span>
@@ -128,9 +161,7 @@ const CreateCatalog = () => {
                         className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
                       />
                     </div>
-                </div>
-                <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
-                    <div className="w-full xl:w-1/2">
+                    <div className="w-full xl:w-1/3">
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                             Document (PDF)
                         </label>
@@ -141,7 +172,7 @@ const CreateCatalog = () => {
                           className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
                         />
                     </div>
-                    <div className="flex flex-col w-full xl:w-1/2">
+                    <div className="flex flex-col w-full xl:w-1/3">
                       <div>
                         <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                           Select Date

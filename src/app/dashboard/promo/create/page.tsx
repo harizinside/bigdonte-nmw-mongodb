@@ -32,7 +32,7 @@ const CreatePromo = () => {
       setImage(file);
       setPreviewImage(URL.createObjectURL(file)); // generate preview
     }
-  };  
+  };   
 
   const generatedSlug = useMemo(() => {
         if (!title) return "";
@@ -54,9 +54,7 @@ const CreatePromo = () => {
     const formData = new FormData();
     if (isCustomLink) {
         formData.append("title", "");
-        formData.append("description", description);
-        formattedKeywords.forEach(keywords => formData.append("keywords", keywords));
-        formData.append("slug", "");
+        formData.append("slug", `default-slug-${Date.now()}`);
         formData.append("image", image || "");
         formData.append("sk", "");
         formData.append("start_date", "");
@@ -164,7 +162,7 @@ const CreatePromo = () => {
                                     className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
                                 />
                                 )}
-                                <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9"></div>
+                                <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
                                 <div className="absolute bottom-10 w-100 text-center z-10">
                                     <p className="mt-2.5 text-body-sm text-white font-medium">
                                     <span className="text-orange-400">Click to upload</span> or drag and drop
@@ -190,27 +188,7 @@ const CreatePromo = () => {
                       />
                   </div>
                   </div>
-                  <div className="mb-3 flex flex-col gap-4.5 xl:flex-row w-full">
-                      <div className="w-full">
-                          <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">Description</label>
-                          <div className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-orange-400 active:border-orange-400 dark:border-dark-3 dark:bg-dark-2 dark:focus:border-orange-400">
-                            <RichEditor onChange={setDescription}/>
-                          </div> 
-                      </div>
-                  </div>
-                  <div className="mb-1 flex flex-col gap-4.5 xl:flex-row">
-                    <div className="w-full xl:w-full">
-                        <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
-                          Keywords
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="separate with commas (clinic, nmw, skincare)"
-                          value={keywords} onChange={(e) => setKeywords(e.target.value)}
-                          className="w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5.5 py-3 text-dark outline-none transition placeholder:text-dark-6 focus:border-orange-400 active:border-orange-400 disabled:cursor-default dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-orange-400"
-                        />
-                    </div>
-                  </div>
+                  
                 </div>
 
                 <div className={`${isCustomLink ? 'hidden' : 'block'}`}>
@@ -244,7 +222,7 @@ const CreatePromo = () => {
                                   className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
                               />
                               )}
-                              <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9"></div>
+                              <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
                               <div className="absolute bottom-10 w-100 text-center z-10">
                                   <p className="mt-2.5 text-body-sm text-white font-medium">
                                   <span className="text-orange-400">Click to upload</span> or drag and drop

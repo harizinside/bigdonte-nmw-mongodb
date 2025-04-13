@@ -6,7 +6,6 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Image from "next/image";
 import Link from "next/link";
-import Branch from "@/models/branchs";
 
 const EditBranch = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -181,21 +180,45 @@ const handlePush = () => {
 
             <div className="p-6.5">
                 <form action="" onSubmit={handleSubmit} encType="multipart/form-data">
-                <div className="w-60 h-auto mb-5 overflow-hidden">
-                  {previewImage && <Image src={previewImage} alt="Preview"  width="700"
-                        height="700" priority
-                        className="w-full rounded-xl" />}
-                </div>
               <div className="mb-5">
                 <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
                   Upload Image
                 </label>
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="w-full cursor-pointer rounded-[7px] border-[1.5px] border-stroke px-3 py-[9px] outline-none transition file:mr-4 file:rounded file:border-[0.5px] file:border-stroke file:bg-stroke file:px-2.5 file:py-1 file:text-body-xs file:font-medium file:text-dark-5 focus:border-orange-400 file:focus:border-orange-400 active:border-orange-400 disabled:cursor-default disabled:bg-dark dark:border-dark-3 dark:bg-dark-2 dark:file:border-dark-3 dark:file:bg-white/30 dark:file:text-white"
+                <div
+                  id="FileUpload"
+                  className="relative mb-5.5 block w-full h-65 cursor-pointer appearance-none rounded-xl border border-dashed border-gray-4 bg-gray-2 px-4 py-4 hover:border-orange-500 dark:border-dark-3 dark:bg-dark-2 dark:hover:border-orange-400 sm:py-7.5"
+                  >
+                  <input
+                      type="file"
+                      onChange={handleImageChange}
+                      name="profilePhoto"
+                      id="profilePhoto"
+                      accept="image/png, image/jpg, image/jpeg"
+                      className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
                   />
+                    <div className="flex flex-col items-center justify-center">
+                        {/* Preview image di sini */}
+                        {(previewImage || formData?.image) && (
+                        <Image
+                            width={800}
+                            height={800}
+                            src={(previewImage || formData?.image) as string}
+                            alt="Preview"
+                            priority
+                            className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
+                        />
+                        )}
+                        <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
+                        <div className="absolute bottom-10 w-100 text-center z-10">
+                            <p className="mt-2.5 text-body-sm text-white font-medium">
+                            <span className="text-orange-400">Click to upload</span> or drag and drop
+                            </p>
+                            <p className="mt-1 text-body-xs text-white">
+                            SVG, PNG, JPG (max, 2MB)
+                            </p>
+                        </div>
+                    </div>
+                </div>
               </div>
 
               <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">

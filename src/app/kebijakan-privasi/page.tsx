@@ -12,43 +12,18 @@ interface Kebijakan {
   privacyPolicy: string;
 }
 
-export const metadata: Metadata = {
-    title: "Kebijakan & Privasi | NMW Aesthetic Clinic",
-    description:
-      "Baca kebijakan privasi NMW Aesthetic Clinic untuk memahami bagaimana kami mengumpulkan, menggunakan, dan melindungi informasi pribadi Anda.",
-      keywords: [
-        "kebijakan privasi",
-        "kebijakan",
-        "privasi",
-        "kebijakan privasi NMW Clinic",
-        "NMW Clinic",
-      ],
-    openGraph: {
-      title: "Kebijakan Privasi NMW Aesthetic Clinic",
-      description:
-        "Baca kebijakan privasi NMW Aesthetic Clinic untuk memahami bagaimana kami mengumpulkan, menggunakan, dan melindungi informasi pribadi Anda.",
-      type: "website",
-      url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/kebijakan-privasi`,
-      images: [
-        {
-          url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/images/kebijakan-privasi.webp`,
-          width: 800,
-          height: 600,
-          alt: "Kebijakan Privasi NMW Aesthetic Clinic",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: "Kebijakan Privasi NMW Aesthetic Clinic",
-      description:
-        "Baca kebijakan privasi NMW Aesthetic Clinic untuk memahami bagaimana kami mengumpulkan, menggunakan, dan melindungi informasi pribadi Anda.",
-      images: [`${process.env.NEXT_PUBLIC_API_WEB_URL}/images/kebijakan-privasi.webp`],
-    },
-    alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}/kebijakan-privasi`,
-    },
-  };
+interface Settings {
+  logo: string;
+  title: string;
+}
+
+interface PrivacyPage {
+  image: string;
+  headline: string;
+  title: string;
+  description: string;
+  keywords: string[];
+}
 
 // Fungsi server untuk fetch data
 async function fetchTerms(): Promise<Kebijakan[]> {
@@ -69,48 +44,126 @@ async function fetchTerms(): Promise<Kebijakan[]> {
   return data.privacyPolicy;
 }
 
+async function fetchSettings(): Promise<Settings> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+  const response = await fetch(`${baseUrl}/api/settings`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error("Gagal mengambil data achievement");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+async function fetchPrivacyPage(): Promise<PrivacyPage> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
+  const response = await fetch(`${baseUrl}/api/privacyPage`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) { 
+    throw new Error("Gagal mengambil data privacy page");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+    const privacyPage = await fetchPrivacyPage();
+  
+    const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
+  
+    return {
+    title: `${privacyPage.title}`,
+    description:
+      `${privacyPage.description}`,
+    keywords: [
+      `${privacyPage.keywords.join(", ")}`,
+    ],
+    openGraph: {
+      title: `${privacyPage.title}`,
+      description:
+        `${privacyPage.description}`,
+      type: "website",
+      url: `${process.env.NEXT_PUBLIC_API_WEB_URL}/kebijakan-privasi`,
+      images: [
+        {
+          url: `${baseUrl}${privacyPage.image}`,
+          width: 800,
+          height: 600,
+          alt: `${privacyPage.title}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${privacyPage.title}`,
+      description:
+        `${privacyPage.description}`,
+      images: [`${baseUrl}${privacyPage.image}`,],
+    },
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_API_WEB_URL}/kebijakan-privasi`,
+    },
+  };
+}
+
 // Fungsi server component
 export default async function TermsPage() {
   // Fetch data server-side
   const privacyPolicy = await fetchTerms();
+  const privacyPage = await fetchPrivacyPage();
+  const settings = await fetchSettings(); 
 
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || "";
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `Kebijakan Privasi - NMW Aesthetic Clinic`,
-    description: `Baca kebijakan privasi NMW Aesthetic Clinic untuk memahami bagaimana kami mengumpulkan, menggunakan, dan melindungi informasi pribadi Anda.`,
+    name: `${privacyPage.title}`, 
+    description: `${privacyPage.description}`,
     url: `${baseUrl}/kebijakan-privasi`,
     publisher: {
-    "@type": "Organization",
-    name: "NMW Aesthetic Clinic",
-    logo: {
+      "@type": "Organization",
+      name: `${settings.title}`,
+      logo: {
         "@type": "ImageObject",
-        url: `${baseUrl}/images/kebijakan-privasi.webp`
-    }
+        url: `${baseUrl}${settings.logo}`
+      }
     },
     mainEntityOfPage: {
-    "@type": "WebPage",
-    "@id": `${baseUrl}/kebijakan-privasi`
+      "@type": "WebPage",
+      "@id": `${baseUrl}/kebijakan-privasi`
     },
     breadcrumb: {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-            {
-            "@type": "ListItem",
-                position: 1,
-                name: "Home",
-                item: `${baseUrl}`
-            },
-            {
-            "@type": "ListItem",
-            position: 2,
-                name: "Kebijakan Privasi",
-                item: `${baseUrl}/kebijakan-privasi`
-            }
-        ]
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: `${settings.title}`,
+          item: `${baseUrl}`
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: `${privacyPage.title}`,
+          item: `${baseUrl}/kebijakan-privasi`
+        }
+      ]
     }
-};
+  };
 
   return (
     <div>
@@ -122,14 +175,14 @@ export default async function TermsPage() {
       />
       <div className={banner.banner}>
         <Image priority width={800} height={800}
-          src="/images/kebijakan-privasi.webp"
-          alt="Kebijakan Privasi NMW Aesthetic Clinic"
-        />
+            src={privacyPage.image}
+            alt={privacyPage.title}
+          />
       </div>
       <div className={breadcrumb.breadcrumb}>
           <h5><Link href={'/'}>Home</Link> / <span><Link href={'/kebijakan-privasi'}>Kebijakan Privasi</Link></span></h5>
       </div>
-      <h1 className={styles.heading_hide}>Selamat Datang di Halaman Kebijakan Privasi Pada Website NMW Aesthetic Clinic</h1>
+      <h1 className={styles.heading_hide}>{privacyPage.headline}</h1>
       <div className={styles.container}>
         <div className={`${styles.heading_section}`}>
           <h2>

@@ -21,14 +21,11 @@ const FaqsPage = () => {
     const [faqsPage, setfaqsPage] = useState<FaqsPage | null>(null);
     const [keywordsString, setKeywordsString] = useState("");
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [updating, setUpdating] = useState(false);
     const [image, setImage] = useState<File | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
-    const [loadingDelete, setLoadingDelete] = useState(false);
 
       useEffect(() => {
       
@@ -47,7 +44,7 @@ const FaqsPage = () => {
             if (responseData) {
               setfaqsPage(responseData);
               setPreviewImage(responseData.image);
-              setKeywordsString(responseData.keywords?.join(", ") || "");
+              setKeywordsString(responseData.keywords?.join(", ") || ""); 
             }
           } catch (error) {
             console.error(error);
@@ -175,7 +172,7 @@ const FaqsPage = () => {
                                     className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
                                 />
                                 )}
-                                <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9"></div>
+                                <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
                                 <div className="absolute bottom-10 w-100 text-center z-10">
                                     <p className="mt-2.5 text-body-sm text-white font-medium">
                                     <span className="text-orange-400">Click to upload</span> or drag and drop

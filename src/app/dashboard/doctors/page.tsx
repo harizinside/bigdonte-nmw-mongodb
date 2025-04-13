@@ -6,8 +6,8 @@ import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 
 export const metadata: Metadata = {
-  title: "Doctors | NMW Aesthetic Clinic",
-  description: "Content Management untuk membuat, mengubah, menghapus data dokter",
+  title: "Doctors || NMW Aesthetic Clinic",
+  description: "Dashboard Doctors for editing and managing doctors",
 };
 
 const DoctorPage = () => {

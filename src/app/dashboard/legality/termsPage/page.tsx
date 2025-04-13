@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type AchievementsPage = {
+type TermsPage = {
   _id: number;
   title: string;
   headline: string;
@@ -15,22 +15,24 @@ type AchievementsPage = {
   keywords: string[];
 };
 
-const AchievementsPage = () => {
-
-    const [achievementsPage, setachievementsPage] = useState<AchievementsPage | null>(null);
+const TermsPage = () => {
+    const [termsPage, settermsPage] = useState<TermsPage | null>(null);
     const [keywordsString, setKeywordsString] = useState("");
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [updating, setUpdating] = useState(false);
     const [image, setImage] = useState<File | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [loadingDelete, setLoadingDelete] = useState(false);
 
       useEffect(() => {
       
-        const fetchAchievementsPage = async () => {
+        const fetchTermsPage = async () => {
           try {
-            const response = await fetch(`/api/achievementsPage`, {
+            const response = await fetch(`/api/termsPage`, {
               method: "GET",
               headers: {
                 Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
@@ -41,7 +43,7 @@ const AchievementsPage = () => {
             const responseData = await response.json();
       
             if (responseData) {
-              setachievementsPage(responseData);
+              settermsPage(responseData);
               setPreviewImage(responseData.image);
               setKeywordsString(responseData.keywords?.join(", ") || "");
             }
@@ -52,14 +54,14 @@ const AchievementsPage = () => {
           }
         };
       
-        fetchAchievementsPage();
+        fetchTermsPage();
       }, []); // Hapus settings dari dependensi      
 
       const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        if (!achievementsPage) return;
+        if (!termsPage) return;
       
-        setachievementsPage({
-          ...achievementsPage,
+        settermsPage({
+          ...termsPage,
           [e.target.name]: e.target.value, // Update field yang diubah
         });
       };  
@@ -68,9 +70,9 @@ const AchievementsPage = () => {
         const value = e.target.value;
         setKeywordsString(value);
       
-        if (achievementsPage) {
-          setachievementsPage({
-            ...achievementsPage,
+        if (termsPage) {
+          settermsPage({
+            ...termsPage,
             keywords: value
               .split(",")
               .map((k) => k.trim())
@@ -91,22 +93,22 @@ const AchievementsPage = () => {
 
       const handleUpdate = async (e: React.FormEvent) => { 
         e.preventDefault();
-        if (!achievementsPage) return;
+        if (!termsPage) return;
         setUpdating(true);
        
         const formData = new FormData();
-        formData.append("title", achievementsPage.title);
-        formData.append("headline", achievementsPage.headline);
-        formData.append("description", achievementsPage.description);
+        formData.append("title", termsPage.title);
+        formData.append("headline", termsPage.headline);
+        formData.append("description", termsPage.description);
       
         if (image) {
           formData.append("image", image);
         }  
 
-        achievementsPage.keywords.forEach(keywords => formData.append("keywords", keywords));
+        termsPage.keywords.forEach(keywords => formData.append("keywords", keywords));
       
         try {
-          const res = await fetch(`/api/achievementsPage`, {
+          const res = await fetch(`/api/termsPage`, {
             method: "PUT",
             headers: {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`,
@@ -134,19 +136,18 @@ const AchievementsPage = () => {
   return (
     <DefaultLayout>
       <div className="mb-6 flex flex-col gap-3 sm:flex-col sm:items-start sm:justify-between">
-        <Breadcrumb route="dashboard/achievements" pageName="Manage Achievements" routeSecond={`dashboard/achievements/achievementsPage`} pageNameSecond="/ Achievements Page" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
+        <Breadcrumb route="dashboard/legality" pageName="Manage Legality" routeSecond={`dashboard/legality/termsPage`} pageNameSecond="/ Terms Condition Page" routeThird="" pageNameThird="" routeFour="" pageNameFour="" routeFive="" pageNameFive="" />
       </div>
       <div className="flex flex-col gap-10">
         <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
             <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
               <h3 className="font-semibold text-dark dark:text-white">
-                Achievements Page
+                Terms Condition Page
               </h3>
             </div>
             <div className="p-6.5">
                 <form onSubmit={handleUpdate} encType="multipart/form-data">
                     <div className="mb-4 flex flex-col gap-4.5 xl:flex-row ">
-
                         <div
                         id="FileUpload"
                         className="relative mb-5.5 block w-full h-65 cursor-pointer appearance-none rounded-xl border border-dashed border-gray-4 bg-gray-2 px-4 py-4 hover:border-orange-500 dark:border-dark-3 dark:bg-dark-2 dark:hover:border-orange-400 sm:py-7.5"
@@ -160,28 +161,28 @@ const AchievementsPage = () => {
                             className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
                         />
 
-                        <div className="flex flex-col items-center justify-center">
-                            {/* Preview image di sini */}
-                            {(previewImage || achievementsPage?.image) && (
-                            <Image
-                                width={800}
-                                height={800}
-                                src={(previewImage || achievementsPage?.image) as string}
-                                alt="Preview"
-                                priority
-                                className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
-                            />
-                            )}
-                            <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
-                            <div className="absolute bottom-10 w-100 text-center z-10">
-                                <p className="mt-2.5 text-body-sm text-white font-medium">
-                                <span className="text-orange-400">Click to upload</span> or drag and drop
-                                </p>
-                                <p className="mt-1 text-body-xs text-white">
-                                SVG, PNG, JPG (max, 2MB)
-                                </p>
+                            <div className="flex flex-col items-center justify-center">
+                                {/* Preview image di sini */}
+                                {(previewImage || termsPage?.image) && (
+                                <Image
+                                    width={800}
+                                    height={800}
+                                    src={(previewImage || termsPage?.image) as string}
+                                    alt="Preview"
+                                    priority
+                                    className="w-full h-full object-cover rounded-xl mb-3 absolute top-0 left-0 z-1"
+                                />
+                                )}
+                                <div className="bg-black/40 absolute w-full h-full top-0 left-0 z-9 rounded-xl"></div>
+                                <div className="absolute bottom-10 w-100 text-center z-10">
+                                    <p className="mt-2.5 text-body-sm text-white font-medium">
+                                    <span className="text-orange-400">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="mt-1 text-body-xs text-white">
+                                    SVG, PNG, JPG (max, 2MB)
+                                    </p>
+                                </div>
                             </div>
-                        </div>
                         </div>
                     </div>
                     <div className="mb-7 flex flex-col gap-4.5 xl:flex-row">
@@ -191,7 +192,7 @@ const AchievementsPage = () => {
                             </label>
                             <input
                                 type="text"
-                                defaultValue={achievementsPage?.title}
+                                defaultValue={termsPage?.title}
                                 name="title"
                                 onChange={handleChange}
                                 placeholder="Enter Page Title"
@@ -204,7 +205,7 @@ const AchievementsPage = () => {
                             </label>
                             <input
                                 type="text"
-                                defaultValue={achievementsPage?.headline}
+                                defaultValue={termsPage?.headline}
                                 name="headline"
                                 onChange={handleChange}
                                 placeholder="Enter Page headline"
@@ -233,7 +234,7 @@ const AchievementsPage = () => {
                                 Page Description
                             </label>
                             <textarea
-                                defaultValue={achievementsPage?.description}
+                                defaultValue={termsPage?.description}
                                 name="description"
                                 onChange={handleChange}
                                 placeholder="Enter Page Description"
@@ -245,9 +246,9 @@ const AchievementsPage = () => {
                     <div className="flex gap-3">
                         <button type="submit" onClick={handleUpdate} disabled={updating} className="flex w-max gap-2 justify-center rounded-[7px] bg-green-500 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21 7v14H3V3h14zm-9 11q1.25 0 2.125-.875T15 15t-.875-2.125T12 12t-2.125.875T9 15t.875 2.125T12 18m-6-8h9V6H6z"/></svg>
-                            {updating ? "Saving..." : "Save Achievements Page"}
+                            {updating ? "Saving..." : "Save Terms Condition Page"}
                         </button>
-                        <Link href={'/dashboard/achievements'}>
+                        <Link href={'/dashboard/legality'}>
                             <button className="flex w-max gap-2 justify-center rounded-[7px] bg-red-600 p-[9px] px-5 font-medium text-white hover:bg-opacity-90">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>
                                 Cancel
@@ -256,7 +257,7 @@ const AchievementsPage = () => {
                     </div>
                 </form>
             </div>
-        </div>
+        </div> 
       </div>
       {/* Modal */}
       <div className={`fixed top-0 left-0 z-999 flex h-screen w-screen items-center justify-center bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
@@ -282,4 +283,4 @@ const AchievementsPage = () => {
   );
 };
 
-export default AchievementsPage;
+export default TermsPage;

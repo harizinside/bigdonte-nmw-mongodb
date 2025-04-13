@@ -8,7 +8,7 @@ import TableEleven from "@/components/Tables/TableEleven";
 
 export const metadata: Metadata = {
   title: "Articles || NMW Aesthetic Clinic",
-  description: "This is Next.js Tables page for NextAdmin Dashboard Kit",
+  description: "Dashboard Articles for editing and managing articles",
 };
 
 const ArticlesPage = () => { 

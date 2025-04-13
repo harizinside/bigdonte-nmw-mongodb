@@ -6,8 +6,8 @@ import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import TableSixteen from "@/components/Tables/TableSixteen";
 
 export const metadata: Metadata = {
-  title: "Products CMS",
-  description: "This is Next.js Tables page for NextAdmin Dashboard Kit",
+  title: "Products || NMW Aesthetic Clinic",
+  description: "Dashboard Products for editing and managing products",
 };
 
 const PromoPage = () => { 

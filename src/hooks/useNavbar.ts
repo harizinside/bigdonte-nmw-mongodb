@@ -30,6 +30,7 @@ interface Settings {
   favicon: string;
   title: string;
   address_header: string;
+  address_footer: string;
   email: string;
   meta_description: string;
   direct_link: string;
@@ -49,6 +50,7 @@ export function useNavbar() {
     services: [],
     articles: [],
     settings: {
+      address_footer: "",
       phone: "",
       logo: "",
       favicon: "",
@@ -86,6 +88,7 @@ export function useNavbar() {
             address_header: "",
             email: "",
             meta_description: "",
+            address_footer: "",
           },
           socials: Array.isArray(socialRes) ? socialRes : [],
           loading: false,

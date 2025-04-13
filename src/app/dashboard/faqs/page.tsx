@@ -1,5 +1,4 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import TableThree from "@/components/Tables/TableThree";
 import ButtonDefault from "@/components/Buttons/ButtonDefault";
 
 import { Metadata } from "next";

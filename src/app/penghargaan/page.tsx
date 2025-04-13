@@ -175,7 +175,7 @@ export default async function PenghargaanPage() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(schemaData),
         }}
-      />
+      /> 
       <div className={banner.banner}>
         <Image
           priority

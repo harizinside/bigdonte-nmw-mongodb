@@ -31,6 +31,7 @@ interface HomeClientProps {
       address_header: string;
       email: string;
       direct_link: string;
+      address_footer: string;
     };
     socials: any[];
     promos: any[];
@@ -155,13 +156,13 @@ interface HomeClientProps {
         "@graph": [
             {
                 "@type": "Organization",
-                "name": "NMW Aesthetic Clinic",
+                "name": `${settings.title}`,
                 "url": `${baseUrl}`,
                 "logo": `${baseUrl}/${settings?.logo}`,
-                "description": "Klinik Aesthetic, Skincare, dan Dermatologi terpercaya di Jakarta.",
+                "description": `${settings?.meta_description}`,
                 "address": {
                     "@type": "PostalAddress",
-                    "streetAddress": "Jl. Petogogan II No.29 RT.008 RW.006 Kel. Pulo, Kec. Kebayoran Baru Kota Jakarta Selatan Prov. DKI Jakarta 12160",
+                    "streetAddress": `${settings?.address_footer}`,
                     "addressLocality": "Jakarta Selatan",
                     "addressRegion": "DKI Jakarta",
                     "postalCode": "12160",
@@ -178,7 +179,7 @@ interface HomeClientProps {
             },
             {
                 "@type": "WebSite",
-                "name": "NMW Aesthetic Clinic",
+                "name":  `${settings.title}`,
                 "url": `${baseUrl}`,
                 "potentialAction": {
                     "@type": "SearchAction",
@@ -195,7 +196,7 @@ interface HomeClientProps {
                 <meta name="google-site-verification" content="iYG_LhQQBgtnR0eh5LxjemSAR_8cAHBnM7WZ_Dqq_N8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <link rel="icon" href={`${baseUrl}${settings.favicon}`} />
-                <link rel="apple-touch-icon" href={`${baseUrl}/${settings?.favicon}`} />
+                <link rel="apple-touch-icon" href={`${baseUrl}${settings?.favicon}`} />
                 <meta name="robots" content="index, follow" />
                 <script type="application/ld+json">
                     {JSON.stringify(schemaData)}
@@ -262,7 +263,7 @@ interface HomeClientProps {
                     </button>
                     <div className={`${styles.menu} ${menuActive ? styles.active : ''}`}>
                         <div className={styles.menu_layout}>
-                            <img className={styles.logo_mobile} src={`${baseUrl}/${settings?.logo}`} loading="lazy" alt="NMW Clinic Logo | Logo NMW Clinic | Logo NMW Clinic png" />
+                            <img className={styles.logo_mobile} src={`${baseUrl}${settings?.logo}`} loading="lazy" alt="NMW Clinic Logo | Logo NMW Clinic | Logo NMW Clinic png" />
                             <ul ref={headerRef}>
                                 <li className={isActive('/')} onClick={clickMenu}><Link href="/">Home</Link></li>
                                 <li>
