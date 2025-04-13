@@ -141,12 +141,16 @@ const schemaData = {
       />
       
       <div className={banner.banner}>
-        <Image priority width={900} height={900} src="/images/dokter_banner.webp" alt="Layanan NMW Aesthetic Clinic" />
+        <Image priority width={900} height={900} src={doctorsPage.image} alt={doctorsPage.title} />
       </div>
 
       <div className={breadcrumb.breadcrumb}>
         <h5><Link href="/">Home</Link> / <span><Link href="/dokter-kami">Dokter Kami</Link></span></h5>
       </div>
+
+      <h1 className={styles.heading_hide}>
+        {doctorsPage.headline}
+      </h1>
 
       <div className={styles.container}>
         <div className={styles.tabs}>

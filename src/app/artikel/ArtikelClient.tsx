@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import styles from "@/css/Article.module.css";
 import banner from "@/css/Banner.module.css";
@@ -10,11 +9,15 @@ import breadcrumb from "@/css/Breadcrumb.module.css";
 interface Props {
   tags: any[];
   articles: any[];
+  settings: any;
+  articlesPage: any;
 }
 
 export default function ArtikelClient({
   tags,
   articles,
+  settings,
+  articlesPage,
 }: Props) {
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL;
 
@@ -30,15 +33,15 @@ export default function ArtikelClient({
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: `Artikel - NMW Aesthetic Clinic`,
-    description: `Temukan jawaban atas pertanyaan umum tentang layanan, perawatan, konsultasi, dan prosedur medis di NMW Aesthetic Clinic. Dapatkan informasi lengkap untuk perawatan kecantikan dan kesehatan kulit Anda.`,
+    name: `${articlesPage.title}`,
+    description: `${articlesPage.title}`,
     url: `${baseUrl}/artikel`,
     publisher: {
       "@type": "Organization",
-      name: "NMW Aesthetic Clinic",
+      name: `${settings.title}`,
       logo: {
         "@type": "ImageObject",
-        url: `${baseUrl}/images/article_image_page.png`
+        url: `${baseUrl}${settings.logo}`
       }
     },
     mainEntityOfPage: {
@@ -51,13 +54,13 @@ export default function ArtikelClient({
         {
           "@type": "ListItem",
           position: 1,
-          name: "Home",
+          name: `${settings.title}`,
           item: `${baseUrl}`
         },
         {
           "@type": "ListItem",
           position: 2,
-          name: "Artikel",
+          name: `${articlesPage.title}`,
           item: `${baseUrl}/artikel`
         }
       ]
@@ -72,7 +75,7 @@ export default function ArtikelClient({
         />
       {/* Banner Section */}
       <div className={banner.banner}>
-        <Image src="/images/article_image_page.png" priority width={800} height={800} alt="Layanan Nmw Aesthetic Clinic" />
+        <Image src={articlesPage.image} priority width={800} height={800} alt={articlesPage.title} />
       </div>
 
       {/* Breadcrumb Section */}
@@ -83,7 +86,7 @@ export default function ArtikelClient({
       </div>
 
       {/* Articles Section */}
-      <h1 className={styles.heading_hide}>Selamat Datang di Page Artikel Website NMW Aesthetic Clinic</h1>
+      <h1 className={styles.heading_hide}>{articlesPage.headline}</h1>
 
       <div className={styles.container}>
         <div className={styles.tabsContainer}>
