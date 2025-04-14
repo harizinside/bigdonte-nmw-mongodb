@@ -14,11 +14,7 @@ export async function connectToDatabase() {
 
   if (!cached.promise) {
     console.log("🔄 Connecting to MongoDB...");
-    cached.promise = mongoose
-      .connect(MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      })
+    cached.promise = mongoose.connect(MONGODB_URI)
       .then((mongoose) => {
         console.log("✅ MongoDB connected successfully!");
         return mongoose.connection;

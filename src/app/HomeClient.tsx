@@ -1,23 +1,8 @@
-"use client"
-
 import styles from "@/css/Home.module.css";
-import { FaWhatsapp } from "react-icons/fa";
-import React, { useRef, useState, useEffect } from 'react';
-// Import Swiper React components
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Controller } from "swiper/modules";
 import Link from "next/link";
-import { HiOutlineArrowLongRight } from "react-icons/hi2";
-
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/effect-fade';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import { EffectFade, Pagination, Autoplay } from 'swiper/modules';
 import Image from "next/image";
-
-import type { Swiper as SwiperType } from "swiper";
+import DualServiceSlider from '@/components/DualServiceSlider/page';
+import PromoSwiper from "@/components/PromoSwiper/page"; 
 
 interface HomeClientProps {
   settings: {
@@ -33,14 +18,12 @@ interface HomeClientProps {
   articles: any[];
 }
 
-  export default function HomeClient({
+export default function HomeClient({
     settings,
     promos,
     services,
     articles,
   }: HomeClientProps) {
-  const [firstSwiper, setFirstSwiper] = useState<SwiperType | null>(null);
-  const [secondSwiper, setSecondSwiper] = useState<SwiperType | null>(null);
 
   const baseUrl = process.env.NEXT_PUBLIC_API_WEB_URL || '';
 
@@ -52,10 +35,6 @@ interface HomeClientProps {
       year: "numeric",
     }).format(date);
   };
-
-  const midIndex = Math.ceil(services.length / 2);
-  const firstHalf = services.slice(0, midIndex); // First half of the services
-  const secondHalf = services.slice(midIndex);
 
   const formattedPhone =
   settings.phone && settings.phone.startsWith("0")
@@ -108,111 +87,13 @@ interface HomeClientProps {
           __html: JSON.stringify(schemaData),
         }}
       />
-        <Swiper
-          pagination={{
-            clickable: true,
-          }}
-          effect={'fade'}
-          loop={true}
-          autoplay={{
-            delay: 2500,
-          }}
-          modules={[EffectFade, Pagination, Autoplay]}
-          className="myBanner"
-        >
-          {promos.map(promo => (
-            <SwiperSlide key={promo._id}>
-              <Link href={promo.link ? promo.link : `/promo/${promo.slug}`}>
-                <div
-                  className={styles.banner}
-                  style={{ backgroundImage: `url(${baseUrl}${promo.image})` }}
-                >
-                </div>
-              </Link>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+      <PromoSwiper promos={promos} baseUrl={baseUrl} />
       <div className={styles.section_1}>
         <div className={styles.heading_section}>
           <h2><span>Layanan</span> Kami</h2>
         </div>
           <div className={styles.slide_section_1}>
-            <Swiper
-              dir="rtl"
-              navigation={true}
-              modules={[Navigation, Controller]}
-              className="mySwiper"
-              loop={true}
-              onSwiper={setSecondSwiper}
-              controller={{ control: firstSwiper }}
-            >
-              {firstHalf.map((service) => (
-                <SwiperSlide key={service._id}>
-                  <div className={styles.box_service_layout}>
-                    <div className={`${styles.box_service}`}>
-                      <div className={styles.box_service_content}>
-                        <h3>{service.name}</h3>
-                        <p>
-                          {service.description.replace(/<p[^>]*>/g, '').replace(/<\/p>/g, '')}
-                        </p>
-
-                        <Link href={`/layanan/${service.slug}`}>
-                          <button>Lihat Detail</button>
-                        </Link>
-                      </div>
-                      <div className={styles.box_service_image}>
-                        <Image
-                          width={500}
-                          height={500}
-                          src={service.imageCover}
-                          alt={service.name}
-                          priority
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-
-            <Swiper
-              navigation={true}
-              modules={[Navigation, Controller]}
-              className="mySwiper mySwiperSecond"
-              loop={true}
-              onSwiper={setFirstSwiper}
-              controller={{ control: secondSwiper }}
-            >
-              {secondHalf.map((service) => (
-                <SwiperSlide key={service._id}>
-                  <div
-                    className={`${styles.box_service_layout} ${styles.box_service_layout_second}`}
-                  >
-                    <div className={`${styles.box_service} ${styles.box_service_second}`}>
-                      <div className={styles.box_service_content}>
-                        <h3>{service.name || service.name}</h3>
-                        <p>
-                          {service.description ? service.description.replace(/<p[^>]*>/g, '').replace(/<\/p>/g, '') : "Loading..."}
-                        </p>
-
-                        <Link href={`/layanan/${service.slug}`}>
-                          <button>Lihat Detail</button>
-                        </Link>
-                      </div>
-                      <div className={styles.box_service_image}>
-                        <Image
-                          width={500}
-                          height={500}
-                          src={service.imageCover}
-                          alt={service.name}
-                          priority
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+            <DualServiceSlider services={services} styles={styles} />
           </div>
       </div>
       <h1 className={styles.heading_hide}>Selamat Datang di Website NMW Aesthetic Clinic</h1>
