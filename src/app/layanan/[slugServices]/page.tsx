@@ -6,7 +6,7 @@ import styles from "@/css/Layanan.module.css";
 import breadcrumb from "@/css/Breadcrumb.module.css";
 import notFound from "../../../../public/images/data_empty.webp"
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
-import { JSXElementConstructor, Key, PromiseLikeOfReactNode, ReactElement, ReactNode, ReactPortal } from "react";
+import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal } from "react";
 import { Metadata } from "next";
 
 interface Service {
@@ -263,7 +263,7 @@ export default async function Layanan({ params }: Props) {
             {/* Jika template === false, tampilkan layout service */}
             {services.template === false && servicesList.length > 0 && (
                 <div className={styles.box_service_layout}>
-                {servicesList.map((typeService: { _id: Key | null | undefined; imageCover: string | StaticImport; title: string; name: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; description: string; slug: any; }) => (
+                {servicesList.map((typeService: { _id: Key | null | undefined; imageCover: string | StaticImport; title: string; name: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; description: string; slug: any; }) => (
                     <div className={styles.box_service} key={typeService._id}>
                     <div className={styles.box_service_image}>
                         <Image
@@ -293,7 +293,7 @@ export default async function Layanan({ params }: Props) {
             {/* Jika template === true, tampilkan layout galeri */}
             {services.template === true && servicesList.length > 0 && (
                 <div className={styles.box_galeri_layout}>
-                {servicesList.map((typeService: { slug: any; _id: Key | null | undefined; imageCover: string | StaticImport; name: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | PromiseLikeOfReactNode | null | undefined; }) => (
+                {servicesList.map((typeService: { slug: any; _id: Key | null | undefined; imageCover: string | StaticImport; name: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined; }) => (
                     <Link href={`/layanan/${services.slug}/${typeService.slug}`} key={typeService._id}>
                     <div className={styles.box_galeri}>
                         <div className={styles.box_galeri_image}>

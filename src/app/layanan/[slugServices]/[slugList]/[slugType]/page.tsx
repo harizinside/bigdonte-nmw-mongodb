@@ -5,7 +5,7 @@ import banner from "@/css/Banner.module.css";
 import styles from "@/css/Layanan.module.css";
 import breadcrumb from "@/css/Breadcrumb.module.css";
 import notFound from "../../../../../../public/images/data_empty.webp"
-import { JSXElementConstructor, Key, PromiseLikeOfReactNode, ReactElement, ReactNode, ReactPortal } from "react";
+import { Key } from "react";
 import { Metadata } from "next";
 
 // **Tipe Data untuk Props**

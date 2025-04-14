@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import banner from "@/css/Banner.module.css";
 import styles from "@/css/Layanan.module.css";
 import Link from 'next/link';
-import loadingStyles from "@/css/Loading.module.css";
 import { FaWhatsapp } from "react-icons/fa";
 import breadcrumb from "@/css/Breadcrumb.module.css"
 import Image from 'next/image';
